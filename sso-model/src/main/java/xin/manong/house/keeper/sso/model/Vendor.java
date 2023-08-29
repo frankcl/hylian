@@ -3,6 +3,7 @@ package xin.manong.house.keeper.sso.model;
 import com.alibaba.fastjson.annotation.JSONField;
 import com.baomidou.mybatisplus.annotation.*;
 import com.baomidou.mybatisplus.extension.activerecord.Model;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import lombok.Setter;
@@ -20,7 +21,8 @@ import org.slf4j.LoggerFactory;
 @Getter
 @Setter
 @Accessors(chain = true)
-@TableName("isv")
+@TableName("vendor")
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class Vendor extends Model {
 
     private static final Logger logger = LoggerFactory.getLogger(Vendor.class);
