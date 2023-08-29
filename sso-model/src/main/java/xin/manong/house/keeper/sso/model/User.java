@@ -71,12 +71,12 @@ public class User extends Model {
     public String tenantId;
 
     /**
-     * ISV ID
+     * 供应商ID
      */
-    @TableField(value = "isv_id")
-    @JSONField(name = "isv_id")
-    @JsonProperty("isv_id")
-    public String isvId;
+    @TableField(value = "vendor_id")
+    @JSONField(name = "vendor_id")
+    @JsonProperty("vendor_id")
+    public String vendorId;
 
     /**
      * 头像地址
@@ -135,8 +135,8 @@ public class User extends Model {
             logger.error("tenant id is empty");
             return false;
         }
-        if (StringUtils.isEmpty(isvId)) {
-            logger.error("isv id is empty");
+        if (StringUtils.isEmpty(vendorId)) {
+            logger.error("vendor id is empty");
             return false;
         }
         return true;
