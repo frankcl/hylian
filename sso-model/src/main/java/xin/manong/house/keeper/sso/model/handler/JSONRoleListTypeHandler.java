@@ -11,7 +11,7 @@ import java.util.List;
  * @author frankcl
  * @date 2023-03-15 11:59:24
  */
-public class JSONRoleListTypeHandler extends AbstractJSONListTypeHandler<Role> {
+public class JSONRoleListTypeHandler extends JSONListTypeHandler<Role> {
 
     @Override
     protected TypeReference<List<Role>> specificType() {

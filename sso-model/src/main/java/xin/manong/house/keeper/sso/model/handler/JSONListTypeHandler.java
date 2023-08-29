@@ -25,7 +25,7 @@ import java.util.List;
  */
 @MappedTypes({ List.class })
 @MappedJdbcTypes({ JdbcType.VARCHAR })
-public abstract class AbstractJSONListTypeHandler<T> extends BaseTypeHandler<List<T>> {
+public abstract class JSONListTypeHandler<T> extends BaseTypeHandler<List<T>> {
 
     protected abstract TypeReference<List<T>> specificType();
 
