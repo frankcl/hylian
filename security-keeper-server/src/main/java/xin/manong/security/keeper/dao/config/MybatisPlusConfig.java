@@ -21,7 +21,7 @@ import java.util.List;
  */
 @Configuration
 @EnableTransactionManagement
-@MapperScan("xin.manong.house.keeper.sso.dao.mapper*")
+@MapperScan("xin.manong.security.keeper.dao.mapper*")
 public class MybatisPlusConfig {
 
     /**

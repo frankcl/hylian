@@ -31,6 +31,7 @@
         <velocity.version>2.3</velocity.version>
         <mybatis-plus.version>3.5.2</mybatis-plus.version>
         <druid.version>1.2.16</druid.version>
+        <java-jwt.version>4.4.0</java-jwt.version>
         <weapon.version>0.1.6</weapon.version>
         <security-keeper.version>0.0.1</security-keeper.version>
     </properties>
@@ -292,6 +293,11 @@
                 <groupId>com.alibaba</groupId>
                 <artifactId>druid</artifactId>
                 <version>${druid.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.auth0</groupId>
+                <artifactId>java-jwt</artifactId>
+                <version>${java-jwt.version}</version>
             </dependency>
             <dependency>
                 <groupId>xin.manong</groupId>
