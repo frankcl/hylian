@@ -8,9 +8,9 @@
     <artifactId>security-keeper</artifactId>
     <packaging>pom</packaging>
     <modules>
-        <module>security-model</module>
-        <module>security-sso-client</module>
-        <module>security-sso-server</module>
+        <module>security-keeper-model</module>
+        <module>security-keeper-sso-client</module>
+        <module>security-keeper-server</module>
     </modules>
     <version>0.0.1</version>
 

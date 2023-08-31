@@ -9,7 +9,7 @@
         <version>0.0.1</version>
     </parent>
 
-    <artifactId>security-sso-server</artifactId>
+    <artifactId>security-keeper-server</artifactId>
 
     <dependencies>
         <dependency>
@@ -94,7 +94,7 @@
         </dependency>
         <dependency>
             <groupId>xin.manong</groupId>
-            <artifactId>security-model</artifactId>
+            <artifactId>security-keeper-model</artifactId>
             <version>${security-keeper.version}</version>
         </dependency>
     </dependencies>

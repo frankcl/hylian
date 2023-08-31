@@ -9,7 +9,7 @@
         <version>0.0.1</version>
     </parent>
 
-    <artifactId>security-model</artifactId>
+    <artifactId>security-keeper-sso-client</artifactId>
 
     <dependencies>
         <dependency>
@@ -22,16 +22,9 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-annotations</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.baomidou</groupId>
-            <artifactId>mybatis-plus-extension</artifactId>
-        </dependency>
-        <dependency>
             <groupId>xin.manong</groupId>
-            <artifactId>weapon-base</artifactId>
+            <artifactId>security-keeper-model</artifactId>
+            <version>${security-keeper.version}</version>
         </dependency>
     </dependencies>
 </project>
