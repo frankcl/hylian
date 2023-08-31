@@ -5,12 +5,12 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>xin.manong</groupId>
-    <artifactId>house-keeper</artifactId>
+    <artifactId>security-keeper</artifactId>
     <packaging>pom</packaging>
     <modules>
-        <module>sso-model</module>
-        <module>sso-client</module>
-        <module>sso-server</module>
+        <module>security-model</module>
+        <module>security-sso-client</module>
+        <module>security-sso-server</module>
     </modules>
     <version>0.0.1</version>
 
@@ -32,7 +32,7 @@
         <mybatis-plus.version>3.5.2</mybatis-plus.version>
         <druid.version>1.2.16</druid.version>
         <weapon.version>0.1.6</weapon.version>
-        <house-keeper.version>0.0.1</house-keeper.version>
+        <security-keeper.version>0.0.1</security-keeper.version>
     </properties>
 
     <profiles>
