@@ -1,6 +1,6 @@
 spring:
   application:
-    name: sso-server
+    name: security-keeper-server
   profiles:
     active: @profileActive@
   server: 8080

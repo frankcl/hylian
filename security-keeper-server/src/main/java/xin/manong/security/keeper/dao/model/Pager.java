@@ -1,4 +1,4 @@
-package xin.manong.security.keeper.sso.dao.model;
+package xin.manong.security.keeper.dao.model;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;

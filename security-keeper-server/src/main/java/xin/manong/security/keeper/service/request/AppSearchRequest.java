@@ -1,4 +1,4 @@
-package xin.manong.security.keeper.sso.service.request;
+package xin.manong.security.keeper.service.request;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;

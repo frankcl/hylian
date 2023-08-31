@@ -1,4 +1,4 @@
-package xin.manong.security.keeper.sso.dao.mapper;
+package xin.manong.security.keeper.dao.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import org.apache.ibatis.annotations.Mapper;

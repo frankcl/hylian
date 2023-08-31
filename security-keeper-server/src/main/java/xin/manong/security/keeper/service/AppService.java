@@ -1,8 +1,8 @@
-package xin.manong.security.keeper.sso.service;
+package xin.manong.security.keeper.service;
 
-import xin.manong.security.keeper.sso.dao.model.Pager;
+import xin.manong.security.keeper.dao.model.Pager;
 import xin.manong.security.keeper.model.App;
-import xin.manong.security.keeper.sso.service.request.AppSearchRequest;
+import xin.manong.security.keeper.service.request.AppSearchRequest;
 
 /**
  * 应用服务接口定义

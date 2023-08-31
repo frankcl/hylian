@@ -1,4 +1,4 @@
-package xin.manong.security.keeper.sso.dao.tools;
+package xin.manong.security.keeper.dao.tools;
 
 import com.baomidou.mybatisplus.generator.config.GlobalConfig;
 import com.baomidou.mybatisplus.generator.config.converts.MySqlTypeConvert;

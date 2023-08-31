@@ -1,4 +1,4 @@
-package xin.manong.security.keeper.sso.dao.handler;
+package xin.manong.security.keeper.dao.handler;
 
 import com.baomidou.mybatisplus.core.handlers.MetaObjectHandler;
 import org.apache.ibatis.reflection.MetaObject;

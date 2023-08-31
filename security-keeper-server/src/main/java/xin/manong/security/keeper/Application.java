@@ -1,4 +1,4 @@
-package xin.manong.security.keeper.sso;
+package xin.manong.security.keeper;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -10,7 +10,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
  * @author frankcl
  * @date 2022-08-24 12:58:39
  */
-@SpringBootApplication(scanBasePackages = {"xin.manong.house.keeper.sso",
+@SpringBootApplication(scanBasePackages = {"xin.manong.security.keeper",
         "xin.manong.weapon.spring.web.ws.aspect"})
 public class Application {
 

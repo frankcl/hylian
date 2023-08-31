@@ -1,4 +1,4 @@
-package xin.manong.security.keeper.sso.dao.config;
+package xin.manong.security.keeper.dao.config;
 
 import com.baomidou.mybatisplus.annotation.DbType;
 import com.baomidou.mybatisplus.extension.plugins.MybatisPlusInterceptor;

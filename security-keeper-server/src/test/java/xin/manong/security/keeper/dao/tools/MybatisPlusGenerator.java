@@ -1,4 +1,4 @@
-package xin.manong.security.keeper.sso.dao.tools;
+package xin.manong.security.keeper.dao.tools;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
@@ -22,14 +22,14 @@ public class MybatisPlusGenerator {
     private final static String AUTHOR = "MGC";
     private final static String DATE_FORMAT = "yyyy-MM-dd HH:mm:ss";
     private final static String USER_DIR = System.getProperty("user.dir");
-    private final static String MODULE = "sso-server";
+    private final static String MODULE = "security-keeper-server";
     private final static String OUTPUT_DIR = String.format("%s/%s/src/main/java", USER_DIR, MODULE);
-    private final static String DATABASE = "house_keeper";
+    private final static String DATABASE = "security_keeper";
     private final static String SCHEMA = "app";
     private final static String JDBC_URL = "jdbc:mysql://localhost:3306/%s?useUnicode=true&characterEncoding=utf-8";
     private final static String USERNAME = "root";
     private final static String PASSWORD = "xmjjyhy28p";
-    private final static String PARENT_PACKAGE = "xin.manong.house.keeper.sso.dao";
+    private final static String PARENT_PACKAGE = "xin.manong.security.keeper.dao";
     private final static String MODEL_PACKAGE = "model";
     private final static String MAPPER_PACKAGE = "mapper";
 
