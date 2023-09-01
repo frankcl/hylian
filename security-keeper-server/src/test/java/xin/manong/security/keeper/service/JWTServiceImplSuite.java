@@ -56,4 +56,17 @@ public class JWTServiceImplSuite {
         Assert.assertEquals(profile.tenantId, decodedProfile.tenantId);
         Assert.assertEquals(profile.vendorId, decodedProfile.vendorId);
     }
+
+    @Test
+    public void testBuildTokenWithTicket() {
+        Profile profile = new Profile();
+        profile.userId = "aaa";
+        profile.tenantId = "bbb";
+        profile.vendorId = "ccc";
+        String ticket = jwtService.buildTicket(profile, JWTServiceImpl.ALGORITHM_HS256, 60000L);
+        Assert.assertTrue(!StringUtils.isEmpty(ticket));
+        String token = jwtService.buildTokenWithTicket(ticket, 60000L);
+        Assert.assertTrue(!StringUtils.isEmpty(token));
+        Assert.assertTrue(jwtService.verifyToken(token));
+    }
 }

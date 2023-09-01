@@ -10,5 +10,8 @@ app:
   server:
     name: security_keeper_server
     aspectLogFile: ./log/aspect/web.log
+    securityCodeConfig:
+      cacheCapacity: 1000
+      expiredTimeSeconds: 180
     jwtConfig:
       secretHS256: JWT_%x6xo7l7_u9bf_u!9#g#m*)*=ej@bek8)(@u3kh*84+unjv=

@@ -31,6 +31,15 @@ public interface JWTService {
     String buildToken(Profile profile, String algorithm, Long expiredTime);
 
     /**
+     * 根据ticket创建token
+     *
+     * @param ticket
+     * @param expiredTime 过期时间间隔，单位毫秒
+     * @return 成功返回token，否则返回null
+     */
+    String buildTokenWithTicket(String ticket, Long expiredTime);
+
+    /**
      * 验证ticket有效性
      *
      * @param ticket ticket

@@ -5,12 +5,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
+import xin.manong.security.keeper.model.App;
 import xin.manong.security.keeper.model.Tenant;
 import xin.manong.security.keeper.model.User;
 import xin.manong.security.keeper.request.LoginRequest;
 import xin.manong.security.keeper.request.RefreshTokenRequest;
-import xin.manong.security.keeper.service.CookieService;
-import xin.manong.security.keeper.service.JWTService;
+import xin.manong.security.keeper.service.*;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
@@ -18,6 +18,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
+import java.net.URL;
 import java.net.URLEncoder;
 
 /**
@@ -51,7 +52,13 @@ public class AuthController {
     @Resource
     protected JWTService jwtService;
     @Resource
+    protected CodeService codeService;
+    @Resource
     protected CookieService cookieService;
+    @Resource
+    protected AppService appService;
+    @Resource
+    protected HTTPService httpService;
 
     /**
      * 申请安全code
@@ -83,6 +90,10 @@ public class AuthController {
             httpResponse.sendRedirect(String.format("%s?%s=%s", PATH_LOGIN, PARAM_REDIRECT_URL,
                     URLEncoder.encode(redirectURL, CHARSET_UTF8)));
         }
+        String code = codeService.createCode(ticket);
+        String requestURL = httpService.getRequestURL(httpRequest);
+        boolean hasQuery = !StringUtils.isEmpty(new URL(requestURL).getQuery());
+        httpResponse.sendRedirect(String.format("%s%scode=%s", requestURL, hasQuery ? "&" : "?", code));
     }
 
     /**
@@ -91,15 +102,15 @@ public class AuthController {
      * @param code 安全code
      * @param appId 应用ID
      * @param appSecret 应用秘钥
-     * @return 成功返回token，否则返回null
+     * @return 成功返回token，否则抛出异常
      */
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     @Path("getToken")
     @GetMapping("getToken")
-    public String getSecurityToken(@QueryParam("code")  String code,
-                                          @QueryParam("app_id")  String appId,
-                                          @QueryParam("app_secret") String appSecret) {
+    public String getToken(@QueryParam("code")  String code,
+                           @QueryParam("app_id")  String appId,
+                           @QueryParam("app_secret") String appSecret) {
         if (StringUtils.isEmpty(code)) {
             logger.error("code is empty");
             throw new BadRequestException("安全code为空");
@@ -112,7 +123,27 @@ public class AuthController {
             logger.error("app secret is empty");
             throw new BadRequestException("应用秘钥为空");
         }
-        return null;
+        App app = appService.get(appId);
+        if (app == null) {
+            logger.error("app[{}] is not found", appId);
+            throw new RuntimeException(String.format("应用[%s]不存在", appId));
+        }
+        if (!appSecret.equals(app.secret)) {
+            logger.error("app secret[{}] is not correct");
+            throw new RuntimeException("应用秘钥不正确");
+        }
+        String ticket = codeService.getTicket(code);
+        if (StringUtils.isEmpty(ticket)) {
+            logger.error("ticket is not found for code[{}]", code);
+            throw new RuntimeException(String.format("code[%s]对应ticket未找到", code));
+        }
+        codeService.removeCode(code);
+        String token = jwtService.buildTokenWithTicket(ticket, TOKEN_EXPIRED_TIME);
+        if (StringUtils.isEmpty(token)) {
+            logger.error("build token failed");
+            throw new RuntimeException("构建token失败");
+        }
+        return token;
     }
 
     /**

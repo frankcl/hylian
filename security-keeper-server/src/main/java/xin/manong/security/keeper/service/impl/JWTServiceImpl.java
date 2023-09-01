@@ -68,6 +68,25 @@ public class JWTServiceImpl implements JWTService {
     }
 
     @Override
+    public String buildTokenWithTicket(String ticket, Long expiredTime) {
+        if (!verifyTicket(ticket)) return null;
+        DecodedJWT decodedJWT = decode(ticket);
+        Profile profile = decodeProfile(ticket);
+        if (profile == null) {
+            logger.error("decode profile failed from ticket");
+            return null;
+        }
+        Claim claim = decodedJWT.getHeaderClaim(HEADER_KEY_ALGORITHM);
+        String algorithm = claim == null ? ALGORITHM_HS256 : claim.asString();
+        if (!SUPPORT_ALGORITHMS.contains(algorithm)) algorithm = ALGORITHM_HS256;
+        Date expiresAt = new Date(System.currentTimeMillis() +
+                (expiredTime == null ? DEFAULT_TOKEN_EXPIRED_TIME_MS : expiredTime));
+        Map<String, Object> headers = new HashMap<>();
+        headers.put(HEADER_KEY_CATEGORY, CATEGORY_TOKEN);
+        return buildJWT(profile, expiresAt, algorithm, headers);
+    }
+
+    @Override
     public boolean verifyTicket(String ticket) {
         DecodedJWT decodedJWT = decode(ticket);
         if (decodedJWT == null) return false;

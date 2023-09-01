@@ -18,6 +18,7 @@ public class ServerConfig {
     public String name;
     public String aspectLogFile;
     public JWTConfig jwtConfig;
+    public SecurityCodeConfig securityCodeConfig;
 
     @Bean(name = "webAspectLogger")
     public JSONLogger webAspectLogger() {
