@@ -11,4 +11,4 @@ app:
     name: security_keeper_server
     aspectLogFile: ./log/aspect/web.log
     jwtConfig:
-      secretHS256: TOKEN_%x6xo7l7_u9bf_u!9#g#m*)*=ej@bek8)(@u3kh*84+unjv=
+      secretHS256: JWT_%x6xo7l7_u9bf_u!9#g#m*)*=ej@bek8)(@u3kh*84+unjv=

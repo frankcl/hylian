@@ -30,22 +30,22 @@ public class Vendor extends Model {
     @TableId(value = "id")
     @JSONField(name = "id")
     @JsonProperty("id")
-    private String id;
+    public String id;
 
     @TableField(value = "name")
     @JSONField(name = "name")
     @JsonProperty("name")
-    private String name;
+    public String name;
 
     @TableField(value = "create_time", fill = FieldFill.INSERT)
     @JSONField(name = "create_time")
     @JsonProperty("create_time")
-    private Long createTime;
+    public Long createTime;
 
     @TableField(value = "update_time", fill = FieldFill.INSERT_UPDATE)
     @JSONField(name = "update_time")
     @JsonProperty("update_time")
-    private Long updateTime;
+    public Long updateTime;
 
     /**
      * 检测有效性

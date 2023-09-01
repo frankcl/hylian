@@ -45,6 +45,9 @@ public class AuthController {
     private static final String PARAM_CODE = "code";
     private static final String PARAM_REDIRECT_URL = "redirect_url";
 
+    private static final Long TOKEN_EXPIRED_TIME = 300000L;
+    private static final Long TICKET_EXPIRED_TIME = 86400000L;
+
     @Resource
     protected JWTService jwtService;
     @Resource
