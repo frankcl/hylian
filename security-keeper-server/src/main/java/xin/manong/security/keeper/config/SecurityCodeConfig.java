@@ -12,7 +12,7 @@ import lombok.Data;
 public class SecurityCodeConfig {
 
     private static final int DEFAULT_CACHE_CAPACITY = 1000;
-    private static final int DEFAULT_EXPIRED_TIME_SECONDS = 180;
+    private static final int DEFAULT_EXPIRED_TIME_SECONDS = 60;
 
     public int cacheCapacity = DEFAULT_CACHE_CAPACITY;
     public int expiredTimeSeconds = DEFAULT_EXPIRED_TIME_SECONDS;
