@@ -11,21 +11,40 @@ import xin.manong.security.keeper.model.Profile;
 public interface JWTService {
 
     /**
-     * 构建JWT
+     * 构建Ticket
      *
      * @param profile 用户简介
+     * @param algorithm 加密算法
      * @param expiredTime 过期时间间隔，单位毫秒
-     * @return JWT
+     * @return ticket
      */
-    String buildJWT(Profile profile, Long expiredTime);
+    String buildTicket(Profile profile, String algorithm, Long expiredTime);
+
+    /**
+     * 构建Token
+     *
+     * @param profile 用户简介
+     * @param algorithm 加密算法
+     * @param expiredTime 过期时间间隔，单位毫秒
+     * @return token
+     */
+    String buildToken(Profile profile, String algorithm, Long expiredTime);
+
+    /**
+     * 验证ticket有效性
+     *
+     * @param ticket ticket
+     * @return 有效返回true，否则返回false
+     */
+    boolean verifyTicket(String ticket);
 
     /**
      * 验证token有效性
      *
-     * @param token JWT
+     * @param token token
      * @return 有效返回true，否则返回false
      */
-    boolean verify(String token);
+    boolean verifyToken(String token);
 
     /**
      * 从JWT中获取用户简介

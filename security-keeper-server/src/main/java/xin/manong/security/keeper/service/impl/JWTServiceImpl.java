@@ -17,7 +17,7 @@ import xin.manong.security.keeper.model.Profile;
 import xin.manong.security.keeper.service.JWTService;
 
 import javax.annotation.Resource;
-import java.util.Date;
+import java.util.*;
 
 /**
  * JWT服务实现
@@ -31,45 +31,64 @@ public class JWTServiceImpl implements JWTService {
     private static final Logger logger = LoggerFactory.getLogger(JWTServiceImpl.class);
 
     private static final String CLAIM_KEY_PROFILE = "profile";
+    private static final String HEADER_KEY_CATEGORY = "category";
+    private static final String HEADER_KEY_ALGORITHM = "alg";
+
+    private static final String CATEGORY_TICKET = "ticket";
+    private static final String CATEGORY_TOKEN = "token";
 
     private static final Long DEFAULT_TOKEN_EXPIRED_TIME_MS = 300000L;
+    private static final Long DEFAULT_TICKET_EXPIRED_TIME_MS = 86400000L;
+
+    public static final String ALGORITHM_HS256 = "HS256";
+
+    private static final Set<String> SUPPORT_ALGORITHMS = new HashSet<String>() {
+        { add(ALGORITHM_HS256); }
+    };
 
     @Resource
     protected ServerConfig serverConfig;
 
     @Override
-    public String buildJWT(Profile profile, Long expireTime) {
-        if (profile == null) {
-            logger.error("profile is null");
-            return null;
-        }
+    public String buildTicket(Profile profile, String algorithm, Long expiredTime) {
         Date expiresAt = new Date(System.currentTimeMillis() +
-                (expireTime == null ? DEFAULT_TOKEN_EXPIRED_TIME_MS : expireTime));
-        Algorithm algorithm = Algorithm.HMAC256(serverConfig.jwtConfig.getSecretHS256());
-        return JWT.create().withClaim(CLAIM_KEY_PROFILE, JSON.toJSONString(profile))
-                .withExpiresAt(expiresAt).sign(algorithm);
+                (expiredTime == null ? DEFAULT_TICKET_EXPIRED_TIME_MS : expiredTime));
+        Map<String, Object> headers = new HashMap<>();
+        headers.put(HEADER_KEY_CATEGORY, CATEGORY_TICKET);
+        return buildJWT(profile, expiresAt, algorithm, headers);
     }
 
     @Override
-    public boolean verify(String token) {
-        Algorithm algorithm = Algorithm.HMAC256(serverConfig.jwtConfig.getSecretHS256());
-        JWTVerifier verifier = JWT.require(algorithm).build();
-        try {
-            verifier.verify(token);
-            return true;
-        } catch (TokenExpiredException e) {
-            logger.error("token is expired");
-            return false;
-        } catch (SignatureVerificationException e){
-            logger.error("sign verify failed");
-            return false;
-        } catch (AlgorithmMismatchException e){
-            logger.error("algorithm not match");
-            return false;
-        } catch (Exception e) {
-            logger.error(e.getMessage(), e);
+    public String buildToken(Profile profile, String algorithm, Long expiredTime) {
+        Date expiresAt = new Date(System.currentTimeMillis() +
+                (expiredTime == null ? DEFAULT_TOKEN_EXPIRED_TIME_MS : expiredTime));
+        Map<String, Object> headers = new HashMap<>();
+        headers.put(HEADER_KEY_CATEGORY, CATEGORY_TOKEN);
+        return buildJWT(profile, expiresAt, algorithm, headers);
+    }
+
+    @Override
+    public boolean verifyTicket(String ticket) {
+        DecodedJWT decodedJWT = decode(ticket);
+        if (decodedJWT == null) return false;
+        Claim claim = decodedJWT.getHeaderClaim(HEADER_KEY_CATEGORY);
+        if (claim == null || !claim.asString().equals(CATEGORY_TICKET)) {
+            logger.error("not ticket for category[{}]", claim == null ? "null" : claim.asString());
             return false;
         }
+        return verify(decodedJWT);
+    }
+
+    @Override
+    public boolean verifyToken(String token) {
+        DecodedJWT decodedJWT = decode(token);
+        if (decodedJWT == null) return false;
+        Claim claim = decodedJWT.getHeaderClaim(HEADER_KEY_CATEGORY);
+        if (claim == null || !claim.asString().equals(CATEGORY_TOKEN)) {
+            logger.error("not token for category[{}]", claim == null ? "null" : claim.asString());
+            return false;
+        }
+        return verify(decodedJWT);
     }
 
     @Override
@@ -86,6 +105,69 @@ public class JWTServiceImpl implements JWTService {
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
             return null;
+        }
+    }
+
+    /**
+     * 构建JWT
+     *
+     * @param profile 用户信息
+     * @param expiresAt 过期时间
+     * @param algoName 加密算法
+     * @param headers JWT headers
+     * @return 成功返回JWT，否则返回null
+     */
+    private String buildJWT(Profile profile, Date expiresAt,
+                            String algoName, Map<String, Object> headers) {
+        if (profile == null) {
+            logger.error("profile is null");
+            return null;
+        }
+        if (!SUPPORT_ALGORITHMS.contains(algoName)) {
+            logger.error("unsupported encrypt algorithm[{}]", algoName);
+            return null;
+        }
+        Algorithm algorithm = null;
+        if (algoName.equals(ALGORITHM_HS256)) algorithm = Algorithm.HMAC256(serverConfig.jwtConfig.getSecretHS256());
+        return JWT.create().withHeader(headers).withClaim(CLAIM_KEY_PROFILE, JSON.toJSONString(profile))
+                .withExpiresAt(expiresAt).sign(algorithm);
+    }
+
+    /**
+     * 验证token有效性
+     *
+     * @param decodedJWT
+     * @return 有效返回true，否则返回false
+     */
+    private boolean verify(DecodedJWT decodedJWT) {
+        Claim claim = decodedJWT.getHeaderClaim(HEADER_KEY_ALGORITHM);
+        if (claim == null) {
+            logger.error("encrypt algorithm is not found");
+            return false;
+        }
+        String algoName = claim.asString();
+        if (!SUPPORT_ALGORITHMS.contains(algoName)) {
+            logger.error("unsupported encrypt algorithm[{}]", algoName);
+            return false;
+        }
+        Algorithm algorithm = null;
+        if (algoName.equals(ALGORITHM_HS256)) algorithm = Algorithm.HMAC256(serverConfig.jwtConfig.getSecretHS256());
+        JWTVerifier verifier = JWT.require(algorithm).build();
+        try {
+            verifier.verify(decodedJWT);
+            return true;
+        } catch (TokenExpiredException e) {
+            logger.error("token is expired, time[{}]", decodedJWT.getExpiresAt().getTime());
+            return false;
+        } catch (SignatureVerificationException e){
+            logger.error("sign verify failed");
+            return false;
+        } catch (AlgorithmMismatchException e){
+            logger.error("algorithm[{}] not match for expected[{}]", algorithm.getName(), algoName);
+            return false;
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
+            return false;
         }
     }
 

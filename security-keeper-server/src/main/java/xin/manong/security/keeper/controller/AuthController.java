@@ -36,7 +36,9 @@ public class AuthController {
 
     private static final String CHARSET_UTF8 = "UTF-8";
     private static final String COOKIE_TICKET = "TICKET";
+
     private static final String PATH_LOGIN = "/security/login";
+
     private static final String PARAM_APP_ID = "app_id";
     private static final String PARAM_APP_SECRET = "app_secret";
     private static final String PARAM_TOKEN = "token";
@@ -73,8 +75,8 @@ public class AuthController {
             throw new BadRequestException("重定向URL为空");
         }
         String ticket = cookieService.getCookie(httpRequest, COOKIE_TICKET);
-        if (StringUtils.isEmpty(ticket) || !jwtService.verify(ticket)) {
-            if (!StringUtils.isEmpty(ticket)) cookieService.removeCookie(COOKIE_TICKET, "/", httpResponse);
+        if (StringUtils.isEmpty(ticket) || !jwtService.verifyTicket(ticket)) {
+            if (ticket != null) cookieService.removeCookie(COOKIE_TICKET, "/", httpResponse);
             httpResponse.sendRedirect(String.format("%s?%s=%s", PATH_LOGIN, PARAM_REDIRECT_URL,
                     URLEncoder.encode(redirectURL, CHARSET_UTF8)));
         }
