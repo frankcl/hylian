@@ -9,7 +9,7 @@
         <version>0.0.1</version>
     </parent>
 
-    <artifactId>security-keeper-sso-client</artifactId>
+    <artifactId>security-keeper-common</artifactId>
 
     <dependencies>
         <dependency>
@@ -27,17 +27,8 @@
             <scope>compile</scope>
         </dependency>
         <dependency>
-            <groupId>com.squareup.okhttp3</groupId>
-            <artifactId>okhttp</artifactId>
-        </dependency>
-        <dependency>
             <groupId>xin.manong</groupId>
-            <artifactId>weapon-spring-boot-starter</artifactId>
-            <version>${weapon.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>xin.manong</groupId>
-            <artifactId>security-keeper-common</artifactId>
+            <artifactId>security-keeper-model</artifactId>
             <version>${security-keeper.version}</version>
         </dependency>
     </dependencies>

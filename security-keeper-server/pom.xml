@@ -138,7 +138,7 @@
         </dependency>
         <dependency>
             <groupId>xin.manong</groupId>
-            <artifactId>security-keeper-model</artifactId>
+            <artifactId>security-keeper-common</artifactId>
             <version>${security-keeper.version}</version>
         </dependency>
     </dependencies>
