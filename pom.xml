@@ -21,9 +21,9 @@
         <junit.version>4.13.2</junit.version>
         <lombok.version>1.18.24</lombok.version>
         <slf4j-log4j12.version>1.7.25</slf4j-log4j12.version>
-        <okhttp3.version>4.9.3</okhttp3.version>
         <mysql-connector.version>8.0.22</mysql-connector.version>
         <guava.version>31.1-jre</guava.version>
+        <okhttp3.version>4.9.3</okhttp3.version>
         <spring.version>5.3.22</spring.version>
         <spring-boot.version>2.7.3</spring-boot.version>
         <jersey.version>2.35</jersey.version>

@@ -17,4 +17,12 @@ public interface HTTPService {
      * @return HTTP请求URL
      */
     String getRequestURL(HttpServletRequest httpRequest);
+
+    /**
+     * 获取base URL
+     *
+     * @param httpRequest HTTP请求
+     * @return base URL
+     */
+    String getRequestBaseURL(HttpServletRequest httpRequest);
 }

@@ -12,6 +12,7 @@ import com.auth0.jwt.interfaces.DecodedJWT;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import xin.manong.security.keeper.common.Constants;
 import xin.manong.security.keeper.config.ServerConfig;
 import xin.manong.security.keeper.model.Profile;
 import xin.manong.security.keeper.service.JWTService;
@@ -40,10 +41,8 @@ public class JWTServiceImpl implements JWTService {
     private static final Long DEFAULT_TOKEN_EXPIRED_TIME_MS = 300000L;
     private static final Long DEFAULT_TICKET_EXPIRED_TIME_MS = 86400000L;
 
-    public static final String ALGORITHM_HS256 = "HS256";
-
     private static final Set<String> SUPPORT_ALGORITHMS = new HashSet<String>() {
-        { add(ALGORITHM_HS256); }
+        { add(Constants.ALGORITHM_HS256); }
     };
 
     @Resource
@@ -77,8 +76,8 @@ public class JWTServiceImpl implements JWTService {
             return null;
         }
         Claim claim = decodedJWT.getHeaderClaim(HEADER_KEY_ALGORITHM);
-        String algorithm = claim == null ? ALGORITHM_HS256 : claim.asString();
-        if (!SUPPORT_ALGORITHMS.contains(algorithm)) algorithm = ALGORITHM_HS256;
+        String algorithm = claim == null ? Constants.ALGORITHM_HS256 : claim.asString();
+        if (!SUPPORT_ALGORITHMS.contains(algorithm)) algorithm = Constants.ALGORITHM_HS256;
         Date expiresAt = new Date(System.currentTimeMillis() +
                 (expiredTime == null ? DEFAULT_TOKEN_EXPIRED_TIME_MS : expiredTime));
         Map<String, Object> headers = new HashMap<>();
@@ -147,7 +146,9 @@ public class JWTServiceImpl implements JWTService {
             return null;
         }
         Algorithm algorithm = null;
-        if (algoName.equals(ALGORITHM_HS256)) algorithm = Algorithm.HMAC256(serverConfig.jwtConfig.getSecretHS256());
+        if (algoName.equals(Constants.ALGORITHM_HS256)) {
+            algorithm = Algorithm.HMAC256(serverConfig.jwtConfig.getSecretHS256());
+        }
         return JWT.create().withHeader(headers).withClaim(CLAIM_KEY_PROFILE, JSON.toJSONString(profile))
                 .withExpiresAt(expiresAt).sign(algorithm);
     }
@@ -170,7 +171,9 @@ public class JWTServiceImpl implements JWTService {
             return false;
         }
         Algorithm algorithm = null;
-        if (algoName.equals(ALGORITHM_HS256)) algorithm = Algorithm.HMAC256(serverConfig.jwtConfig.getSecretHS256());
+        if (algoName.equals(Constants.ALGORITHM_HS256)) {
+            algorithm = Algorithm.HMAC256(serverConfig.jwtConfig.getSecretHS256());
+        }
         JWTVerifier verifier = JWT.require(algorithm).build();
         try {
             verifier.verify(decodedJWT);

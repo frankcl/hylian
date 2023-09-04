@@ -4,6 +4,8 @@ import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import xin.manong.weapon.base.http.HttpClient;
+import xin.manong.weapon.base.http.HttpClientConfig;
 import xin.manong.weapon.base.log.JSONLogger;
 
 /**
@@ -23,5 +25,11 @@ public class ServerConfig {
     @Bean(name = "webAspectLogger")
     public JSONLogger webAspectLogger() {
         return new JSONLogger(aspectLogFile, null);
+    }
+
+    @Bean
+    public HttpClient buildHttpClient() {
+        HttpClientConfig httpClientConfig = new HttpClientConfig();
+        return new HttpClient(httpClientConfig);
     }
 }
