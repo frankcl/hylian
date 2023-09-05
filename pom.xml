@@ -25,6 +25,7 @@
         <slf4j-log4j12.version>1.7.25</slf4j-log4j12.version>
         <mysql-connector.version>8.0.22</mysql-connector.version>
         <guava.version>31.1-jre</guava.version>
+        <redisson.version>3.19.0</redisson.version>
         <okhttp3.version>4.9.3</okhttp3.version>
         <spring.version>5.3.22</spring.version>
         <spring-boot.version>2.7.3</spring-boot.version>
@@ -142,6 +143,11 @@
                 <groupId>com.google.guava</groupId>
                 <artifactId>guava</artifactId>
                 <version>${guava.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.redisson</groupId>
+                <artifactId>redisson</artifactId>
+                <version>${redisson.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.squareup.okhttp3</groupId>

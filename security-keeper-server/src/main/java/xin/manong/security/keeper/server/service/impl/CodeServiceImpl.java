@@ -5,15 +5,21 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.RemovalCause;
 import com.google.common.cache.RemovalNotification;
 import org.apache.commons.lang3.StringUtils;
+import org.redisson.api.DeletedObjectListener;
+import org.redisson.api.ExpiredObjectListener;
+import org.redisson.api.RBucket;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import xin.manong.security.keeper.server.common.Constants;
 import xin.manong.security.keeper.server.config.ServerConfig;
 import xin.manong.security.keeper.server.service.CodeService;
+import xin.manong.weapon.base.redis.RedisClient;
 import xin.manong.weapon.base.util.RandomID;
 import xin.manong.weapon.base.util.ShortKeyBuilder;
 
+import javax.annotation.Resource;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -27,45 +33,72 @@ public class CodeServiceImpl implements CodeService {
 
     private static final Logger logger = LoggerFactory.getLogger(CodeServiceImpl.class);
 
-    private Cache<String, String> cache;
+    @Resource
+    protected RedisClient redisClient;
+    protected Cache<String, RBucket<String>> cache;
     private ServerConfig serverConfig;
 
     @Autowired
     public CodeServiceImpl(ServerConfig serverConfig) {
         this.serverConfig = serverConfig;
-        CacheBuilder<String, String> builder = CacheBuilder.newBuilder()
+        CacheBuilder<String, RBucket<String>> builder = CacheBuilder.newBuilder()
                 .concurrencyLevel(1)
                 .maximumSize(serverConfig.securityCodeConfig.cacheCapacity)
-                .expireAfterAccess(serverConfig.securityCodeConfig.expiredTimeSeconds, TimeUnit.MINUTES)
+                .expireAfterAccess(5, TimeUnit.SECONDS)
                 .removalListener(n -> onRemoval(n));
         cache = builder.build();
     }
 
     @Override
     public String createCode(String ticket) {
-        String code = null;
+        String code;
+        RBucket<String> bucket;
         while (true) {
             code = ShortKeyBuilder.build(RandomID.build());
             if (StringUtils.isEmpty(code)) {
                 logger.error("create code failed for ticket[{}]", ticket);
                 throw new RuntimeException("创建安全码失败");
             }
-            if (cache.getIfPresent(code) == null) break;
+            String key = String.format("%s%s", Constants.CODE_CACHE_PREFIX, code);
+            bucket = redisClient.getRedissonClient().getBucket(key);
+            if (bucket.get() == null) break;
         }
-        cache.put(code, ticket);
+        bucket.set(ticket, serverConfig.securityCodeConfig.expiredTimeSeconds, TimeUnit.SECONDS);
+        bucket.addListener((ExpiredObjectListener) name -> {
+            logger.info("code[{}] is expired", name);
+            removeCache(name);
+        });
+        bucket.addListener((DeletedObjectListener) name -> {
+            logger.info("code[{}] is deleted", name);
+            removeCache(name);
+        });
+        cache.put(code, bucket);
         return code;
     }
 
     @Override
     public String getTicket(String code) {
-        return cache.getIfPresent(code);
+        String key = String.format("%s%s", Constants.CODE_CACHE_PREFIX, code);
+        RBucket<String> bucket = redisClient.getRedissonClient().getBucket(key);
+        return bucket.get();
     }
 
     @Override
     public boolean removeCode(String code) {
-        String ticket = cache.getIfPresent(code);
+        String key = String.format("%s%s", Constants.CODE_CACHE_PREFIX, code);
+        RBucket<String> bucket = redisClient.getRedissonClient().getBucket(key);
+        return bucket.delete();
+    }
+
+    /**
+     * 删除本地缓存
+     *
+     * @param codeKey redis code key
+     */
+    private void removeCache(String codeKey) {
+        int index = codeKey.lastIndexOf("_");
+        String code = index == -1 ? codeKey : codeKey.substring(index + 1);
         cache.invalidate(code);
-        return ticket != null;
     }
 
     /**
@@ -73,8 +106,8 @@ public class CodeServiceImpl implements CodeService {
      *
      * @param notification 移除通知
      */
-    private void onRemoval(RemovalNotification<String, String> notification) {
+    private void onRemoval(RemovalNotification<String, RBucket<String>> notification) {
         RemovalCause cause = notification.getCause();
-        logger.info("code[{}] is removed, cause[{}]", notification.getKey(), cause.name());
+        logger.info("code[{}] is removed from local cache, cause[{}]", notification.getKey(), cause.name());
     }
 }

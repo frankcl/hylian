@@ -2,6 +2,7 @@ package xin.manong.security.keeper.server;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import xin.manong.weapon.spring.boot.annotation.EnableRedisClient;
 
 /**
  * 应用程序入口
@@ -10,6 +11,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
  * @author frankcl
  * @date 2022-08-24 12:58:39
  */
+@EnableRedisClient
 @SpringBootApplication(scanBasePackages = {"xin.manong.security.keeper.server",
         "xin.manong.weapon.spring.web.ws.aspect"})
 public class Application {

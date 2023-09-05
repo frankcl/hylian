@@ -10,4 +10,6 @@ public class Constants {
     public static final int DEFAULT_PAGE_SIZE = 20;
 
     public static final String ALGORITHM_HS256 = "HS256";
+
+    public static final String CODE_CACHE_PREFIX = "__SECURITY_KEEPER_CODE_";
 }
