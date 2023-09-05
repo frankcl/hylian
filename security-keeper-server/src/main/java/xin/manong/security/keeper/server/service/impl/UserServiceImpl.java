@@ -19,6 +19,7 @@ import xin.manong.security.keeper.server.service.VendorService;
 import xin.manong.security.keeper.server.service.request.UserSearchRequest;
 
 import javax.annotation.Resource;
+import javax.ws.rs.NotFoundException;
 
 /**
  * 用户服务实现
@@ -50,6 +51,21 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public User getByUserName(String userName) {
+        if (StringUtils.isEmpty(userName)) {
+            logger.error("user name is empty");
+            throw new RuntimeException("用户名为空");
+        }
+        UserSearchRequest searchRequest = new UserSearchRequest();
+        searchRequest.current = 1;
+        searchRequest.size = 1;
+        searchRequest.userName = userName;
+        Pager<User> pager = search(searchRequest);
+        if (pager == null || pager.total == 0 || pager.records.isEmpty()) return null;
+        return pager.records.get(0);
+    }
+
+    @Override
     public boolean add(User user) {
         if (tenantService.get(user.tenantId) == null) {
             logger.error("tenant[{}] is not found", user.tenantId);
@@ -72,7 +88,7 @@ public class UserServiceImpl implements UserService {
     public boolean update(User user) {
         if (userMapper.selectById(user.id) == null) {
             logger.error("user is not found for id[{}]", user.id);
-            throw new RuntimeException(String.format("用户[%s]不存在", user.id));
+            throw new NotFoundException(String.format("用户[%s]不存在", user.id));
         }
         user.userName = null;
         return userMapper.updateById(user) > 0;
@@ -82,7 +98,7 @@ public class UserServiceImpl implements UserService {
     public boolean delete(String id) {
         if (StringUtils.isEmpty(id)) {
             logger.error("user id is empty");
-            throw new RuntimeException("用户ID为空");
+            throw new NotFoundException("用户ID为空");
         }
         return userMapper.deleteById(id) > 0;
     }

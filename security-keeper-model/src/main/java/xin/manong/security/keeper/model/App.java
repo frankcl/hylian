@@ -12,6 +12,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.ws.rs.BadRequestException;
+
 /**
  * 应用信息
  *
@@ -54,22 +56,20 @@ public class App extends Model {
 
     /**
      * 检测有效性
-     *
-     * @return 有效返回true，否则返回false
+     * 无效抛出异常
      */
-    public boolean check() {
+    public void check() {
         if (StringUtils.isEmpty(id)) {
             logger.error("app id is empty");
-            return false;
+            throw new BadRequestException("应用ID为空");
         }
         if (StringUtils.isEmpty(name)) {
             logger.error("app name is empty");
-            return false;
+            throw new BadRequestException("应用名为空");
         }
         if (StringUtils.isEmpty(secret)) {
             logger.error("app secret is empty");
-            return false;
+            throw new BadRequestException("应用秘钥为空");
         }
-        return true;
     }
 }

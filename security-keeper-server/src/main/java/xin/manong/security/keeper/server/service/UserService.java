@@ -21,6 +21,14 @@ public interface UserService {
     User get(String id);
 
     /**
+     * 根据用户名获取用户信息
+     *
+     * @param userName 用户名
+     * @return 成功返回用户信息，否则返回null
+     */
+    User getByUserName(String userName);
+
+    /**
      * 添加用户信息
      *
      * @param user 用户信息

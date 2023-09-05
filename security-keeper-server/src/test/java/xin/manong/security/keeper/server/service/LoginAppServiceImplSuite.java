@@ -7,8 +7,10 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.annotation.Transactional;
+import xin.manong.security.keeper.model.Pager;
 import xin.manong.security.keeper.server.ApplicationTest;
 import xin.manong.security.keeper.model.LoginApp;
+import xin.manong.security.keeper.server.service.request.LoginAppSearchRequest;
 
 import javax.annotation.Resource;
 import java.util.List;
@@ -59,6 +61,13 @@ public class LoginAppServiceImplSuite {
             Assert.assertEquals("http://www.sina.com.cn/", loginApps.get(1).baseURL);
             Assert.assertTrue(loginApps.get(1).createTime > 0);
             Assert.assertTrue(loginApps.get(1).updateTime > 0);
+        }
+        {
+            LoginAppSearchRequest searchRequest = new LoginAppSearchRequest();
+            searchRequest.appId = "app1";
+            searchRequest.userId = "user1";
+            Pager<LoginApp> pager = loginAppService.search(searchRequest);
+            Assert.assertTrue(pager != null && pager.total == 1 && pager.records.size() == 1);
         }
         {
             loginAppService.removeLoginApps("xxx");

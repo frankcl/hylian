@@ -18,12 +18,24 @@ public class HTTPUtils {
 
     private static final Logger logger = LoggerFactory.getLogger(HTTPUtils.class);
 
+    /**
+     * 获取请求URL
+     *
+     * @param httpRequest HTTP请求
+     * @return 请求URL
+     */
     public static String getRequestURL(HttpServletRequest httpRequest) {
         String requestURL = httpRequest.getRequestURL().toString();
         String query = httpRequest.getQueryString();
         return StringUtils.isEmpty(query) ? requestURL : String.format("%s?%s", requestURL, query);
     }
 
+    /**
+     * 获取请求base URL
+     *
+     * @param httpRequest HTTP请求
+     * @return 请求base URL
+     */
     public static String getRequestBaseURL(HttpServletRequest httpRequest) {
         try {
             String requestURL = httpRequest.getRequestURL().toString();
@@ -36,6 +48,22 @@ public class HTTPUtils {
             return port == -1 ? String.format("%s://%s", schema, host) : String.format("%s://%s:%d", schema, host, port);
         } catch (Exception e) {
             logger.error("get request base URL failed");
+            logger.error(e.getMessage(), e);
+            return null;
+        }
+    }
+
+    /**
+     * 获取请求URL path
+     *
+     * @param httpRequest HTTP请求
+     * @return 成功返回请求URL path，否则返回null
+     */
+    public static String getRequestPath(HttpServletRequest httpRequest) {
+        try {
+            URL requestURL = new URL(httpRequest.getRequestURL().toString());
+            return requestURL.getPath();
+        } catch (Exception e) {
             logger.error(e.getMessage(), e);
             return null;
         }

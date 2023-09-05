@@ -1,7 +1,7 @@
 package xin.manong.security.keeper.sso.filter;
 
 import com.alibaba.fastjson.JSON;
-import okhttp3.Response;
+import com.alibaba.fastjson.TypeReference;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,7 +11,6 @@ import xin.manong.security.keeper.model.Tenant;
 import xin.manong.security.keeper.model.User;
 import xin.manong.security.keeper.model.Vendor;
 import xin.manong.security.keeper.model.request.RefreshTokenRequest;
-import xin.manong.weapon.base.http.HttpClient;
 import xin.manong.weapon.base.http.HttpRequest;
 import xin.manong.weapon.base.http.RequestFormat;
 import xin.manong.weapon.spring.web.WebResponse;
@@ -35,7 +34,7 @@ import java.util.Set;
  * @author frankcl
  * @date 2023-09-04 14:26:59
  */
-public class LoginFilter extends SecurityKeeperFilter {
+public class LoginFilter extends SecurityFilter {
 
     private static final Logger logger = LoggerFactory.getLogger(LoginFilter.class);
 
@@ -45,19 +44,13 @@ public class LoginFilter extends SecurityKeeperFilter {
     private static final String PARAM_APP_SECRET = "app_secret";
     private static final String PARAM_REDIRECT_URL = "redirect_url";
 
-    private static final String PATH_LOGIN = "security/sso/login";
-    private static final String PATH_APPLY_CODE = "security/auth/applyCode";
-    private static final String PATH_GET_TOKEN = "security/auth/getToken";
-    private static final String PATH_GET_USER = "security/auth/getUser";
-    private static final String PATH_GET_TENANT = "security/resource/getTenant";
-    private static final String PATH_GET_VENDOR = "security/resource/getVendor";
-    private static final String PATH_REFRESH_TOKEN = "security/auth/refreshToken";
-
-    protected HttpClient httpClient;
-
-    public LoginFilter() {
-        httpClient = new HttpClient();
-    }
+    private static final String SERVER_PATH_LOGIN = "security/sso/login";
+    private static final String SERVER_PATH_APPLY_CODE = "security/auth/applyCode";
+    private static final String SERVER_PATH_GET_TOKEN = "security/auth/getToken";
+    private static final String SERVER_PATH_GET_USER = "security/auth/getUser";
+    private static final String SERVER_PATH_GET_TENANT = "security/resource/getTenant";
+    private static final String SERVER_PATH_GET_VENDOR = "security/resource/getVendor";
+    private static final String SERVER_PATH_REFRESH_TOKEN = "security/auth/refreshToken";
 
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
@@ -116,7 +109,8 @@ public class LoginFilter extends SecurityKeeperFilter {
                                HttpServletResponse httpResponse) throws IOException {
         String requestURL = HTTPUtils.getRequestURL(httpRequest);
         httpResponse.sendRedirect(String.format("%s%s?%s=%s",
-                serverURL, PATH_LOGIN, PARAM_REDIRECT_URL, URLEncoder.encode(requestURL == null ? "" : requestURL, "UTF-8")));
+                serverURL, SERVER_PATH_LOGIN, PARAM_REDIRECT_URL,
+                URLEncoder.encode(requestURL == null ? "" : requestURL, "UTF-8")));
     }
 
     /**
@@ -125,13 +119,13 @@ public class LoginFilter extends SecurityKeeperFilter {
      * @param redirectURL 重定向URL
      */
     private void applyCode(String redirectURL) {
-        String requestURL = String.format("%s%s", serverURL, PATH_APPLY_CODE);
+        String requestURL = String.format("%s%s", serverURL, SERVER_PATH_APPLY_CODE);
         Map<String, Object> paramMap = new HashMap<>();
         paramMap.put(PARAM_REDIRECT_URL, redirectURL);
         paramMap.put(PARAM_APP_ID, appId);
         paramMap.put(PARAM_APP_SECRET, appSecret);
         HttpRequest httpRequest = HttpRequest.buildGetRequest(requestURL, paramMap);
-        WebResponse response = execute(httpRequest, Object.class);
+        WebResponse response = execute(httpRequest, null);
         if (response == null) logger.warn("apply code failed");
     }
 
@@ -142,13 +136,13 @@ public class LoginFilter extends SecurityKeeperFilter {
      * @return 成功返回token，否则返回null
      */
     private String getToken(String code) {
-        String requestURL = String.format("%s%s", serverURL, PATH_GET_TOKEN);
+        String requestURL = String.format("%s%s", serverURL, SERVER_PATH_GET_TOKEN);
         Map<String, Object> paramMap = new HashMap<>();
         paramMap.put(PARAM_CODE, code);
         paramMap.put(PARAM_APP_ID, appId);
         paramMap.put(PARAM_APP_SECRET, appSecret);
         HttpRequest httpRequest = HttpRequest.buildGetRequest(requestURL, paramMap);
-        WebResponse<String> response = execute(httpRequest, String.class);
+        WebResponse<String> response = execute(httpRequest, new TypeReference<WebResponse<String>>() {});
         return response == null ? null : response.data;
     }
 
@@ -159,13 +153,13 @@ public class LoginFilter extends SecurityKeeperFilter {
      * @return 成功返回用户信息，否则返回null
      */
     private User getUser(String token) {
-        String requestURL = String.format("%s%s", serverURL, PATH_GET_USER);
+        String requestURL = String.format("%s%s", serverURL, SERVER_PATH_GET_USER);
         Map<String, Object> paramMap = new HashMap<>();
         paramMap.put(PARAM_TOKEN, token);
         paramMap.put(PARAM_APP_ID, appId);
         paramMap.put(PARAM_APP_SECRET, appSecret);
         HttpRequest httpRequest = HttpRequest.buildGetRequest(requestURL, paramMap);
-        WebResponse<User> response = execute(httpRequest, User.class);
+        WebResponse<User> response = execute(httpRequest, new TypeReference<WebResponse<User>>() {});
         return response == null ? null : response.data;
     }
 
@@ -176,13 +170,13 @@ public class LoginFilter extends SecurityKeeperFilter {
      * @return 成功返回租户信息，否则返回null
      */
     private Tenant getTenant(String token) {
-        String requestURL = String.format("%s%s", serverURL, PATH_GET_TENANT);
+        String requestURL = String.format("%s%s", serverURL, SERVER_PATH_GET_TENANT);
         Map<String, Object> paramMap = new HashMap<>();
         paramMap.put(PARAM_TOKEN, token);
         paramMap.put(PARAM_APP_ID, appId);
         paramMap.put(PARAM_APP_SECRET, appSecret);
         HttpRequest httpRequest = HttpRequest.buildGetRequest(requestURL, paramMap);
-        WebResponse<Tenant> response = execute(httpRequest, Tenant.class);
+        WebResponse<Tenant> response = execute(httpRequest, new TypeReference<WebResponse<Tenant>>() {});
         return response == null ? null : response.data;
     }
 
@@ -193,13 +187,13 @@ public class LoginFilter extends SecurityKeeperFilter {
      * @return 成功返回供应商信息，否则返回null
      */
     private Vendor getVendor(String token) {
-        String requestURL = String.format("%s%s", serverURL, PATH_GET_VENDOR);
+        String requestURL = String.format("%s%s", serverURL, SERVER_PATH_GET_VENDOR);
         Map<String, Object> paramMap = new HashMap<>();
         paramMap.put(PARAM_TOKEN, token);
         paramMap.put(PARAM_APP_ID, appId);
         paramMap.put(PARAM_APP_SECRET, appSecret);
         HttpRequest httpRequest = HttpRequest.buildGetRequest(requestURL, paramMap);
-        WebResponse<Vendor> response = execute(httpRequest, Vendor.class);
+        WebResponse<Vendor> response = execute(httpRequest, new TypeReference<WebResponse<Vendor>>() {});
         return response == null ? null : response.data;
     }
 
@@ -211,14 +205,14 @@ public class LoginFilter extends SecurityKeeperFilter {
      * @return 刷新成功返回true，否则返回false
      */
     private boolean refreshToken(String token, HttpServletRequest httpServletRequest) {
-        String requestURL = String.format("%s%s", serverURL, PATH_REFRESH_TOKEN);
+        String requestURL = String.format("%s%s", serverURL, SERVER_PATH_REFRESH_TOKEN);
         RefreshTokenRequest request = new RefreshTokenRequest();
         request.appId = appId;
         request.appSecret = appSecret;
         request.token = token;
         Map<String, Object> body = JSON.parseObject(JSON.toJSONString(request));
         HttpRequest httpRequest = HttpRequest.buildPostRequest(requestURL, RequestFormat.JSON, body);
-        WebResponse<String> response = execute(httpRequest, String.class);
+        WebResponse<String> response = execute(httpRequest, new TypeReference<WebResponse<String>>() {});
         if (response == null || StringUtils.isEmpty(response.data)) return false;
         SessionUtils.setToken(httpServletRequest, response.data);
         return true;
@@ -233,7 +227,7 @@ public class LoginFilter extends SecurityKeeperFilter {
      * @throws IOException
      */
     private void refreshUser(String token, HttpServletRequest httpRequest,
-                                HttpServletResponse httpResponse) throws IOException {
+                             HttpServletResponse httpResponse) throws IOException {
         User user = getUser(token);
         if (user == null) {
             logger.error("get user failed for token[{}]", token);
@@ -276,35 +270,5 @@ public class LoginFilter extends SecurityKeeperFilter {
             redirectLogin(httpRequest, httpResponse);
         }
         SessionUtils.setVendor(httpRequest, vendor);
-    }
-
-    /**
-     * 执行HTTP请求
-     *
-     * @param httpRequest HTTP请求
-     * @param dataClass 结果数据类型
-     * @return 成功返回结果，否则返回null
-     * @param <T>
-     */
-    private <T> WebResponse<T> execute(HttpRequest httpRequest, Class<T> dataClass) {
-        Response httpResponse = httpClient.execute(httpRequest);
-        try {
-            if (httpResponse == null || !httpResponse.isSuccessful() || httpResponse.code() != 200) {
-                logger.error("request failed for url[{}]", httpRequest.requestURL);
-                return null;
-            }
-            WebResponse<T> response = JSON.parseObject(httpResponse.body().string(), WebResponse.class);
-            if (!response.status) {
-                logger.error("request failed for url[{}], message[{}]", httpRequest.requestURL, response.message);
-                return null;
-            }
-            return response;
-        } catch (Exception e) {
-            logger.error("request exception for url[{}], cause[{}]", httpRequest.requestURL, e.getMessage());
-            logger.error(e.getMessage(), e);
-            return null;
-        } finally {
-            if (httpResponse != null) httpResponse.close();
-        }
     }
 }

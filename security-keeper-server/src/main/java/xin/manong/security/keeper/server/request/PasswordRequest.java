@@ -13,18 +13,18 @@ import javax.ws.rs.BadRequestException;
 import java.io.Serializable;
 
 /**
- * 登录请求对象
+ * 更新密码请求
  *
  * @author frankcl
- * @date 2023-08-31 19:49:08
+ * @date 2023-09-05 11:18:03
  */
 @Getter
 @Setter
 @Accessors(chain = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class LoginRequest implements Serializable {
+public class PasswordRequest implements Serializable {
 
-    private static final Logger logger = LoggerFactory.getLogger(LoginRequest.class);
+    private static final Logger logger = LoggerFactory.getLogger(PasswordRequest.class);
 
     /**
      * 用户名
@@ -37,10 +37,15 @@ public class LoginRequest implements Serializable {
     @JsonProperty("password")
     public String password;
     /**
-     * 重定向URL
+     * 新密码
      */
-    @JsonProperty("redirect_url")
-    public String redirectURL;
+    @JsonProperty("new_password")
+    public String newPassword;
+    /**
+     * 确认新密码
+     */
+    @JsonProperty("confirm_password")
+    public String confirmPassword;
 
     /**
      * 检测有效性，无效抛出异常
@@ -54,9 +59,17 @@ public class LoginRequest implements Serializable {
             logger.error("password is empty");
             throw new BadRequestException("密码为空");
         }
-        if (StringUtils.isEmpty(redirectURL)) {
-            logger.error("redirect url is empty");
-            throw new BadRequestException("重定向URL为空");
+        if (StringUtils.isEmpty(newPassword)) {
+            logger.error("new password is empty");
+            throw new BadRequestException("新密码为空");
+        }
+        if (StringUtils.isEmpty(confirmPassword)) {
+            logger.error("confirm new password is empty");
+            throw new BadRequestException("确认新密码为空");
+        }
+        if (!newPassword.equals(confirmPassword)) {
+            logger.error("new password and confirmed new password are not consistent");
+            throw new BadRequestException("新密码与确认新密码不一致");
         }
     }
 }

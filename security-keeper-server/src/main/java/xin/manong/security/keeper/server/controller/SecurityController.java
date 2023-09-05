@@ -258,6 +258,8 @@ public class SecurityController {
     /**
      * 注销登录
      *
+     * @param appId 应用ID
+     * @param appSecret 应用秘钥
      * @param httpRequest HTTP请求
      * @param httpResponse HTTP响应
      */
@@ -265,8 +267,11 @@ public class SecurityController {
     @Produces(MediaType.APPLICATION_JSON)
     @Path("sso/logout")
     @GetMapping("sso/logout")
-    public void logout(@Context HttpServletRequest httpRequest,
+    public void logout(@QueryParam("app_id")  String appId,
+                       @QueryParam("app_secret") String appSecret,
+                       @Context HttpServletRequest httpRequest,
                        @Context HttpServletResponse httpResponse) {
+        verifyApp(appId, appSecret);
         String ticket = CookieUtils.getCookie(httpRequest, COOKIE_TICKET);
         if (StringUtils.isEmpty(ticket) || !jwtService.verifyTicket(ticket)) {
             logger.error("ticket is empty or invalid");
@@ -313,6 +318,9 @@ public class SecurityController {
         if (request == null) {
             logger.error("login request is null");
             throw new BadRequestException("登录请求为空");
+        }
+        if (StringUtils.isEmpty(request.redirectURL)) {
+            request.redirectURL = HTTPUtils.getRequestURL(httpRequest);
         }
         request.check();
         UserSearchRequest searchRequest = new UserSearchRequest();

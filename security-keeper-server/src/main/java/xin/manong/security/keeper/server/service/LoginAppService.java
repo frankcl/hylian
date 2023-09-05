@@ -1,6 +1,8 @@
 package xin.manong.security.keeper.server.service;
 
 import xin.manong.security.keeper.model.LoginApp;
+import xin.manong.security.keeper.model.Pager;
+import xin.manong.security.keeper.server.service.request.LoginAppSearchRequest;
 
 import java.util.List;
 
@@ -42,5 +44,13 @@ public interface LoginAppService {
      * @return 登录应用列表
      */
     List<LoginApp> getLoginApps(String ticketId);
+
+    /**
+     * 登录应用搜索
+     *
+     * @param searchRequest 搜索请求
+     * @return 登录应用分页列表
+     */
+    Pager<LoginApp> search(LoginAppSearchRequest searchRequest);
 
 }

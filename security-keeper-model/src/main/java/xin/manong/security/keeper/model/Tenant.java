@@ -12,6 +12,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.ws.rs.BadRequestException;
+
 /**
  * 租户信息
  *
@@ -54,22 +56,20 @@ public class Tenant extends Model {
 
     /**
      * 检测有效性
-     *
-     * @return 有效返回true，否则返回false
+     * 无效抛出异常
      */
-    public boolean check() {
+    public void check() {
         if (StringUtils.isEmpty(vendorId)) {
             logger.error("vendor id is empty");
-            return false;
+            throw new BadRequestException("供应商ID为空");
         }
         if (StringUtils.isEmpty(id)) {
             logger.error("tenant id is empty");
-            return false;
+            throw new BadRequestException("租户ID为空");
         }
         if (StringUtils.isEmpty(name)) {
             logger.error("tenant name is empty");
-            return false;
+            throw new BadRequestException("租户名为空");
         }
-        return true;
     }
 }

@@ -13,6 +13,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import xin.manong.security.keeper.model.handler.JSONRoleListTypeHandler;
 
+import javax.ws.rs.BadRequestException;
 import java.util.List;
 
 /**
@@ -111,34 +112,32 @@ public class User extends Model {
 
     /**
      * 检测用户有效性
-     *
-     * @return 如果有效返回true，否则返回false
+     * 无效抛出异常
      */
-    public boolean check() {
+    public void check() {
         if (StringUtils.isEmpty(id)) {
             logger.error("user id is empty");
-            return false;
+            throw new BadRequestException("用户ID为空");
         }
         if (StringUtils.isEmpty(userName)) {
             logger.error("user name is empty");
-            return false;
+            throw new BadRequestException("用户名为空");
         }
         if (StringUtils.isEmpty(name)) {
             logger.error("real name is empty");
-            return false;
+            throw new BadRequestException("用户真实名称为空");
         }
         if (StringUtils.isEmpty(password)) {
             logger.error("password is empty");
-            return false;
+            throw new BadRequestException("用户密码为空");
         }
         if (StringUtils.isEmpty(tenantId)) {
             logger.error("tenant id is empty");
-            return false;
+            throw new BadRequestException("租户ID为空");
         }
         if (StringUtils.isEmpty(vendorId)) {
             logger.error("vendor id is empty");
-            return false;
+            throw new BadRequestException("供应商ID为空");
         }
-        return true;
     }
 }
