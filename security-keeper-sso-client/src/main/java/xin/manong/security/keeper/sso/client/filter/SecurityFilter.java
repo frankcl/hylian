@@ -1,16 +1,13 @@
-package xin.manong.security.keeper.sso.filter;
+package xin.manong.security.keeper.sso.client.filter;
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.TypeReference;
-import okhttp3.Response;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import xin.manong.weapon.base.http.HttpClient;
-import xin.manong.weapon.base.http.HttpRequest;
-import xin.manong.weapon.spring.web.WebResponse;
+import xin.manong.security.keeper.sso.client.core.SecurityChecker;
 
 import javax.servlet.*;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * 单点登录过滤器抽象实现
@@ -25,17 +22,14 @@ public abstract class SecurityFilter implements Filter {
     public static final String PARAM_APP_ID = "app_id";
     public static final String PARAM_APP_SECRET = "app_secret";
     public static final String PARAM_SERVER_URL = "server_url";
+    public static final String PARAM_EXCLUDE_PATTERNS = "exclude_patterns";
 
     protected String name;
     protected String appId;
     protected String appSecret;
     protected String serverURL;
-
-    protected HttpClient httpClient;
-
-    public SecurityFilter() {
-        httpClient = new HttpClient();
-    }
+    protected List<String> excludePatterns;
+    protected SecurityChecker securityChecker;
 
     @Override
     public void init(FilterConfig filterConfig) throws ServletException {
@@ -56,7 +50,19 @@ public abstract class SecurityFilter implements Filter {
             logger.error("param[{}] is not found", PARAM_SERVER_URL);
             throw new RuntimeException(String.format("过滤器参数[%s]未找到", PARAM_SERVER_URL));
         }
+        String excludeURLPatterns = filterConfig.getInitParameter(PARAM_EXCLUDE_PATTERNS);
+        if (!StringUtils.isEmpty(excludeURLPatterns)) {
+            excludePatterns = new ArrayList<>();
+            String[] patterns = excludeURLPatterns.split(",");
+            for (String pattern : patterns) {
+                pattern = pattern.trim();
+                if (StringUtils.isEmpty(pattern)) continue;
+                if (!pattern.startsWith("/")) pattern = String.format("/%s", pattern);
+                excludePatterns.add(pattern);
+            }
+        }
         if (!serverURL.endsWith("/")) serverURL += "/";
+        securityChecker = new SecurityChecker(appId, appSecret, serverURL);
         logger.info("filter[{}] init success", filterConfig.getFilterName());
     }
 
@@ -64,37 +70,5 @@ public abstract class SecurityFilter implements Filter {
     public void destroy() {
         logger.info("filter[{}] is destroying ...", name);
         logger.info("filter[{}] has been destroyed", name);
-    }
-
-    /**
-     * 执行HTTP请求
-     *
-     * @param httpRequest HTTP请求
-     * @param typeReference 结果数据类型
-     * @return 成功返回结果，否则返回null
-     * @param <T>
-     */
-    protected  <T> WebResponse<T> execute(HttpRequest httpRequest, TypeReference<WebResponse<T>> typeReference) {
-        Response httpResponse = httpClient.execute(httpRequest);
-        try {
-            if (httpResponse == null || !httpResponse.isSuccessful() || httpResponse.code() != 200) {
-                logger.error("request failed for url[{}]", httpRequest.requestURL);
-                return null;
-            }
-            WebResponse<T> response;
-            if (typeReference == null) response = JSON.parseObject(httpResponse.body().string(), WebResponse.class);
-            else response = JSON.parseObject(httpResponse.body().string(), typeReference);
-            if (!response.status) {
-                logger.error("request failed for url[{}], message[{}]", httpRequest.requestURL, response.message);
-                return null;
-            }
-            return response;
-        } catch (Exception e) {
-            logger.error("request exception for url[{}], cause[{}]", httpRequest.requestURL, e.getMessage());
-            logger.error(e.getMessage(), e);
-            return null;
-        } finally {
-            if (httpResponse != null) httpResponse.close();
-        }
     }
 }
