@@ -135,7 +135,7 @@ public class UserServiceImplSuite {
             Assert.assertEquals("frankcl", user.name);
             Assert.assertEquals("t_abc", user.tenantId);
             Assert.assertEquals("v_abc", user.vendorId);
-            Assert.assertEquals("xxxxxx", user.password);
+            Assert.assertEquals("dad3a37aa9d50688b5157698acfd7aee", user.password);
             Assert.assertEquals("http://www.manong.xin/frankcl/avatar.jpg", user.avatar);
             Assert.assertTrue(user.createTime > 0);
             Assert.assertTrue(user.updateTime > 0);
@@ -155,7 +155,7 @@ public class UserServiceImplSuite {
             Assert.assertEquals("frankcl", user.name);
             Assert.assertEquals("t_abc", user.tenantId);
             Assert.assertEquals("v_abc", user.vendorId);
-            Assert.assertEquals("xxxxxxx", user.password);
+            Assert.assertEquals("04adb4e2f055c978c9bb101ee1bc5cd4", user.password);
             Assert.assertEquals("http://www.manong.xin/frankcl/avatar1.jpg", user.avatar);
             Assert.assertTrue(user.createTime > 0);
             Assert.assertTrue(user.updateTime > 0);
@@ -171,6 +171,15 @@ public class UserServiceImplSuite {
         }
         {
             Assert.assertTrue(userService.delete("xxx"));
+        }
+        {
+            User user = new User();
+            user.checkPassword("afdsfsdAAAFDSF12323$%");
+            try {
+                user.checkPassword("3242fdfsdfdsfAA");
+                Assert.assertTrue(false);
+            } catch (Exception e) {
+            }
         }
     }
 }
