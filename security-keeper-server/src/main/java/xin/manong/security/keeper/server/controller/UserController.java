@@ -182,8 +182,9 @@ public class UserController {
             throw new RuntimeException("用户密码不正确");
         }
         User updateUser = new User();
+        updateUser.checkPassword(request.newPassword);
         updateUser.id = user.id;
-        updateUser.password = DigestUtils.md5Hex(request.newPassword);
+        updateUser.password = request.newPassword.trim();
         return userService.update(user);
     }
 

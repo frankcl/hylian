@@ -31,6 +31,8 @@ public class User extends Model {
 
     private static final Logger logger = LoggerFactory.getLogger(User.class);
 
+    private static final int MIN_PASSWORD_LENGTH = 8;
+
     /**
      * 用户ID
      */
@@ -127,10 +129,6 @@ public class User extends Model {
             logger.error("real name is empty");
             throw new BadRequestException("用户真实名称为空");
         }
-        if (StringUtils.isEmpty(password)) {
-            logger.error("password is empty");
-            throw new BadRequestException("用户密码为空");
-        }
         if (StringUtils.isEmpty(tenantId)) {
             logger.error("tenant id is empty");
             throw new BadRequestException("租户ID为空");
@@ -138,6 +136,32 @@ public class User extends Model {
         if (StringUtils.isEmpty(vendorId)) {
             logger.error("vendor id is empty");
             throw new BadRequestException("供应商ID为空");
+        }
+        checkPassword(password);
+    }
+
+    /**
+     * 检查密码
+     *
+     * @param password 密码
+     */
+    public void checkPassword(String password) {
+        password = password == null ? "" : password.trim();
+        if (StringUtils.isEmpty(password) || password.length() < MIN_PASSWORD_LENGTH) {
+            logger.error("password length[{}] is invalid", password == null ? 0 : password.length());
+            throw new BadRequestException(String.format("秘钥最小长度[%d]", password.length()));
+        }
+        int lowerCaseLetters = 0, upperCaseLetters = 0, digits = 0, others = 0;
+        for (int i = 0; i < password.length(); i++) {
+            char c = password.charAt(i);
+            if (c >= 'A' && c <= 'Z') upperCaseLetters++;
+            else if (c >= 'a' && c <= 'z') lowerCaseLetters++;
+            else if (c >= '0' && c <= '9') digits++;
+            else others++;
+        }
+        if (lowerCaseLetters == 0 || upperCaseLetters == 0 || digits == 0 || others == 0) {
+            logger.error("password security is weak");
+            throw new BadRequestException("密码安全性弱，建议包含大小写字母、数字及特殊符号");
         }
     }
 }

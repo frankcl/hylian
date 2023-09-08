@@ -3,6 +3,7 @@ package xin.manong.security.keeper.server.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -81,6 +82,7 @@ public class UserServiceImpl implements UserService {
             logger.error("user has existed for the same id[{}] or username[{}]", user.id, user.userName);
             throw new RuntimeException(String.format("同名用户ID[%s]或用户名[%s]已存在", user.id, user.userName));
         }
+        user.password = DigestUtils.md5Hex(user.password.trim());
         return userMapper.insert(user) > 0;
     }
 
@@ -91,6 +93,7 @@ public class UserServiceImpl implements UserService {
             throw new NotFoundException(String.format("用户[%s]不存在", user.id));
         }
         user.userName = null;
+        if (user.password != null) user.password = DigestUtils.md5Hex(user.password);
         return userMapper.updateById(user) > 0;
     }
 
