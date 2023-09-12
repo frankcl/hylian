@@ -6,6 +6,8 @@ import org.slf4j.LoggerFactory;
 
 import javax.servlet.http.HttpServletRequest;
 import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -17,6 +19,11 @@ import java.util.Set;
 public class HTTPUtils {
 
     private static final Logger logger = LoggerFactory.getLogger(HTTPUtils.class);
+
+    private static final int DEFAULT_HTTP_PORT = 80;
+    private static final int DEFAULT_HTTPS_PORT = 443;
+    private static final String PROTOCOL_HTTP = "http";
+    private static final String PROTOCOL_HTTPS = "https";
 
     /**
      * 获取请求URL
@@ -31,21 +38,19 @@ public class HTTPUtils {
     }
 
     /**
-     * 获取请求base URL
+     * 获取请求根URL
      *
      * @param httpRequest HTTP请求
-     * @return 请求base URL
+     * @return 请求根URL
      */
-    public static String getRequestBaseURL(HttpServletRequest httpRequest) {
+    public static String getRequestRootURL(HttpServletRequest httpRequest) {
         try {
-            String requestURL = httpRequest.getRequestURL().toString();
-            URL url = new URL(requestURL);
-            String schema = url.getProtocol();
-            String host = url.getHost();
-            int port = url.getPort();
-            if (schema.equals("http") && port == 80) port = -1;
-            else if (schema.equals("https") && port == 443) port = -1;
-            return port == -1 ? String.format("%s://%s", schema, host) : String.format("%s://%s:%d", schema, host, port);
+            URL requestURL = new URL(httpRequest.getRequestURL().toString());
+            String host = requestURL.getHost();
+            String protocol = requestURL.getProtocol();
+            int port = getPort(requestURL);
+            return port == -1 ? String.format("%s://%s", protocol, host) :
+                    String.format("%s://%s:%d", protocol, host, port);
         } catch (Exception e) {
             logger.error("get request base URL failed");
             logger.error(e.getMessage(), e);
@@ -67,6 +72,26 @@ public class HTTPUtils {
             logger.error(e.getMessage(), e);
             return null;
         }
+    }
+
+    /**
+     * 获取请求query字典
+     *
+     * @param httpRequest HTTP请求
+     * @return query字典
+     */
+    public static Map<String, String> getRequestQueryMap(HttpServletRequest httpRequest) {
+        Map<String, String> queryMap = new HashMap<>();
+        String queryString = httpRequest.getQueryString();
+        if (StringUtils.isEmpty(queryString)) return queryMap;
+        String[] queryList = queryString.split("&");
+        for (String query : queryList) {
+            query = query.trim();
+            int index = query.indexOf("=");
+            if (index == -1) queryMap.put(query, null);
+            else queryMap.put(query.substring(0, index).trim(), query.substring(index + 1).trim());
+        }
+        return queryMap;
     }
 
     /**
@@ -100,5 +125,20 @@ public class HTTPUtils {
             logger.error(e.getMessage(), e);
             return url;
         }
+    }
+
+    /**
+     * 获取URL端口
+     *
+     * @param requestURL 请求URL
+     * @return 端口号，协议默认端口返回-1
+     */
+    private static int getPort(URL requestURL) {
+        String protocol = requestURL.getProtocol();
+        int port = requestURL.getPort();
+        if (StringUtils.isEmpty(protocol)) return port;
+        if (protocol.equals(PROTOCOL_HTTP) && port == DEFAULT_HTTP_PORT) return -1;
+        else if (protocol.equals(PROTOCOL_HTTPS) && port == DEFAULT_HTTPS_PORT) return -1;
+        return port;
     }
 }

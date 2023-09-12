@@ -9,7 +9,7 @@ import lombok.Setter;
 import lombok.experimental.Accessors;
 
 /**
- * 登录用户及应用信息
+ * 应用登录信息
  *
  * @author frankcl
  * @date 2023-09-01 19:38:37
@@ -17,17 +17,24 @@ import lombok.experimental.Accessors;
 @Getter
 @Setter
 @Accessors(chain = true)
-@TableName("login_app")
+@TableName("app_login")
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class LoginApp {
+public class AppLogin {
 
     /**
-     * 登录用户应用ID
+     * 自增ID
      */
     @TableId(value = "id", type = IdType.AUTO)
     @JSONField(name = "id")
     @JsonProperty("id")
     public Long id;
+    /**
+     * 应用session ID
+     */
+    @TableField(value = "session_id")
+    @JSONField(name = "session_id")
+    @JsonProperty("session_id")
+    public String sessionId;
     /**
      * 登录ticket ID
      */
@@ -50,12 +57,12 @@ public class LoginApp {
     @JsonProperty("app_id")
     public String appId;
     /**
-     * 应用base URL
+     * 应用注销URL
      */
-    @TableField(value = "base_url")
-    @JSONField(name = "base_url")
-    @JsonProperty("base_url")
-    public String baseURL;
+    @TableField(value = "logout_url")
+    @JSONField(name = "logout_url")
+    @JsonProperty("logout_url")
+    public String logoutURL;
     /**
      * 创建时间，毫秒时间戳
      */
@@ -70,14 +77,4 @@ public class LoginApp {
     @JSONField(name = "update_time")
     @JsonProperty("update_time")
     public Long updateTime;
-
-    public LoginApp() {
-    }
-
-    public LoginApp(String ticketId, String userId, String appId, String baseURL) {
-        this.ticketId = ticketId;
-        this.userId = userId;
-        this.appId = appId;
-        this.baseURL = baseURL;
-    }
 }

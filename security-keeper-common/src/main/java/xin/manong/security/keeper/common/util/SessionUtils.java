@@ -7,6 +7,7 @@ import xin.manong.security.keeper.model.User;
 import xin.manong.security.keeper.model.Vendor;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 
 /**
  * session工具
@@ -15,6 +16,17 @@ import javax.servlet.http.HttpServletRequest;
  * @date 2023-09-04 14:53:57
  */
 public class SessionUtils {
+
+    /**
+     * 获取session ID
+     *
+     * @param httpRequest HTTP请求
+     * @return 成功返回sessionID，否则返回null
+     */
+    public static String getSessionID(HttpServletRequest httpRequest) {
+        HttpSession httpSession = httpRequest.getSession();
+        return httpSession == null ? null : httpSession.getId();
+    }
 
     /**
      * 从session中获取token
