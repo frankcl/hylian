@@ -9,7 +9,6 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import xin.manong.security.keeper.common.util.CookieUtils;
 import xin.manong.security.keeper.common.util.HTTPUtils;
-import xin.manong.security.keeper.common.util.SessionUtils;
 import xin.manong.security.keeper.model.*;
 import xin.manong.security.keeper.server.common.Constants;
 import xin.manong.security.keeper.model.request.RefreshTokenRequest;
@@ -351,6 +350,11 @@ public class SecurityController {
                       @FormParam("redirect_url") String redirectURL,
                       @Context HttpServletRequest httpRequest,
                       @Context HttpServletResponse httpResponse) throws IOException {
+        if (isLogin(httpRequest)) {
+            logger.info("previously logged in");
+            httpResponse.sendRedirect(redirectURL);
+            return;
+        }
         if (StringUtils.isEmpty(userName)) {
             logger.error("username is empty");
             throw new BadRequestException("用户名为空");
@@ -379,20 +383,26 @@ public class SecurityController {
         Profile profile = new Profile();
         profile.setId(RandomID.build()).setUserId(user.id).setTenantId(user.tenantId).setVendorId(user.vendorId);
         String ticket = ticketService.buildTicket(profile, Constants.CACHE_TICKET_EXPIRED_TIME_MS);
-        if (StringUtils.isEmpty(ticket)) {
-            logger.error("build ticket failed");
-            throw new RuntimeException("构建ticket失败");
-        }
-        String prevTicket = CookieUtils.getCookie(httpRequest, Constants.COOKIE_TICKET);
-        if (!StringUtils.isEmpty(prevTicket)) {
-            Profile prevProfile = jwtService.decodeProfile(prevTicket);
-            if (prevProfile != null) removeAppLogins(prevProfile.id);
-            removeTicketResources(prevTicket);
-        }
         ticketService.putTicket(profile.id, ticket);
         CookieUtils.setCookie(Constants.COOKIE_TICKET, ticket, "/", httpRequest, httpResponse);
-        SessionUtils.removeResources(httpRequest);
         httpResponse.sendRedirect(redirectURL);
+    }
+
+    /**
+     * 判断是否已经登录
+     *
+     * @param httpRequest HTTP请求
+     * @return 已经登录返回true，否则返回false
+     */
+    private boolean isLogin(HttpServletRequest httpRequest) {
+        String ticket = CookieUtils.getCookie(httpRequest, Constants.COOKIE_TICKET);
+        if (StringUtils.isEmpty(ticket)) return false;
+        if (!verifyTicket(ticket)) {
+            Profile profile = jwtService.decodeProfile(ticket);
+            if (profile != null) removeAppLogins(profile.id);
+            return false;
+        }
+        return true;
     }
 
     /**

@@ -74,8 +74,8 @@ public class SecurityChecker {
             if (SessionUtils.getTenant(httpRequest) == null && !refreshTenant(token, httpRequest, httpResponse)) return false;
             if (SessionUtils.getVendor(httpRequest) == null && !refreshVendor(token, httpRequest, httpResponse)) return false;
             if (refreshToken(token, httpRequest)) return true;
-            else SessionUtils.removeResources(httpRequest);
         }
+        SessionUtils.removeResources(httpRequest);
         String code = httpRequest.getParameter(Constants.PARAM_CODE);
         if (!StringUtils.isEmpty(code)) {
             String token = acquireToken(code, httpRequest);
