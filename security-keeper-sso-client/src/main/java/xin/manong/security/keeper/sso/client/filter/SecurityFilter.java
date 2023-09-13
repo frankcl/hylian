@@ -3,6 +3,7 @@ package xin.manong.security.keeper.sso.client.filter;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import xin.manong.security.keeper.sso.client.common.Constants;
 import xin.manong.security.keeper.sso.client.core.SecurityChecker;
 
 import javax.servlet.*;
@@ -19,11 +20,6 @@ public abstract class SecurityFilter implements Filter {
 
     private static final Logger logger = LoggerFactory.getLogger(SecurityFilter.class);
 
-    public static final String PARAM_APP_ID = "app_id";
-    public static final String PARAM_APP_SECRET = "app_secret";
-    public static final String PARAM_SERVER_URL = "server_url";
-    public static final String PARAM_EXCLUDE_PATTERNS = "exclude_patterns";
-
     protected String name;
     protected String appId;
     protected String appSecret;
@@ -35,22 +31,22 @@ public abstract class SecurityFilter implements Filter {
     public void init(FilterConfig filterConfig) throws ServletException {
         logger.info("filter[{}] is init ...", filterConfig.getFilterName());
         name = filterConfig.getFilterName();
-        appId = filterConfig.getInitParameter(PARAM_APP_ID);
+        appId = filterConfig.getInitParameter(Constants.PARAM_APP_ID);
         if (StringUtils.isEmpty(appId)) {
-            logger.error("param[{}] is not found", PARAM_APP_ID);
-            throw new RuntimeException(String.format("过滤器参数[%s]未找到", PARAM_APP_ID));
+            logger.error("param[{}] is not found", Constants.PARAM_APP_ID);
+            throw new RuntimeException(String.format("过滤器参数[%s]未找到", Constants.PARAM_APP_ID));
         }
-        appSecret = filterConfig.getInitParameter(PARAM_APP_SECRET);
+        appSecret = filterConfig.getInitParameter(Constants.PARAM_APP_SECRET);
         if (StringUtils.isEmpty(appSecret)) {
-            logger.error("param[{}] is not found", PARAM_APP_SECRET);
-            throw new RuntimeException(String.format("过滤器参数[%s]未找到", PARAM_APP_SECRET));
+            logger.error("param[{}] is not found", Constants.PARAM_APP_SECRET);
+            throw new RuntimeException(String.format("过滤器参数[%s]未找到", Constants.PARAM_APP_SECRET));
         }
-        serverURL = filterConfig.getInitParameter(PARAM_SERVER_URL);
+        serverURL = filterConfig.getInitParameter(Constants.PARAM_SERVER_URL);
         if (StringUtils.isEmpty(serverURL)) {
-            logger.error("param[{}] is not found", PARAM_SERVER_URL);
-            throw new RuntimeException(String.format("过滤器参数[%s]未找到", PARAM_SERVER_URL));
+            logger.error("param[{}] is not found", Constants.PARAM_SERVER_URL);
+            throw new RuntimeException(String.format("过滤器参数[%s]未找到", Constants.PARAM_SERVER_URL));
         }
-        String excludeURLPatterns = filterConfig.getInitParameter(PARAM_EXCLUDE_PATTERNS);
+        String excludeURLPatterns = filterConfig.getInitParameter(Constants.PARAM_EXCLUDE_PATTERNS);
         if (!StringUtils.isEmpty(excludeURLPatterns)) {
             excludePatterns = new ArrayList<>();
             String[] patterns = excludeURLPatterns.split(",");

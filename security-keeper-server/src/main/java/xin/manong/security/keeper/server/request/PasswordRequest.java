@@ -8,6 +8,7 @@ import lombok.experimental.Accessors;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import xin.manong.security.keeper.model.util.PasswordUtils;
 
 import javax.ws.rs.BadRequestException;
 import java.io.Serializable;
@@ -71,5 +72,6 @@ public class PasswordRequest implements Serializable {
             logger.error("new password and confirmed new password are not consistent");
             throw new BadRequestException("新密码与确认新密码不一致");
         }
+        PasswordUtils.checkPassword(newPassword);
     }
 }

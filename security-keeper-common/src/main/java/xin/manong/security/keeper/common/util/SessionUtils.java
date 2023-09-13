@@ -115,4 +115,18 @@ public class SessionUtils {
         if (httpRequest == null || vendor == null) return;
         httpRequest.getSession().setAttribute(SessionConstants.VENDOR, vendor);
     }
+
+    /**
+     * 移除session资源
+     *
+     * @param httpRequest HTTP请求
+     */
+    public static void removeResources(HttpServletRequest httpRequest) {
+        if (httpRequest == null) return;
+        HttpSession httpSession = httpRequest.getSession();
+        httpSession.removeAttribute(SessionConstants.TOKEN);
+        httpSession.removeAttribute(SessionConstants.USER);
+        httpSession.removeAttribute(SessionConstants.TENANT);
+        httpSession.removeAttribute(SessionConstants.VENDOR);
+    }
 }

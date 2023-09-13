@@ -26,14 +26,4 @@ public class Profile {
     public String tenantId;
     @JsonProperty("vendor_id")
     public String vendorId;
-
-    public Profile() {
-    }
-
-    public Profile(String id, String userId, String tenantId, String vendorId) {
-        this.id = id;
-        this.userId = userId;
-        this.tenantId = tenantId;
-        this.vendorId = vendorId;
-    }
 }

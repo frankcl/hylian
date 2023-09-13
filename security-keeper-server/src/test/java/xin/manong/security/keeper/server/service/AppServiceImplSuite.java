@@ -1,5 +1,6 @@
 package xin.manong.security.keeper.server.service;
 
+import org.apache.commons.codec.digest.DigestUtils;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -92,5 +93,6 @@ public class AppServiceImplSuite {
         {
             Assert.assertTrue(appService.delete("xxx"));
         }
+        System.out.println("AAA:" + DigestUtils.md5Hex("123456"));
     }
 }

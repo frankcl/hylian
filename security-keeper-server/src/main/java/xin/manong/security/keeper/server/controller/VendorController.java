@@ -9,6 +9,7 @@ import xin.manong.security.keeper.model.Pager;
 import xin.manong.security.keeper.model.Vendor;
 import xin.manong.security.keeper.server.service.VendorService;
 import xin.manong.security.keeper.server.service.request.VendorSearchRequest;
+import xin.manong.weapon.spring.web.ws.aspect.EnableWebLogAspect;
 
 import javax.annotation.Resource;
 import javax.ws.rs.*;
@@ -41,6 +42,7 @@ public class VendorController {
     @Produces(MediaType.APPLICATION_JSON)
     @Path("get")
     @GetMapping("get")
+    @EnableWebLogAspect
     public Vendor get(@QueryParam("id")  String id) {
         if (StringUtils.isEmpty(id)) {
             logger.error("vendor id is empty");
@@ -65,6 +67,7 @@ public class VendorController {
     @Produces(MediaType.APPLICATION_JSON)
     @Path("add")
     @PostMapping("add")
+    @EnableWebLogAspect
     public boolean add(@RequestBody Vendor vendor) {
         if (vendor == null) {
             logger.error("add vendor is null");
@@ -85,6 +88,7 @@ public class VendorController {
     @Produces(MediaType.APPLICATION_JSON)
     @Path("update")
     @PostMapping("update")
+    @EnableWebLogAspect
     public boolean update(@RequestBody Vendor vendor) {
         if (vendor == null) {
             logger.error("update vendor is null");
@@ -107,6 +111,7 @@ public class VendorController {
     @Produces(MediaType.APPLICATION_JSON)
     @Path("delete")
     @DeleteMapping("delete")
+    @EnableWebLogAspect
     public boolean delete(@QueryParam("id") String id) {
         if (StringUtils.isEmpty(id)) {
             logger.error("vendor id is empty");
@@ -126,6 +131,7 @@ public class VendorController {
     @Produces(MediaType.APPLICATION_JSON)
     @Path("search")
     @PostMapping("search")
+    @EnableWebLogAspect
     public Pager<Vendor> search(@RequestBody VendorSearchRequest searchRequest) {
         return vendorService.search(searchRequest);
     }

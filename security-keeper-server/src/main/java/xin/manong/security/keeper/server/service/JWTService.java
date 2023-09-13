@@ -1,6 +1,10 @@
 package xin.manong.security.keeper.server.service;
 
+import com.auth0.jwt.interfaces.DecodedJWT;
 import xin.manong.security.keeper.model.Profile;
+
+import java.util.Date;
+import java.util.Map;
 
 /**
  * JWT服务接口定义
@@ -11,55 +15,38 @@ import xin.manong.security.keeper.model.Profile;
 public interface JWTService {
 
     /**
-     * 构建Ticket
+     * 构建JWT
      *
-     * @param profile 用户简介
+     * @param profile 用户信息
+     * @param expiresAt 过期时间
      * @param algorithm 加密算法
-     * @param expiredTime 过期时间间隔，单位毫秒
-     * @return ticket
+     * @param headers JWT headers
+     * @return 成功返回JWT，否则返回null
      */
-    String buildTicket(Profile profile, String algorithm, Long expiredTime);
+    String buildJWT(Profile profile, Date expiresAt,
+                    String algorithm, Map<String, Object> headers);
 
     /**
-     * 构建Token
+     * 从JWT中解码用户信息
      *
-     * @param profile 用户简介
-     * @param algorithm 加密算法
-     * @param expiredTime 过期时间间隔，单位毫秒
-     * @return token
+     * @param jwt JWT
+     * @return 成功返回用户信息，否则返回null
      */
-    String buildToken(Profile profile, String algorithm, Long expiredTime);
+    Profile decodeProfile(String jwt);
 
     /**
-     * 根据ticket创建token
+     * 解码JWT
      *
-     * @param ticket
-     * @param expiredTime 过期时间间隔，单位毫秒
-     * @return 成功返回token，否则返回null
+     * @param jwt JWT
+     * @return 成功返回JWT解码对象，否则返回null
      */
-    String buildTokenWithTicket(String ticket, Long expiredTime);
+    DecodedJWT decodeJWT(String jwt);
 
     /**
-     * 验证ticket有效性
+     * 验证JWT有效性
      *
-     * @param ticket ticket
+     * @param decodedJWT 解码JWT
      * @return 有效返回true，否则返回false
      */
-    boolean verifyTicket(String ticket);
-
-    /**
-     * 验证token有效性
-     *
-     * @param token token
-     * @return 有效返回true，否则返回false
-     */
-    boolean verifyToken(String token);
-
-    /**
-     * 从JWT中获取用户简介
-     *
-     * @param token JWT
-     * @return 成功返回用户简介，否则返回null
-     */
-    Profile decodeProfile(String token);
+    boolean verify(DecodedJWT decodedJWT);
 }

@@ -12,6 +12,7 @@ import xin.manong.security.keeper.model.Tenant;
 import xin.manong.security.keeper.model.User;
 import xin.manong.security.keeper.model.Vendor;
 import xin.manong.security.keeper.model.request.RefreshTokenRequest;
+import xin.manong.security.keeper.sso.client.common.Constants;
 import xin.manong.weapon.base.http.HttpClient;
 import xin.manong.weapon.base.http.HttpRequest;
 import xin.manong.weapon.base.http.RequestFormat;
@@ -19,7 +20,6 @@ import xin.manong.weapon.spring.web.WebResponse;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.util.*;
@@ -33,24 +33,6 @@ import java.util.*;
 public class SecurityChecker {
 
     private static final Logger logger = LoggerFactory.getLogger(SecurityChecker.class);
-
-    private static final String PARAM_CODE = "code";
-    private static final String PARAM_TOKEN = "token";
-    private static final String PARAM_APP_ID = "app_id";
-    private static final String PARAM_APP_SECRET = "app_secret";
-    private static final String PARAM_REDIRECT_URL = "redirect_url";
-
-    private static final String CLIENT_PATH_LOGOUT = "/logout";
-    private static final String CLIENT_PATH_EXECUTE_LOGOUT = "/sso/executeLogout";
-
-    private static final String SERVER_PATH_LOGIN = "security/sso/login";
-    private static final String SERVER_PATH_LOGOUT = "security/sso/logout";
-    private static final String SERVER_PATH_APPLY_CODE = "security/auth/applyCode";
-    private static final String SERVER_PATH_GET_TOKEN = "security/auth/getToken";
-    private static final String SERVER_PATH_GET_USER = "security/auth/getUser";
-    private static final String SERVER_PATH_GET_TENANT = "security/resource/getTenant";
-    private static final String SERVER_PATH_GET_VENDOR = "security/resource/getVendor";
-    private static final String SERVER_PATH_REFRESH_TOKEN = "security/auth/refreshToken";
 
     private String appId;
     private String appSecret;
@@ -77,42 +59,47 @@ public class SecurityChecker {
     public boolean check(HttpServletRequest httpRequest, HttpServletResponse httpResponse)
         throws IOException {
         String requestPath = HTTPUtils.getRequestPath(httpRequest);
-        if (requestPath.equals(CLIENT_PATH_LOGOUT)) {
-            serverLogout();
+        if (requestPath.equals(Constants.CLIENT_PATH_LOGOUT)) {
+            redirectServerLogout(httpRequest, httpResponse);
             return false;
-        } else if (requestPath.equals(CLIENT_PATH_EXECUTE_LOGOUT)) {
-            HttpSession httpSession = httpRequest.getSession();
-            if (httpSession != null) httpSession.invalidate();
+        } else if (requestPath.equals(Constants.CLIENT_PATH_LOGOUT_DESTROY)) {
+            Map<String, String> queryMap = HTTPUtils.getRequestQueryMap(httpRequest);
+            String sessionId = queryMap.getOrDefault(Constants.PARAM_SESSION_ID, null);
+            SessionManager.invalidateSession(sessionId);
             return false;
         }
-        String token = SessionUtils.getToken(httpRequest);
-        if (!StringUtils.isEmpty(token)) {
+        if (checkToken(httpRequest)) {
+            String token = SessionUtils.getToken(httpRequest);
             if (SessionUtils.getUser(httpRequest) == null && !refreshUser(token, httpRequest, httpResponse)) return false;
             if (SessionUtils.getTenant(httpRequest) == null && !refreshTenant(token, httpRequest, httpResponse)) return false;
             if (SessionUtils.getVendor(httpRequest) == null && !refreshVendor(token, httpRequest, httpResponse)) return false;
             if (refreshToken(token, httpRequest)) return true;
+            else SessionUtils.removeResources(httpRequest);
         }
-        String code = httpRequest.getParameter(PARAM_CODE);
+        String code = httpRequest.getParameter(Constants.PARAM_CODE);
         if (!StringUtils.isEmpty(code)) {
-            token = getToken(code);
+            String token = acquireToken(code, httpRequest);
             if (StringUtils.isEmpty(token)) {
-                redirectLogin(httpRequest, httpResponse);
+                redirectServerLogin(httpRequest, httpResponse);
                 return false;
             }
             if (!refreshUser(token, httpRequest, httpResponse) ||
                     !refreshTenant(token, httpRequest, httpResponse) ||
-                    !refreshVendor(token, httpRequest, httpResponse)) return false;
+                    !refreshVendor(token, httpRequest, httpResponse)) {
+                SessionUtils.removeResources(httpRequest);
+                return false;
+            }
             SessionUtils.setToken(httpRequest, token);
+            SessionManager.putSession(httpRequest.getSession());
             redirectRequestURLWithoutCode(httpRequest, httpResponse);
             return false;
         }
-        String requestURL = HTTPUtils.getRequestURL(httpRequest);
-        applyCode(requestURL);
+        redirectServerApplyCode(httpRequest, httpResponse);
         return false;
     }
 
     /**
-     * 重定向到请求URL并去除code参数
+     * 重定向到去除code参数的请求URL
      *
      * @param httpRequest HTTP请求
      * @param httpResponse HTTP响应
@@ -122,57 +109,92 @@ public class SecurityChecker {
                                                HttpServletResponse httpResponse) throws IOException {
         String requestURL = HTTPUtils.getRequestURL(httpRequest);
         Set<String> queryKeys = new HashSet<>();
-        queryKeys.add(PARAM_CODE);
+        queryKeys.add(Constants.PARAM_CODE);
         requestURL = HTTPUtils.removeQueries(requestURL, queryKeys);
         httpResponse.sendRedirect(requestURL);
     }
 
     /**
-     * 重定向到登录页
+     * 重定向服务端申请安全码URL
      *
      * @param httpRequest HTTP请求
      * @param httpResponse HTTP响应
      * @throws IOException
      */
-    private void redirectLogin(HttpServletRequest httpRequest,
-                               HttpServletResponse httpResponse) throws IOException {
-        String requestURL = HTTPUtils.getRequestURL(httpRequest);
-        httpResponse.sendRedirect(String.format("%s%s?%s=%s",
-                serverURL, SERVER_PATH_LOGIN, PARAM_REDIRECT_URL,
-                URLEncoder.encode(requestURL == null ? "" : requestURL, "UTF-8")));
+    private void redirectServerApplyCode(HttpServletRequest httpRequest,
+                                         HttpServletResponse httpResponse) throws IOException {
+        String redirectURL = HTTPUtils.getRequestURL(httpRequest);
+        httpResponse.sendRedirect(String.format("%s%s?%s=%s&%s=%s&%s=%s", serverURL, Constants.SERVER_PATH_APPLY_CODE,
+                Constants.PARAM_APP_ID, appId, Constants.PARAM_APP_SECRET, appSecret, Constants.PARAM_REDIRECT_URL,
+                URLEncoder.encode(redirectURL, Constants.CHARSET_UTF8)));
     }
 
     /**
-     * 申请安全码
+     * 重定向服务端登录页
      *
-     * @param redirectURL 重定向URL
+     * @param httpRequest HTTP请求
+     * @param httpResponse HTTP响应
+     * @throws IOException
      */
-    private void applyCode(String redirectURL) {
-        String requestURL = String.format("%s%s", serverURL, SERVER_PATH_APPLY_CODE);
+    private void redirectServerLogin(HttpServletRequest httpRequest,
+                                     HttpServletResponse httpResponse) throws IOException {
+        SessionUtils.removeResources(httpRequest);
+        String requestURL = HTTPUtils.getRequestURL(httpRequest);
+        httpResponse.sendRedirect(String.format("%s%s?%s=%s",
+                serverURL, Constants.SERVER_PATH_LOGIN, Constants.PARAM_REDIRECT_URL,
+                URLEncoder.encode(requestURL == null ? "" : requestURL, Constants.CHARSET_UTF8)));
+    }
+
+    /**
+     * 重定向服务端注销页
+     *
+     * @param httpRequest HTTP请求
+     * @param httpResponse HTTP响应
+     */
+    private void redirectServerLogout(HttpServletRequest httpRequest,
+                                      HttpServletResponse httpResponse) throws IOException {
+        httpResponse.sendRedirect(String.format("%s%s?%s=%s&%s=%s&%s=%s", serverURL, Constants.SERVER_PATH_LOGOUT,
+                Constants.PARAM_APP_ID, appId, Constants.PARAM_APP_SECRET, appSecret, Constants.PARAM_REDIRECT_URL,
+                URLEncoder.encode(HTTPUtils.getRequestRootURL(httpRequest), Constants.CHARSET_UTF8)));
+    }
+
+    /**
+     * 检测token
+     *
+     * @param httpRequest HTTP请求
+     * @return 有效返回true，否则返回false
+     */
+    private boolean checkToken(HttpServletRequest httpRequest) {
+        String token = SessionUtils.getToken(httpRequest);
+        if (StringUtils.isEmpty(token)) return false;
+        String requestURL = String.format("%s%s", serverURL, Constants.SERVER_PATH_CHECK_TOKEN);
         Map<String, Object> paramMap = new HashMap<>();
-        paramMap.put(PARAM_REDIRECT_URL, redirectURL);
-        paramMap.put(PARAM_APP_ID, appId);
-        paramMap.put(PARAM_APP_SECRET, appSecret);
-        HttpRequest httpRequest = HttpRequest.buildGetRequest(requestURL, paramMap);
-        WebResponse response = execute(httpRequest, null);
-        if (response == null) logger.warn("apply code failed");
+        paramMap.put(Constants.PARAM_TOKEN, token);
+        paramMap.put(Constants.PARAM_APP_ID, appId);
+        paramMap.put(Constants.PARAM_APP_SECRET, appSecret);
+        HttpRequest request = HttpRequest.buildGetRequest(requestURL, paramMap);
+        Boolean result = execute(request, new TypeReference<WebResponse<Boolean>>() {});
+        return result == null ? false : result;
     }
 
     /**
      * 根据安全码获取token
      *
      * @param code 安全码
+     * @param httpRequest HTTP请求
      * @return 成功返回token，否则返回null
      */
-    private String getToken(String code) {
-        String requestURL = String.format("%s%s", serverURL, SERVER_PATH_GET_TOKEN);
+    private String acquireToken(String code, HttpServletRequest httpRequest) {
+        String requestURL = String.format("%s%s", serverURL, Constants.SERVER_PATH_ACQUIRE_TOKEN);
         Map<String, Object> paramMap = new HashMap<>();
-        paramMap.put(PARAM_CODE, code);
-        paramMap.put(PARAM_APP_ID, appId);
-        paramMap.put(PARAM_APP_SECRET, appSecret);
-        HttpRequest httpRequest = HttpRequest.buildGetRequest(requestURL, paramMap);
-        WebResponse<String> response = execute(httpRequest, new TypeReference<WebResponse<String>>() {});
-        return response == null ? null : response.data;
+        paramMap.put(Constants.PARAM_CODE, code);
+        paramMap.put(Constants.PARAM_APP_ID, appId);
+        paramMap.put(Constants.PARAM_APP_SECRET, appSecret);
+        paramMap.put(Constants.PARAM_SESSION_ID, SessionUtils.getSessionID(httpRequest));
+        paramMap.put(Constants.PARAM_LOGOUT_URL, String.format("%s%s",
+                HTTPUtils.getRequestRootURL(httpRequest), Constants.CLIENT_PATH_LOGOUT_DESTROY));
+        HttpRequest request = HttpRequest.buildGetRequest(requestURL, paramMap);
+        return execute(request, new TypeReference<WebResponse<String>>() {});
     }
 
     /**
@@ -182,14 +204,13 @@ public class SecurityChecker {
      * @return 成功返回用户信息，否则返回null
      */
     private User getUser(String token) {
-        String requestURL = String.format("%s%s", serverURL, SERVER_PATH_GET_USER);
+        String requestURL = String.format("%s%s", serverURL, Constants.SERVER_PATH_GET_USER);
         Map<String, Object> paramMap = new HashMap<>();
-        paramMap.put(PARAM_TOKEN, token);
-        paramMap.put(PARAM_APP_ID, appId);
-        paramMap.put(PARAM_APP_SECRET, appSecret);
+        paramMap.put(Constants.PARAM_TOKEN, token);
+        paramMap.put(Constants.PARAM_APP_ID, appId);
+        paramMap.put(Constants.PARAM_APP_SECRET, appSecret);
         HttpRequest httpRequest = HttpRequest.buildGetRequest(requestURL, paramMap);
-        WebResponse<User> response = execute(httpRequest, new TypeReference<WebResponse<User>>() {});
-        return response == null ? null : response.data;
+        return execute(httpRequest, new TypeReference<WebResponse<User>>() {});
     }
 
     /**
@@ -199,14 +220,13 @@ public class SecurityChecker {
      * @return 成功返回租户信息，否则返回null
      */
     private Tenant getTenant(String token) {
-        String requestURL = String.format("%s%s", serverURL, SERVER_PATH_GET_TENANT);
+        String requestURL = String.format("%s%s", serverURL, Constants.SERVER_PATH_GET_TENANT);
         Map<String, Object> paramMap = new HashMap<>();
-        paramMap.put(PARAM_TOKEN, token);
-        paramMap.put(PARAM_APP_ID, appId);
-        paramMap.put(PARAM_APP_SECRET, appSecret);
+        paramMap.put(Constants.PARAM_TOKEN, token);
+        paramMap.put(Constants.PARAM_APP_ID, appId);
+        paramMap.put(Constants.PARAM_APP_SECRET, appSecret);
         HttpRequest httpRequest = HttpRequest.buildGetRequest(requestURL, paramMap);
-        WebResponse<Tenant> response = execute(httpRequest, new TypeReference<WebResponse<Tenant>>() {});
-        return response == null ? null : response.data;
+        return execute(httpRequest, new TypeReference<WebResponse<Tenant>>() {});
     }
 
     /**
@@ -216,14 +236,13 @@ public class SecurityChecker {
      * @return 成功返回供应商信息，否则返回null
      */
     private Vendor getVendor(String token) {
-        String requestURL = String.format("%s%s", serverURL, SERVER_PATH_GET_VENDOR);
+        String requestURL = String.format("%s%s", serverURL, Constants.SERVER_PATH_GET_VENDOR);
         Map<String, Object> paramMap = new HashMap<>();
-        paramMap.put(PARAM_TOKEN, token);
-        paramMap.put(PARAM_APP_ID, appId);
-        paramMap.put(PARAM_APP_SECRET, appSecret);
+        paramMap.put(Constants.PARAM_TOKEN, token);
+        paramMap.put(Constants.PARAM_APP_ID, appId);
+        paramMap.put(Constants.PARAM_APP_SECRET, appSecret);
         HttpRequest httpRequest = HttpRequest.buildGetRequest(requestURL, paramMap);
-        WebResponse<Vendor> response = execute(httpRequest, new TypeReference<WebResponse<Vendor>>() {});
-        return response == null ? null : response.data;
+        return execute(httpRequest, new TypeReference<WebResponse<Vendor>>() {});
     }
 
     /**
@@ -234,16 +253,16 @@ public class SecurityChecker {
      * @return 刷新成功返回true，否则返回false
      */
     private boolean refreshToken(String token, HttpServletRequest httpServletRequest) {
-        String requestURL = String.format("%s%s", serverURL, SERVER_PATH_REFRESH_TOKEN);
+        String requestURL = String.format("%s%s", serverURL, Constants.SERVER_PATH_REFRESH_TOKEN);
         RefreshTokenRequest request = new RefreshTokenRequest();
         request.appId = appId;
         request.appSecret = appSecret;
         request.token = token;
         Map<String, Object> body = JSON.parseObject(JSON.toJSONString(request));
         HttpRequest httpRequest = HttpRequest.buildPostRequest(requestURL, RequestFormat.JSON, body);
-        WebResponse<String> response = execute(httpRequest, new TypeReference<WebResponse<String>>() {});
-        if (response == null || StringUtils.isEmpty(response.data)) return false;
-        SessionUtils.setToken(httpServletRequest, response.data);
+        String newToken = execute(httpRequest, new TypeReference<WebResponse<String>>() {});
+        if (StringUtils.isEmpty(newToken)) return false;
+        SessionUtils.setToken(httpServletRequest, newToken);
         return true;
     }
 
@@ -261,7 +280,7 @@ public class SecurityChecker {
         User user = getUser(token);
         if (user == null) {
             logger.error("get user failed for token[{}]", token);
-            redirectLogin(httpRequest, httpResponse);
+            redirectServerLogin(httpRequest, httpResponse);
             return false;
         }
         SessionUtils.setUser(httpRequest, user);
@@ -282,7 +301,7 @@ public class SecurityChecker {
         Tenant tenant = getTenant(token);
         if (tenant == null) {
             logger.error("get tenant failed for token[{}]", token);
-            redirectLogin(httpRequest, httpResponse);
+            redirectServerLogin(httpRequest, httpResponse);
             return false;
         }
         SessionUtils.setTenant(httpRequest, tenant);
@@ -303,24 +322,11 @@ public class SecurityChecker {
         Vendor vendor = getVendor(token);
         if (vendor == null) {
             logger.error("get vendor failed for token[{}]", token);
-            redirectLogin(httpRequest, httpResponse);
+            redirectServerLogin(httpRequest, httpResponse);
             return false;
         }
         SessionUtils.setVendor(httpRequest, vendor);
         return true;
-    }
-
-    /**
-     * SSO服务端注销
-     */
-    private void serverLogout() {
-        String requestURL = String.format("%s%s", serverURL, SERVER_PATH_LOGOUT);
-        Map<String, Object> paramMap = new HashMap<>();
-        paramMap.put(PARAM_APP_ID, appId);
-        paramMap.put(PARAM_APP_SECRET, appSecret);
-        HttpRequest httpRequest = HttpRequest.buildGetRequest(requestURL, paramMap);
-        WebResponse response = execute(httpRequest, null);
-        if (response == null) logger.warn("security keeper server sso logout failed");
     }
 
     /**
@@ -331,21 +337,20 @@ public class SecurityChecker {
      * @return 成功返回结果，否则返回null
      * @param <T>
      */
-    private <T> WebResponse<T> execute(HttpRequest httpRequest, TypeReference<WebResponse<T>> typeReference) {
+    private <T> T execute(HttpRequest httpRequest, TypeReference<WebResponse<T>> typeReference) {
         Response httpResponse = httpClient.execute(httpRequest);
         try {
             if (httpResponse == null || !httpResponse.isSuccessful() || httpResponse.code() != 200) {
                 logger.error("request failed for url[{}]", httpRequest.requestURL);
                 return null;
             }
-            WebResponse<T> response;
-            if (typeReference == null) response = JSON.parseObject(httpResponse.body().string(), WebResponse.class);
-            else response = JSON.parseObject(httpResponse.body().string(), typeReference);
+            String body = httpResponse.body().string();
+            WebResponse<T> response = JSON.parseObject(body, typeReference);
             if (!response.status) {
                 logger.error("request failed for url[{}], message[{}]", httpRequest.requestURL, response.message);
                 return null;
             }
-            return response;
+            return response.data;
         } catch (Exception e) {
             logger.error("request exception for url[{}], cause[{}]", httpRequest.requestURL, e.getMessage());
             logger.error(e.getMessage(), e);

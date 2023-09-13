@@ -18,11 +18,24 @@ weapon:
           db: 1
 
 app:
+  security:
+    sso:
+      appId: security-keeper
+      appSecret: 123456
+      serverURL: http://localhost:8080/
+      excludePatterns:
+        - security/.*
+        - health/.*
+        - home/login
+        - favicon.ico
   server:
     name: security_keeper_server
     aspectLogFile: ./log/aspect/web.log
-    securityCodeConfig:
-      cacheCapacity: 1000
-      expiredTimeSeconds: 60
+    jetty:
+      acceptors: 2
+      selectors: 4
+      min-threads: 8
+      max-threads: 200
+      max-http-post-size: 1048576
     jwtConfig:
       secretHS256: JWT_%x6xo7l7_u9bf_u!9#g#m*)*=ej@bek8)(@u3kh*84+unjv=

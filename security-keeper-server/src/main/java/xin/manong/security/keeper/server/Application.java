@@ -13,6 +13,7 @@ import xin.manong.weapon.spring.boot.annotation.EnableRedisClient;
  */
 @EnableRedisClient
 @SpringBootApplication(scanBasePackages = {"xin.manong.security.keeper.server",
+        "xin.manong.security.keeper.sso.client",
         "xin.manong.weapon.spring.web.ws.aspect"})
 public class Application {
 

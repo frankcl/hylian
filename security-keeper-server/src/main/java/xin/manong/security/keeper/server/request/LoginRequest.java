@@ -10,6 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.BadRequestException;
+import javax.ws.rs.FormParam;
 import java.io.Serializable;
 
 /**
@@ -30,16 +31,19 @@ public class LoginRequest implements Serializable {
      * 用户名
      */
     @JsonProperty("user_name")
+    @FormParam("user_name")
     public String userName;
     /**
      * 密码
      */
     @JsonProperty("password")
+    @FormParam("password")
     public String password;
     /**
      * 重定向URL
      */
     @JsonProperty("redirect_url")
+    @FormParam("redirect_url")
     public String redirectURL;
 
     /**

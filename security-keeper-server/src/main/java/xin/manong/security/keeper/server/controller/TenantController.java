@@ -13,6 +13,7 @@ import xin.manong.security.keeper.server.response.ViewTenant;
 import xin.manong.security.keeper.server.service.TenantService;
 import xin.manong.security.keeper.server.service.VendorService;
 import xin.manong.security.keeper.server.service.request.TenantSearchRequest;
+import xin.manong.weapon.spring.web.ws.aspect.EnableWebLogAspect;
 
 import javax.annotation.Resource;
 import javax.ws.rs.*;
@@ -48,6 +49,7 @@ public class TenantController {
     @Produces(MediaType.APPLICATION_JSON)
     @Path("get")
     @GetMapping("get")
+    @EnableWebLogAspect
     public ViewTenant get(@QueryParam("id")  String id) {
         if (StringUtils.isEmpty(id)) {
             logger.error("tenant id is empty");
@@ -72,6 +74,7 @@ public class TenantController {
     @Produces(MediaType.APPLICATION_JSON)
     @Path("add")
     @PostMapping("add")
+    @EnableWebLogAspect
     public boolean add(@RequestBody Tenant tenant) {
         if (tenant == null) {
             logger.error("add tenant is null");
@@ -92,6 +95,7 @@ public class TenantController {
     @Produces(MediaType.APPLICATION_JSON)
     @Path("update")
     @PostMapping("update")
+    @EnableWebLogAspect
     public boolean update(@RequestBody Tenant tenant) {
         if (tenant == null) {
             logger.error("update tenant is null");
@@ -114,6 +118,7 @@ public class TenantController {
     @Produces(MediaType.APPLICATION_JSON)
     @Path("delete")
     @DeleteMapping("delete")
+    @EnableWebLogAspect
     public boolean delete(@QueryParam("id") String id) {
         if (StringUtils.isEmpty(id)) {
             logger.error("tenant id is empty");
@@ -133,6 +138,7 @@ public class TenantController {
     @Produces(MediaType.APPLICATION_JSON)
     @Path("search")
     @PostMapping("search")
+    @EnableWebLogAspect
     public Pager<ViewTenant> search(@RequestBody TenantSearchRequest searchRequest) {
         Pager<Tenant> pager = tenantService.search(searchRequest);
         Pager<ViewTenant> viewPager = new Pager<>();

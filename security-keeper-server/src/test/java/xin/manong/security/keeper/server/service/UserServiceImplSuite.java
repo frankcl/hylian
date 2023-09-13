@@ -172,14 +172,5 @@ public class UserServiceImplSuite {
         {
             Assert.assertTrue(userService.delete("xxx"));
         }
-        {
-            User user = new User();
-            user.checkPassword("afdsfsdAAAFDSF12323$%");
-            try {
-                user.checkPassword("3242fdfsdfdsfAA");
-                Assert.assertTrue(false);
-            } catch (Exception e) {
-            }
-        }
     }
 }

@@ -5,10 +5,11 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import xin.manong.security.keeper.model.LoginApp;
+import xin.manong.security.keeper.model.AppLogin;
 import xin.manong.security.keeper.model.Pager;
-import xin.manong.security.keeper.server.service.LoginAppService;
-import xin.manong.security.keeper.server.service.request.LoginAppSearchRequest;
+import xin.manong.security.keeper.server.service.AppLoginService;
+import xin.manong.security.keeper.server.service.request.AppLoginSearchRequest;
+import xin.manong.weapon.spring.web.ws.aspect.EnableWebLogAspect;
 
 import javax.annotation.Resource;
 import javax.ws.rs.Consumes;
@@ -30,7 +31,7 @@ import javax.ws.rs.core.MediaType;
 public class LoginAppController {
 
     @Resource
-    protected LoginAppService loginAppService;
+    protected AppLoginService appLoginService;
 
     /**
      * 搜索登录应用
@@ -43,7 +44,8 @@ public class LoginAppController {
     @Produces(MediaType.APPLICATION_JSON)
     @Path("search")
     @PostMapping("search")
-    public Pager<LoginApp> search(@RequestBody LoginAppSearchRequest searchRequest) {
-        return loginAppService.search(searchRequest);
+    @EnableWebLogAspect
+    public Pager<AppLogin> search(@RequestBody AppLoginSearchRequest searchRequest) {
+        return appLoginService.search(searchRequest);
     }
 }

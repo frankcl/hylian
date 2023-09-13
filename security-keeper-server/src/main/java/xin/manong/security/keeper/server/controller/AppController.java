@@ -12,6 +12,7 @@ import xin.manong.security.keeper.server.request.ViewApp;
 import xin.manong.security.keeper.server.service.AppService;
 import xin.manong.security.keeper.server.service.request.AppSearchRequest;
 import xin.manong.weapon.base.util.RandomID;
+import xin.manong.weapon.spring.web.ws.aspect.EnableWebLogAspect;
 
 import javax.annotation.Resource;
 import javax.ws.rs.*;
@@ -44,6 +45,7 @@ public class AppController {
     @Produces(MediaType.APPLICATION_JSON)
     @Path("get")
     @GetMapping("get")
+    @EnableWebLogAspect
     public App get(@QueryParam("id")  String id) {
         if (StringUtils.isEmpty(id)) {
             logger.error("app id is empty");
@@ -68,6 +70,7 @@ public class AppController {
     @Produces(MediaType.APPLICATION_JSON)
     @Path("add")
     @PostMapping("add")
+    @EnableWebLogAspect
     public boolean add(@RequestBody ViewApp viewApp) {
         if (viewApp == null || StringUtils.isEmpty(viewApp.name)) {
             logger.error("add app is null");
@@ -92,6 +95,7 @@ public class AppController {
     @Produces(MediaType.APPLICATION_JSON)
     @Path("update")
     @PostMapping("update")
+    @EnableWebLogAspect
     public boolean update(@RequestBody ViewApp viewApp) {
         if (viewApp == null) {
             logger.error("update app is null");
@@ -117,6 +121,7 @@ public class AppController {
     @Produces(MediaType.APPLICATION_JSON)
     @Path("updateSecret/{id}")
     @PostMapping("updateSecret/{id}")
+    @EnableWebLogAspect
     public boolean updateSecret(@PathParam("id") @PathVariable("id") String id) {
         if (StringUtils.isEmpty(id)) {
             logger.error("app id is empty");
@@ -138,6 +143,7 @@ public class AppController {
     @Produces(MediaType.APPLICATION_JSON)
     @Path("delete")
     @DeleteMapping("delete")
+    @EnableWebLogAspect
     public boolean delete(@QueryParam("id") String id) {
         if (StringUtils.isEmpty(id)) {
             logger.error("app id is empty");
@@ -157,6 +163,7 @@ public class AppController {
     @Produces(MediaType.APPLICATION_JSON)
     @Path("search")
     @PostMapping("search")
+    @EnableWebLogAspect
     public Pager<App> search(@RequestBody AppSearchRequest searchRequest) {
         return appService.search(searchRequest);
     }

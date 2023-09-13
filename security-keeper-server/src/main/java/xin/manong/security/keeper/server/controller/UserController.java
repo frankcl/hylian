@@ -18,6 +18,7 @@ import xin.manong.security.keeper.server.service.TenantService;
 import xin.manong.security.keeper.server.service.UserService;
 import xin.manong.security.keeper.server.service.VendorService;
 import xin.manong.security.keeper.server.service.request.UserSearchRequest;
+import xin.manong.weapon.spring.web.ws.aspect.EnableWebLogAspect;
 
 import javax.annotation.Resource;
 import javax.ws.rs.*;
@@ -55,6 +56,7 @@ public class UserController {
     @Produces(MediaType.APPLICATION_JSON)
     @Path("get")
     @GetMapping("get")
+    @EnableWebLogAspect
     public ViewUser get(@QueryParam("id")  String id) {
         if (StringUtils.isEmpty(id)) {
             logger.error("user id is empty");
@@ -79,6 +81,7 @@ public class UserController {
     @Produces(MediaType.APPLICATION_JSON)
     @Path("add")
     @PostMapping("add")
+    @EnableWebLogAspect
     public boolean add(@RequestBody User user) {
         if (user == null) {
             logger.error("add user is null");
@@ -99,6 +102,7 @@ public class UserController {
     @Produces(MediaType.APPLICATION_JSON)
     @Path("update")
     @PostMapping("update")
+    @EnableWebLogAspect
     public boolean update(@RequestBody User user) {
         if (user == null) {
             logger.error("update user is null");
@@ -122,6 +126,7 @@ public class UserController {
     @Produces(MediaType.APPLICATION_JSON)
     @Path("delete")
     @DeleteMapping("delete")
+    @EnableWebLogAspect
     public boolean delete(@QueryParam("id") String id) {
         if (StringUtils.isEmpty(id)) {
             logger.error("user id is empty");
@@ -141,6 +146,7 @@ public class UserController {
     @Produces(MediaType.APPLICATION_JSON)
     @Path("search")
     @PostMapping("search")
+    @EnableWebLogAspect
     public Pager<ViewUser> search(@RequestBody UserSearchRequest searchRequest) {
         Pager<User> pager = userService.search(searchRequest);
         Pager<ViewUser> viewPager = new Pager<>();
@@ -166,6 +172,7 @@ public class UserController {
     @Produces(MediaType.APPLICATION_JSON)
     @Path("changePassword")
     @PostMapping("changePassword")
+    @EnableWebLogAspect
     public boolean changePassword(@RequestBody PasswordRequest request) {
         if (request == null) {
             logger.error("change password request is null");
@@ -182,7 +189,6 @@ public class UserController {
             throw new RuntimeException("用户密码不正确");
         }
         User updateUser = new User();
-        updateUser.checkPassword(request.newPassword);
         updateUser.id = user.id;
         updateUser.password = request.newPassword.trim();
         return userService.update(user);

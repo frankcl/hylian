@@ -7,6 +7,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 /**
+ * 安全登录拦截器
+ *
  * @author frankcl
  * @date 2023-09-05 19:34:12
  */
@@ -23,10 +25,10 @@ public class SecurityLoginInterceptor implements HandlerInterceptor {
     /**
      * 登录预处理方法
      *
-     * @param httpRequest
-     * @param httpResponse
-     * @param handler
-     * @return
+     * @param httpRequest HTTP请求
+     * @param httpResponse HTTP响应
+     * @param handler 目标处理对象
+     * @return 检测成功返回true，否则返回false
      * @throws Exception
      */
     public boolean preHandle(HttpServletRequest httpRequest, HttpServletResponse httpResponse,

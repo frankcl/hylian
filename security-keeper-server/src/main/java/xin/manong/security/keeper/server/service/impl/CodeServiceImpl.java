@@ -13,7 +13,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import xin.manong.security.keeper.server.common.Constants;
-import xin.manong.security.keeper.server.config.ServerConfig;
 import xin.manong.security.keeper.server.service.CodeService;
 import xin.manong.weapon.base.redis.RedisClient;
 import xin.manong.weapon.base.util.RandomID;
@@ -35,18 +34,16 @@ public class CodeServiceImpl implements CodeService {
 
     @Resource
     protected RedisClient redisClient;
-    protected Cache<String, RBucket<String>> cache;
-    private ServerConfig serverConfig;
+    protected Cache<String, RBucket<String>> codeCache;
 
     @Autowired
-    public CodeServiceImpl(ServerConfig serverConfig) {
-        this.serverConfig = serverConfig;
+    public CodeServiceImpl() {
         CacheBuilder<String, RBucket<String>> builder = CacheBuilder.newBuilder()
                 .concurrencyLevel(1)
-                .maximumSize(serverConfig.securityCodeConfig.cacheCapacity)
-                .expireAfterAccess(5, TimeUnit.SECONDS)
+                .maximumSize(Constants.LOCAL_CACHE_CAPACITY_CODE)
+                .expireAfterAccess(Constants.CACHE_CODE_EXPIRED_TIME_MS, TimeUnit.MILLISECONDS)
                 .removalListener(n -> onRemoval(n));
-        cache = builder.build();
+        codeCache = builder.build();
     }
 
     @Override
@@ -63,16 +60,16 @@ public class CodeServiceImpl implements CodeService {
             bucket = redisClient.getRedissonClient().getBucket(key);
             if (bucket.get() == null) break;
         }
-        bucket.set(ticket, serverConfig.securityCodeConfig.expiredTimeSeconds, TimeUnit.SECONDS);
         bucket.addListener((ExpiredObjectListener) name -> {
             logger.info("code[{}] is expired", name);
-            removeCache(name);
+            removeLocalCache(name);
         });
         bucket.addListener((DeletedObjectListener) name -> {
-            logger.info("code[{}] is deleted", name);
-            removeCache(name);
+            logger.info("code[{}] is removed", name);
+            removeLocalCache(name);
         });
-        cache.put(code, bucket);
+        bucket.set(ticket, Constants.CACHE_CODE_EXPIRED_TIME_MS, TimeUnit.MILLISECONDS);
+        codeCache.put(code, bucket);
         return code;
     }
 
@@ -95,10 +92,10 @@ public class CodeServiceImpl implements CodeService {
      *
      * @param codeKey redis code key
      */
-    private void removeCache(String codeKey) {
+    private void removeLocalCache(String codeKey) {
         int index = codeKey.lastIndexOf("_");
         String code = index == -1 ? codeKey : codeKey.substring(index + 1);
-        cache.invalidate(code);
+        codeCache.invalidate(code);
     }
 
     /**

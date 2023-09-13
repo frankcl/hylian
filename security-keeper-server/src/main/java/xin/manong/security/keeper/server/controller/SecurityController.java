@@ -9,15 +9,18 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import xin.manong.security.keeper.common.util.CookieUtils;
 import xin.manong.security.keeper.common.util.HTTPUtils;
+import xin.manong.security.keeper.common.util.SessionUtils;
 import xin.manong.security.keeper.model.*;
 import xin.manong.security.keeper.server.common.Constants;
 import xin.manong.security.keeper.model.request.RefreshTokenRequest;
-import xin.manong.security.keeper.server.request.LoginRequest;
+import xin.manong.security.keeper.server.request.AcquireTokenRequest;
 import xin.manong.security.keeper.server.service.*;
+import xin.manong.security.keeper.server.service.request.AppLoginSearchRequest;
 import xin.manong.security.keeper.server.service.request.UserSearchRequest;
 import xin.manong.weapon.base.http.HttpClient;
 import xin.manong.weapon.base.http.HttpRequest;
 import xin.manong.weapon.base.util.RandomID;
+import xin.manong.weapon.spring.web.ws.aspect.EnableWebLogAspect;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
@@ -28,10 +31,13 @@ import javax.ws.rs.core.MediaType;
 import java.io.IOException;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
- * 登录认证控制器
+ * 安全控制器
  *
  * @author frankcl
  * @date 2023-08-31 15:33:28
@@ -44,21 +50,14 @@ public class SecurityController {
 
     private static final Logger logger = LoggerFactory.getLogger(SecurityController.class);
 
-    private static final String CHARSET_UTF8 = "UTF-8";
-    private static final String COOKIE_TICKET = "TICKET";
-
-    private static final String PATH_LOGIN = "/security/sso/login";
-
-    private static final String PARAM_CODE = "code";
-    private static final String PARAM_REDIRECT_URL = "redirect_url";
-
-    private static final Long TOKEN_EXPIRED_TIME = 300000L;
-    private static final Long TICKET_EXPIRED_TIME = 86400000L;
-
     @Resource
     protected JWTService jwtService;
     @Resource
     protected CodeService codeService;
+    @Resource
+    protected TokenService tokenService;
+    @Resource
+    protected TicketService ticketService;
     @Resource
     protected AppService appService;
     @Resource
@@ -68,14 +67,16 @@ public class SecurityController {
     @Resource
     protected VendorService vendorService;
     @Resource
-    protected LoginAppService loginAppService;
+    protected AppLoginService appLoginService;
     @Resource
     protected HttpClient httpClient;
 
     /**
      * 申请安全code
+     * 成功重定向到redirectURL，否则重定向到登录URL
      *
      * @param appId 应用ID
+     * @param appSecret 应用秘钥
      * @param redirectURL 重定向URL
      * @param httpRequest HTTP请求对象
      * @param httpResponse HTTP响应对象
@@ -84,8 +85,9 @@ public class SecurityController {
     @Produces(MediaType.APPLICATION_JSON)
     @Path("auth/applyCode")
     @GetMapping("auth/applyCode")
+    @EnableWebLogAspect
     public void applyCode(@QueryParam("app_id")  String appId,
-                          @QueryParam("app_secret")  String appSecret,
+                          @QueryParam("app_secret") String appSecret,
                           @QueryParam("redirect_url") String redirectURL,
                           @Context HttpServletRequest httpRequest,
                           @Context HttpServletResponse httpResponse) throws Exception {
@@ -94,55 +96,82 @@ public class SecurityController {
             throw new BadRequestException("重定向URL为空");
         }
         verifyApp(appId, appSecret);
-        String ticket = CookieUtils.getCookie(httpRequest, COOKIE_TICKET);
-        if (StringUtils.isEmpty(ticket) || !jwtService.verifyTicket(ticket)) {
-            if (ticket != null) CookieUtils.removeCookie(COOKIE_TICKET, "/", httpResponse);
-            httpResponse.sendRedirect(String.format("%s?%s=%s", PATH_LOGIN, PARAM_REDIRECT_URL,
-                    URLEncoder.encode(redirectURL, CHARSET_UTF8)));
+        String ticket = CookieUtils.getCookie(httpRequest, Constants.COOKIE_TICKET);
+        if (!verifyTicket(ticket)) {
+            logger.warn("verify ticket failed for applying code");
+            if (ticket != null) CookieUtils.removeCookie(Constants.COOKIE_TICKET, "/", httpResponse);
+            httpResponse.sendRedirect(String.format("%s%s?%s=%s",
+                    HTTPUtils.getRequestRootURL(httpRequest), Constants.PATH_LOGIN, Constants.PARAM_REDIRECT_URL,
+                    URLEncoder.encode(redirectURL, Constants.CHARSET_UTF8)));
+            return;
         }
         String code = codeService.createCode(ticket);
         boolean hasQuery = !StringUtils.isEmpty(new URL(redirectURL).getQuery());
-        httpResponse.sendRedirect(String.format("%s%s%s=%s", redirectURL, hasQuery ? "&" : "?", PARAM_CODE, code));
+        httpResponse.sendRedirect(String.format("%s%s%s=%s", redirectURL,
+                hasQuery ? "&" : "?", Constants.PARAM_CODE, code));
     }
 
     /**
-     * 根据安全code获取token
+     * 检测token有效性
      *
-     * @param code 安全code
-     * @param appId 应用ID
-     * @param appSecret 应用秘钥
-     * @return 成功返回token，否则抛出异常
+     * @param token
+     * @return 有效返回true，否则返回false
      */
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    @Path("auth/getToken")
-    @GetMapping("auth/getToken")
-    public String getToken(@QueryParam("code")  String code,
-                           @QueryParam("app_id")  String appId,
-                           @QueryParam("app_secret") String appSecret,
-                           @Context HttpServletRequest httpRequest) {
-        if (StringUtils.isEmpty(code)) {
-            logger.error("code is empty");
-            throw new BadRequestException("安全code为空");
-        }
+    @Path("auth/checkToken")
+    @GetMapping("auth/checkToken")
+    @EnableWebLogAspect
+    public boolean checkToken(@QueryParam("token") String token,
+                              @QueryParam("app_id")  String appId,
+                              @QueryParam("app_secret") String appSecret) {
         verifyApp(appId, appSecret);
-        String ticket = codeService.getTicket(code);
-        if (StringUtils.isEmpty(ticket)) {
-            logger.error("ticket is not found for code[{}]", code);
-            throw new RuntimeException(String.format("code[%s]对应ticket未找到", code));
+        verifyToken(token);
+        return true;
+    }
+
+    /**
+     * 获取token
+     *
+     * @param request 请求
+     * @return 成功返回token
+     */
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("auth/acquireToken")
+    @GetMapping("auth/acquireToken")
+    @EnableWebLogAspect
+    public String acquireToken(@BeanParam AcquireTokenRequest request,
+                               @Context HttpServletRequest httpRequest) {
+        if (request == null) {
+            logger.error("acquire token request is empty");
+            throw new BadRequestException("获取token请求为空");
         }
-        codeService.removeCode(code);
-        String token = jwtService.buildTokenWithTicket(ticket, TOKEN_EXPIRED_TIME);
+        request.check();
+        verifyApp(request.appId, request.appSecret);
+        String ticket = codeService.getTicket(request.code);
+        if (!verifyTicket(ticket)) {
+            logger.error("ticket is not found for code[{}] or verify ticket failed", request.code);
+            throw new RuntimeException(String.format("未找到code[%s]对应ticket或ticket验证失败", request.code));
+        }
+        codeService.removeCode(request.code);
+        Profile profile = jwtService.decodeProfile(ticket);
+        String token = tokenService.buildToken(profile, Constants.CACHE_TOKEN_EXPIRED_TIME_MS);
         if (StringUtils.isEmpty(token)) {
             logger.error("build token failed");
             throw new RuntimeException("构建token失败");
         }
-        Profile profile = jwtService.decodeProfile(token);
-        if (!loginAppService.isLoginApp(profile.id, appId)) {
-            LoginApp loginApp = new LoginApp(profile.id, profile.userId, appId,
-                    HTTPUtils.getRequestBaseURL(httpRequest));
-            if (!loginAppService.register(loginApp)) {
-                logger.warn("register login app failed for app[{}] and user[{}]", loginApp.appId, loginApp.userId);
+        tokenService.putTokenTicket(token, ticket);
+        ticketService.addToken(profile.id, token);
+        AppLoginSearchRequest searchRequest = new AppLoginSearchRequest();
+        searchRequest.userId = profile.userId;
+        searchRequest.appId = request.appId;
+        searchRequest.sessionId = request.sessionId;
+        if (!appLoginService.isLoginApp(searchRequest)) {
+            AppLogin appLogin = new AppLogin().setAppId(request.appId).setUserId(profile.userId).
+                    setTicketId(profile.id).setSessionId(request.sessionId).setLogoutURL(request.logoutURL);
+            if (!appLoginService.add(appLogin)) {
+                logger.warn("add app login failed for app[{}] and user[{}]", appLogin.appId, appLogin.userId);
             }
         }
         return token;
@@ -160,12 +189,14 @@ public class SecurityController {
     @Produces(MediaType.APPLICATION_JSON)
     @Path("resource/getUser")
     @GetMapping("resource/getUser")
+    @EnableWebLogAspect
     public User getUser(@QueryParam("token")  String token,
                         @QueryParam("app_id")  String appId,
                         @QueryParam("app_secret") String appSecret,
                         @Context HttpServletRequest httpRequest) {
         verifyApp(appId, appSecret);
-        Profile profile = verifyAndDecodeProfile(token, httpRequest);
+        verifyToken(token);
+        Profile profile = jwtService.decodeProfile(token);
         User user = userService.get(profile.userId);
         if (user == null) {
             logger.error("user[{}] is not found", profile.userId);
@@ -186,12 +217,14 @@ public class SecurityController {
     @Produces(MediaType.APPLICATION_JSON)
     @Path("resource/getTenant")
     @GetMapping("resource/getTenant")
+    @EnableWebLogAspect
     public Tenant getTenant(@QueryParam("token")  String token,
                             @QueryParam("app_id")  String appId,
                             @QueryParam("app_secret") String appSecret,
                             @Context HttpServletRequest httpRequest) {
         verifyApp(appId, appSecret);
-        Profile profile = verifyAndDecodeProfile(token, httpRequest);
+        verifyToken(token);
+        Profile profile = jwtService.decodeProfile(token);
         Tenant tenant = tenantService.get(profile.tenantId);
         if (tenant == null) {
             logger.error("tenant[{}] is not found", profile.tenantId);
@@ -212,12 +245,14 @@ public class SecurityController {
     @Produces(MediaType.APPLICATION_JSON)
     @Path("resource/getVendor")
     @GetMapping("resource/getVendor")
+    @EnableWebLogAspect
     public Vendor getVendor(@QueryParam("token")  String token,
                             @QueryParam("app_id")  String appId,
                             @QueryParam("app_secret") String appSecret,
                             @Context HttpServletRequest httpRequest) {
         verifyApp(appId, appSecret);
-        Profile profile = verifyAndDecodeProfile(token, httpRequest);
+        verifyToken(token);
+        Profile profile = jwtService.decodeProfile(token);
         Vendor vendor = vendorService.get(profile.vendorId);
         if (vendor == null) {
             logger.error("vendor[{}] is not found", profile.vendorId);
@@ -239,6 +274,7 @@ public class SecurityController {
     @Produces(MediaType.APPLICATION_JSON)
     @Path("auth/refreshToken")
     @PostMapping("auth/refreshToken")
+    @EnableWebLogAspect
     public String refreshToken(@RequestBody RefreshTokenRequest request,
                                @Context HttpServletRequest httpRequest,
                                @Context HttpServletResponse httpResponse) {
@@ -248,103 +284,140 @@ public class SecurityController {
         }
         request.check();
         verifyApp(request.appId, request.appSecret);
-        Profile profile = verifyAndDecodeProfile(request.token, httpRequest);
-        String newTicket = jwtService.buildTicket(profile, Constants.ALGORITHM_HS256, TICKET_EXPIRED_TIME);
-        String newToken = jwtService.buildTokenWithTicket(newTicket, TOKEN_EXPIRED_TIME);
-        CookieUtils.setCookie(COOKIE_TICKET, newTicket, "/", httpRequest, httpResponse);
+        verifyToken(request.token);
+        String ticket = tokenService.getTicket(request.token);
+        Profile profile = jwtService.decodeProfile(ticket);
+        tokenService.removeTokenTicket(request.token);
+        ticketService.removeToken(profile.id, request.token);
+        String newToken = tokenService.buildToken(profile, Constants.CACHE_TOKEN_EXPIRED_TIME_MS);
+        tokenService.putTokenTicket(newToken, ticket);
+        ticketService.addToken(profile.id, newToken);
         return newToken;
     }
 
     /**
-     * 注销登录
+     * 注销
      *
      * @param appId 应用ID
      * @param appSecret 应用秘钥
+     * @param redirectURL 重定向URL
      * @param httpRequest HTTP请求
      * @param httpResponse HTTP响应
      */
     @GET
-    @Produces(MediaType.APPLICATION_JSON)
     @Path("sso/logout")
     @GetMapping("sso/logout")
+    @EnableWebLogAspect
     public void logout(@QueryParam("app_id")  String appId,
                        @QueryParam("app_secret") String appSecret,
+                       @QueryParam("redirect_url") String redirectURL,
                        @Context HttpServletRequest httpRequest,
-                       @Context HttpServletResponse httpResponse) {
+                       @Context HttpServletResponse httpResponse) throws IOException {
+        if (StringUtils.isEmpty(redirectURL)) {
+            logger.error("redirect url is empty");
+            throw new BadRequestException("重定向URL为空");
+        }
         verifyApp(appId, appSecret);
-        String ticket = CookieUtils.getCookie(httpRequest, COOKIE_TICKET);
-        if (StringUtils.isEmpty(ticket) || !jwtService.verifyTicket(ticket)) {
-            logger.error("ticket is empty or invalid");
+        String ticket = CookieUtils.getCookie(httpRequest, Constants.COOKIE_TICKET);
+        if (StringUtils.isEmpty(ticket)) {
+            logger.error("ticket is not found from cookies");
+            httpResponse.sendRedirect(redirectURL);
             return;
         }
+        removeTicketResources(ticket);
+        CookieUtils.removeCookie(Constants.COOKIE_TICKET, "/", httpResponse);
         Profile profile = jwtService.decodeProfile(ticket);
-        if (profile == null) {
-            logger.error("decode profile failed from ticket");
-            return;
-        }
-        List<LoginApp> loginApps = loginAppService.getLoginApps(profile.id);
-        if (loginApps != null && !loginApps.isEmpty()) {
-            for (LoginApp loginApp : loginApps) {
-                String logoutURL = String.format("%s/sso/logout", loginApp.baseURL);
-                HttpRequest request = HttpRequest.buildGetRequest(logoutURL, null);
-                Response response = httpClient.execute(request);
-                if (response == null || !response.isSuccessful() || response.code() != 200) {
-                    logger.warn("logout failed for url[{}], app[{}] and user[{}]",
-                            logoutURL, loginApp.appId, loginApp.userId);
-                } else logger.info("logout success for app[{}] and user[{}]", loginApp.appId, loginApp.userId);
-                if (response != null) response.close();
-            }
-        }
-        loginAppService.removeLoginApps(profile.id);
-        CookieUtils.removeCookie(COOKIE_TICKET, "/", httpResponse);
+        if (profile != null) removeAppLogins(profile.id);
+        httpResponse.sendRedirect(redirectURL);
     }
 
     /**
      * 登录
      *
-     * @param request 登录请求
+     * @param userName 用户名
+     * @param password 密码
+     * @param redirectURL 重定向URL
      * @param httpRequest HTTP请求
      * @param httpResponse HTTP响应
      * @throws IOException
      */
     @POST
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Path("sso/login")
     @PostMapping("sso/login")
-    public void login(@RequestBody LoginRequest request,
+    @EnableWebLogAspect
+    public void login(@FormParam("user_name") String userName,
+                      @FormParam("password") String password,
+                      @FormParam("redirect_url") String redirectURL,
                       @Context HttpServletRequest httpRequest,
                       @Context HttpServletResponse httpResponse) throws IOException {
-        if (request == null) {
-            logger.error("login request is null");
-            throw new BadRequestException("登录请求为空");
+        if (StringUtils.isEmpty(userName)) {
+            logger.error("username is empty");
+            throw new BadRequestException("用户名为空");
         }
-        if (StringUtils.isEmpty(request.redirectURL)) {
-            request.redirectURL = HTTPUtils.getRequestURL(httpRequest);
+        if (StringUtils.isEmpty(password)) {
+            logger.error("password is empty");
+            throw new BadRequestException("密码为空");
         }
-        request.check();
+        if (StringUtils.isEmpty(redirectURL)) {
+            redirectURL = String.format("%s%s", HTTPUtils.getRequestRootURL(httpRequest), Constants.PATH_HOME);
+        }
         UserSearchRequest searchRequest = new UserSearchRequest();
-        searchRequest.userName = request.userName;
+        searchRequest.userName = userName;
         searchRequest.current = 1;
         searchRequest.size = 1;
         Pager<User> pager = userService.search(searchRequest);
         if (pager == null || pager.total < 1 || pager.records.isEmpty()) {
-            logger.error("user is not found for username[{}]", request.userName);
-            throw new NotFoundException(String.format("用户[%s]不存在", request.userName));
+            logger.error("user is not found for username[{}]", userName);
+            throw new NotFoundException(String.format("用户[%s]不存在", userName));
         }
         User user = pager.records.get(0);
-        if (!user.password.equals(DigestUtils.md5Hex(request.password))) {
+        if (!user.password.equals(DigestUtils.md5Hex(password))) {
             logger.error("username and password are not matched");
             throw new RuntimeException("用户名和密码不匹配");
         }
-        Profile profile = new Profile(RandomID.build(), user.id, user.tenantId, user.vendorId);
-        String ticket = jwtService.buildTicket(profile, Constants.ALGORITHM_HS256, TICKET_EXPIRED_TIME);
+        Profile profile = new Profile();
+        profile.setId(RandomID.build()).setUserId(user.id).setTenantId(user.tenantId).setVendorId(user.vendorId);
+        String ticket = ticketService.buildTicket(profile, Constants.CACHE_TICKET_EXPIRED_TIME_MS);
         if (StringUtils.isEmpty(ticket)) {
             logger.error("build ticket failed");
             throw new RuntimeException("构建ticket失败");
         }
-        CookieUtils.setCookie(COOKIE_TICKET, ticket, "/", httpRequest, httpResponse);
-        httpResponse.sendRedirect(request.redirectURL);
+        String prevTicket = CookieUtils.getCookie(httpRequest, Constants.COOKIE_TICKET);
+        if (!StringUtils.isEmpty(prevTicket)) {
+            Profile prevProfile = jwtService.decodeProfile(prevTicket);
+            if (prevProfile != null) removeAppLogins(prevProfile.id);
+            removeTicketResources(prevTicket);
+        }
+        ticketService.putTicket(profile.id, ticket);
+        CookieUtils.setCookie(Constants.COOKIE_TICKET, ticket, "/", httpRequest, httpResponse);
+        SessionUtils.removeResources(httpRequest);
+        httpResponse.sendRedirect(redirectURL);
+    }
+
+    /**
+     * 注销应用系统并删除应用登录信息
+     *
+     * @param ticketId ticket ID
+     */
+    private void removeAppLogins(String ticketId) {
+        List<AppLogin> appLogins = appLoginService.getAppLogins(ticketId);
+        if (appLogins == null || appLogins.isEmpty()) return;
+        for (AppLogin appLogin : appLogins) {
+            Map<String, Object> paramMap = new HashMap<>();
+            paramMap.put(Constants.PARAM_SESSION_ID, appLogin.sessionId);
+            HttpRequest request = HttpRequest.buildGetRequest(appLogin.logoutURL, paramMap);
+            Response response = httpClient.execute(request);
+            if (response == null || !response.isSuccessful() || response.code() != 200) {
+                logger.warn("execute app[{}] logout failed for user[{}] and session[{}]",
+                        appLogin.appId, appLogin.userId, appLogin.sessionId);
+            } else {
+                logger.warn("execute app[{}] logout success for user[{}] and session[{}]",
+                        appLogin.appId, appLogin.userId, appLogin.sessionId);
+            }
+            if (response != null) response.close();
+        }
+        appLoginService.removeAppLogins(ticketId);
     }
 
     /**
@@ -375,32 +448,86 @@ public class SecurityController {
     }
 
     /**
-     * 验证token及解码profile
+     * 验证token
+     * 1. 检测token有效性
+     * 2. 检测token对应ticket
      *
      * @param token
-     * @param httpRequest HTTP请求
-     * @return 成功返回profile，否则抛出异常
      */
-    private Profile verifyAndDecodeProfile(String token, HttpServletRequest httpRequest) {
+    private void verifyToken(String token) {
         if (StringUtils.isEmpty(token)) {
             logger.error("token is empty");
             throw new BadRequestException("token为空");
         }
-        if (!jwtService.verifyToken(token)) {
+        if (!tokenService.verifyToken(token)) {
             logger.error("verify token failed");
+            removeTokenResources(token);
             throw new RuntimeException("验证token失败");
         }
-        Profile profile = jwtService.decodeProfile(token);
+        String ticket = tokenService.getTicket(token);
+        if (!verifyTicket(ticket)) {
+            logger.error("verify ticket failed for token[{}]", DigestUtils.md5Hex(token));
+            removeTokenResources(token);
+            throw new RuntimeException("未找到ticket或验证ticket失败");
+        }
+    }
+
+    /**
+     * 验证ticket
+     *
+     * @param ticket
+     * @return 成功返回true，否则返回false
+     */
+    private boolean verifyTicket(String ticket) {
+        if (StringUtils.isEmpty(ticket)) {
+            logger.warn("ticket is empty");
+            return false;
+        }
+        if (!ticketService.verifyTicket(ticket)) {
+            logger.error("verify ticket failed");
+            removeTicketResources(ticket);
+            return false;
+        }
+        Profile profile = jwtService.decodeProfile(ticket);
         if (profile == null) {
-            logger.error("decode profile failed from token");
-            throw new RuntimeException("解码profile失败");
+            logger.error("decode profile failed from ticket");
+            removeTicketResources(ticket);
+            return false;
         }
-        String ticket = CookieUtils.getCookie(httpRequest, COOKIE_TICKET);
-        Profile ticketProfile = jwtService.decodeProfile(ticket);
-        if (ticketProfile == null || !ticketProfile.id.equals(profile.id)) {
-            logger.error("token and ticket are not consistent");
-            throw new RuntimeException("token和ticket不一致");
+        String cachedTicket = ticketService.getTicket(profile.id);
+        if (StringUtils.isEmpty(cachedTicket) || !ticket.equals(cachedTicket)) {
+            logger.error("cached ticket and provided ticket are not consistent");
+            removeTicketResources(ticket);
+            return false;
         }
-        return profile;
+        return true;
+    }
+
+    /**
+     * 移除ticket相关资源
+     * 1. 移除ticket相关token资源
+     * 2. 资源ticket资源
+     *
+     * @param ticket
+     */
+    private void removeTicketResources(String ticket) {
+        Profile profile = jwtService.decodeProfile(ticket);
+        if (profile == null) return;
+        Set<String> tokenIds = ticketService.getTicketTokens(profile.id);
+        for (String tokenId : tokenIds) tokenService.removeTokenTicketById(tokenId);
+        ticketService.removeTicketTokens(profile.id);
+        ticketService.removeTicket(profile.id);
+    }
+
+    /**
+     * 移除token相关资源
+     *
+     * @param token
+     */
+    private void removeTokenResources(String token) {
+        tokenService.removeTokenTicket(token);
+        Profile profile = jwtService.decodeProfile(token);
+        if (profile == null) return;
+        ticketService.removeToken(profile.id, token);
     }
 }

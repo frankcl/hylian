@@ -8,7 +8,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import xin.manong.security.keeper.sso.client.filter.SecurityFilter;
+import xin.manong.security.keeper.sso.client.common.Constants;
 import xin.manong.security.keeper.sso.client.filter.SecurityLoginFilter;
 
 import java.util.ArrayList;
@@ -22,7 +22,7 @@ import java.util.List;
  */
 @Data
 @Configuration
-@ConfigurationProperties(prefix = "security-keeper.sso")
+@ConfigurationProperties(prefix = "app.security.sso")
 public class SecurityFilterConfig {
 
     private static final Logger logger = LoggerFactory.getLogger(SecurityFilterConfig.class);
@@ -70,11 +70,11 @@ public class SecurityFilterConfig {
             logger.error("server URL is empty");
             throw new RuntimeException("单点登录服务URL为空");
         }
-        bean.addInitParameter(SecurityFilter.PARAM_APP_ID, appId);
-        bean.addInitParameter(SecurityFilter.PARAM_APP_SECRET, appSecret);
-        bean.addInitParameter(SecurityFilter.PARAM_SERVER_URL, serverURL);
+        bean.addInitParameter(Constants.PARAM_APP_ID, appId);
+        bean.addInitParameter(Constants.PARAM_APP_SECRET, appSecret);
+        bean.addInitParameter(Constants.PARAM_SERVER_URL, serverURL);
         if (excludePatterns != null && !excludePatterns.isEmpty()) {
-            bean.addInitParameter(SecurityFilter.PARAM_EXCLUDE_PATTERNS, String.join(",", excludePatterns));
+            bean.addInitParameter(Constants.PARAM_EXCLUDE_PATTERNS, String.join(",", excludePatterns));
         }
     }
 }
