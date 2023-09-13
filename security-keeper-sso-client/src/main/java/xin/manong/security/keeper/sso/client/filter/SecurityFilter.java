@@ -9,6 +9,7 @@ import xin.manong.security.keeper.sso.client.core.SecurityChecker;
 import javax.servlet.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Pattern;
 
 /**
  * 单点登录过滤器抽象实现
@@ -24,7 +25,7 @@ public abstract class SecurityFilter implements Filter {
     protected String appId;
     protected String appSecret;
     protected String serverURL;
-    protected List<String> excludePatterns;
+    protected List<Pattern> excludePatterns;
     protected SecurityChecker securityChecker;
 
     @Override
@@ -53,8 +54,7 @@ public abstract class SecurityFilter implements Filter {
             for (String pattern : patterns) {
                 pattern = pattern.trim();
                 if (StringUtils.isEmpty(pattern)) continue;
-                if (!pattern.startsWith("/")) pattern = String.format("/%s", pattern);
-                excludePatterns.add(pattern);
+                excludePatterns.add(Pattern.compile(pattern));
             }
         }
         if (!serverURL.endsWith("/")) serverURL += "/";

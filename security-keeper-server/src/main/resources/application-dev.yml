@@ -24,8 +24,8 @@ app:
       appSecret: 123456
       serverURL: http://localhost:8080/
       excludePatterns:
-        - security/.*
-        - health/.*
+        - security/*
+        - health/*
         - home/login
         - favicon.ico
   server:

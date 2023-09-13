@@ -38,8 +38,8 @@ public class SecurityLoginFilter extends SecurityFilter {
      */
     private boolean matchExcludePatterns(String requestPath) {
         if (excludePatterns == null || excludePatterns.isEmpty()) return false;
-        for (String excludePattern : excludePatterns) {
-            if (Pattern.matches(excludePattern, requestPath)) return true;
+        for (Pattern excludePattern : excludePatterns) {
+            if (excludePattern.matcher(requestPath).matches()) return true;
         }
         return false;
     }

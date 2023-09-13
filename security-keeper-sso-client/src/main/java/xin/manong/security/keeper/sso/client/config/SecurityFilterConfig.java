@@ -74,7 +74,36 @@ public class SecurityFilterConfig {
         bean.addInitParameter(Constants.PARAM_APP_SECRET, appSecret);
         bean.addInitParameter(Constants.PARAM_SERVER_URL, serverURL);
         if (excludePatterns != null && !excludePatterns.isEmpty()) {
-            bean.addInitParameter(Constants.PARAM_EXCLUDE_PATTERNS, String.join(",", excludePatterns));
+            List<String> patterns = new ArrayList<>();
+            for (String excludePattern : excludePatterns) patterns.add(checkExcludePattern(excludePattern));
+            bean.addInitParameter(Constants.PARAM_EXCLUDE_PATTERNS, String.join(",", patterns));
         }
+    }
+
+    /**
+     * 检测排除URL模式
+     *
+     * @param excludePattern 排除URL模式
+     * @return 通过检测返回排除URL正则表达式，否则抛出异常
+     */
+    private String checkExcludePattern(String excludePattern) {
+        if (StringUtils.isEmpty(excludePattern)) {
+            logger.error("exclude pattern is empty");
+            throw new RuntimeException("排除URL模式为空");
+        }
+        int pos = excludePattern.indexOf("*");
+        if (pos == -1) return excludePattern.startsWith("/") ? excludePattern : String.format("/%s", excludePattern);
+        int n = 0;
+        for (int i = 0; i < excludePattern.length(); i++) {
+            if (excludePattern.charAt(i) == '*') n++;
+        }
+        if (n == 1 && (pos == 0 || (pos == excludePattern.length() - 1 &&
+                excludePattern.charAt(excludePattern.length() - 2) == '/'))) {
+            String pattern = String.format("%s.%s", excludePattern.substring(0, pos),
+                    excludePattern.substring(pos));
+            return pos == 0 || pattern.startsWith("/") ? pattern : String.format("/%s", pattern);
+        }
+        logger.error("invalid exclude pattern[{}]", excludePattern);
+        throw new RuntimeException(String.format("非法排除URL模式[%s]", excludePattern));
     }
 }
