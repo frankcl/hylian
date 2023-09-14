@@ -44,11 +44,24 @@ public class AppLoginServiceImpl implements AppLoginService {
     }
 
     @Override
-    public void removeAppLogins(String ticketId) {
+    public int removeExpiredAppLogins(Long maxUpdateTime) {
+        LambdaQueryWrapper<AppLogin> query = new LambdaQueryWrapper<>();
+        query.lt(AppLogin::getUpdateTime, maxUpdateTime);
+        return appLoginMapper.delete(query);
+    }
+
+    @Override
+    public boolean removeAppLogins(String ticketId) {
         LambdaQueryWrapper<AppLogin> query = new LambdaQueryWrapper<>();
         query.eq(AppLogin::getTicketId, ticketId);
-        int n = appLoginMapper.delete(query);
-        if (n > 0) logger.info("delete app login records[{}]", n);
+        return appLoginMapper.delete(query) > 0;
+    }
+
+    @Override
+    public boolean removeAppLogin(String sessionId, String appId) {
+        LambdaQueryWrapper<AppLogin> query = new LambdaQueryWrapper<>();
+        query.eq(AppLogin::getSessionId, sessionId).eq(AppLogin::getAppId, appId);
+        return appLoginMapper.delete(query) > 0;
     }
 
     @Override

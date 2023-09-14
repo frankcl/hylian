@@ -82,6 +82,7 @@ public class CodeServiceImpl implements CodeService {
 
     @Override
     public boolean removeCode(String code) {
+        codeCache.invalidate(code);
         String key = String.format("%s%s", Constants.CODE_CACHE_PREFIX, code);
         RBucket<String> bucket = redisClient.getRedissonClient().getBucket(key);
         return bucket.delete();

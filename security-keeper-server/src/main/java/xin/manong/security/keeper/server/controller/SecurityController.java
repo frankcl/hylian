@@ -13,6 +13,7 @@ import xin.manong.security.keeper.model.*;
 import xin.manong.security.keeper.server.common.Constants;
 import xin.manong.security.keeper.model.request.RefreshTokenRequest;
 import xin.manong.security.keeper.server.request.AcquireTokenRequest;
+import xin.manong.security.keeper.server.request.RemoveAppLoginRequest;
 import xin.manong.security.keeper.server.service.*;
 import xin.manong.security.keeper.server.service.request.AppLoginSearchRequest;
 import xin.manong.security.keeper.server.service.request.UserSearchRequest;
@@ -96,8 +97,7 @@ public class SecurityController {
         }
         verifyApp(appId, appSecret);
         String ticket = CookieUtils.getCookie(httpRequest, Constants.COOKIE_TICKET);
-        if (!verifyTicket(ticket)) {
-            logger.warn("verify ticket failed for applying code");
+        if (StringUtils.isEmpty(ticket) || !verifyTicket(ticket)) {
             if (ticket != null) CookieUtils.removeCookie(Constants.COOKIE_TICKET, "/", httpResponse);
             httpResponse.sendRedirect(String.format("%s%s?%s=%s",
                     HTTPUtils.getRequestRootURL(httpRequest), Constants.PATH_LOGIN, Constants.PARAM_REDIRECT_URL,
@@ -291,7 +291,30 @@ public class SecurityController {
         String newToken = tokenService.buildToken(profile, Constants.CACHE_TOKEN_EXPIRED_TIME_MS);
         tokenService.putTokenTicket(newToken, ticket);
         ticketService.addToken(profile.id, newToken);
+        ticketService.putTicket(profile.id, ticket);
         return newToken;
+    }
+
+    /**
+     * 移除应用登录记录
+     *
+     * @param request 移除请求
+     * @return 成功返回true，否则返回false
+     */
+    @POST
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("auth/removeAppLogin")
+    @PostMapping("auth/removeAppLogin")
+    @EnableWebLogAspect
+    public boolean removeAppLogin(@RequestBody RemoveAppLoginRequest request) {
+        if (request == null) {
+            logger.error("remove app login request is null");
+            throw new BadRequestException("移除应用登录记录请求为空");
+        }
+        request.check();
+        verifyApp(request.appId, request.appSecret);
+        return appLoginService.removeAppLogin(request.sessionId, request.appId);
     }
 
     /**
@@ -382,7 +405,7 @@ public class SecurityController {
         }
         Profile profile = new Profile();
         profile.setId(RandomID.build()).setUserId(user.id).setTenantId(user.tenantId).setVendorId(user.vendorId);
-        String ticket = ticketService.buildTicket(profile, Constants.CACHE_TICKET_EXPIRED_TIME_MS);
+        String ticket = ticketService.buildTicket(profile, Constants.COOKIE_TICKET_EXPIRED_TIME_MS);
         ticketService.putTicket(profile.id, ticket);
         CookieUtils.setCookie(Constants.COOKIE_TICKET, ticket, "/", httpRequest, httpResponse);
         httpResponse.sendRedirect(redirectURL);

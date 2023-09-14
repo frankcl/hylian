@@ -23,12 +23,13 @@ public class Constants {
     public static final String CLIENT_PATH_LOGOUT = "/logout";
     public static final String CLIENT_PATH_LOGOUT_DESTROY = "/logout/destroy";
 
-    public static final String SERVER_PATH_LOGIN = "/home/login";
+    public static final String SERVER_PATH_LOGIN = "home/login";
     public static final String SERVER_PATH_LOGOUT = "security/sso/logout";
     public static final String SERVER_PATH_APPLY_CODE = "security/auth/applyCode";
     public static final String SERVER_PATH_CHECK_TOKEN = "security/auth/checkToken";
     public static final String SERVER_PATH_ACQUIRE_TOKEN = "security/auth/acquireToken";
     public static final String SERVER_PATH_REFRESH_TOKEN = "security/auth/refreshToken";
+    public static final String SERVER_PATH_REMOVE_APP_LOGIN = "security/auth/removeAppLogin";
     public static final String SERVER_PATH_GET_USER = "security/resource/getUser";
     public static final String SERVER_PATH_GET_TENANT = "security/resource/getTenant";
     public static final String SERVER_PATH_GET_VENDOR = "security/resource/getVendor";

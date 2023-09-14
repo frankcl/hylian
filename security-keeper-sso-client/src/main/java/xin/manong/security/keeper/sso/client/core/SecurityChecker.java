@@ -1,8 +1,6 @@
 package xin.manong.security.keeper.sso.client.core;
 
 import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.TypeReference;
-import okhttp3.Response;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,10 +11,8 @@ import xin.manong.security.keeper.model.User;
 import xin.manong.security.keeper.model.Vendor;
 import xin.manong.security.keeper.model.request.RefreshTokenRequest;
 import xin.manong.security.keeper.sso.client.common.Constants;
-import xin.manong.weapon.base.http.HttpClient;
 import xin.manong.weapon.base.http.HttpRequest;
 import xin.manong.weapon.base.http.RequestFormat;
-import xin.manong.weapon.spring.web.WebResponse;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -37,7 +33,6 @@ public class SecurityChecker {
     private String appId;
     private String appSecret;
     private String serverURL;
-    private HttpClient httpClient;
 
     public SecurityChecker(String appId,
                            String appSecret,
@@ -45,7 +40,6 @@ public class SecurityChecker {
         this.appId = appId;
         this.appSecret = appSecret;
         this.serverURL = serverURL;
-        this.httpClient = new HttpClient();
     }
 
     /**
@@ -56,8 +50,8 @@ public class SecurityChecker {
      * @return 检测通过返回true，否则返回false
      * @throws IOException
      */
-    public boolean check(HttpServletRequest httpRequest, HttpServletResponse httpResponse)
-        throws IOException {
+    public boolean check(HttpServletRequest httpRequest,
+                         HttpServletResponse httpResponse) throws IOException {
         String requestPath = HTTPUtils.getRequestPath(httpRequest);
         if (requestPath.equals(Constants.CLIENT_PATH_LOGOUT)) {
             redirectServerLogout(httpRequest, httpResponse);
@@ -65,7 +59,7 @@ public class SecurityChecker {
         } else if (requestPath.equals(Constants.CLIENT_PATH_LOGOUT_DESTROY)) {
             Map<String, String> queryMap = HTTPUtils.getRequestQueryMap(httpRequest);
             String sessionId = queryMap.getOrDefault(Constants.PARAM_SESSION_ID, null);
-            SessionManager.invalidateSession(sessionId);
+            SessionManager.invalidate(sessionId);
             return false;
         }
         if (checkToken(httpRequest)) {
@@ -85,12 +79,8 @@ public class SecurityChecker {
             }
             if (!refreshUser(token, httpRequest, httpResponse) ||
                     !refreshTenant(token, httpRequest, httpResponse) ||
-                    !refreshVendor(token, httpRequest, httpResponse)) {
-                SessionUtils.removeResources(httpRequest);
-                return false;
-            }
+                    !refreshVendor(token, httpRequest, httpResponse)) return false;
             SessionUtils.setToken(httpRequest, token);
-            SessionManager.putSession(httpRequest.getSession());
             redirectRequestURLWithoutCode(httpRequest, httpResponse);
             return false;
         }
@@ -173,8 +163,8 @@ public class SecurityChecker {
         paramMap.put(Constants.PARAM_APP_ID, appId);
         paramMap.put(Constants.PARAM_APP_SECRET, appSecret);
         HttpRequest request = HttpRequest.buildGetRequest(requestURL, paramMap);
-        Boolean result = execute(request, new TypeReference<WebResponse<Boolean>>() {});
-        return result == null ? false : result;
+        Boolean valid = HTTPExecutor.execute(request, Boolean.class);
+        return valid == null ? false : valid;
     }
 
     /**
@@ -194,7 +184,7 @@ public class SecurityChecker {
         paramMap.put(Constants.PARAM_LOGOUT_URL, String.format("%s%s",
                 HTTPUtils.getRequestRootURL(httpRequest), Constants.CLIENT_PATH_LOGOUT_DESTROY));
         HttpRequest request = HttpRequest.buildGetRequest(requestURL, paramMap);
-        return execute(request, new TypeReference<WebResponse<String>>() {});
+        return HTTPExecutor.execute(request, String.class);
     }
 
     /**
@@ -210,7 +200,7 @@ public class SecurityChecker {
         paramMap.put(Constants.PARAM_APP_ID, appId);
         paramMap.put(Constants.PARAM_APP_SECRET, appSecret);
         HttpRequest httpRequest = HttpRequest.buildGetRequest(requestURL, paramMap);
-        return execute(httpRequest, new TypeReference<WebResponse<User>>() {});
+        return HTTPExecutor.execute(httpRequest, User.class);
     }
 
     /**
@@ -226,7 +216,7 @@ public class SecurityChecker {
         paramMap.put(Constants.PARAM_APP_ID, appId);
         paramMap.put(Constants.PARAM_APP_SECRET, appSecret);
         HttpRequest httpRequest = HttpRequest.buildGetRequest(requestURL, paramMap);
-        return execute(httpRequest, new TypeReference<WebResponse<Tenant>>() {});
+        return HTTPExecutor.execute(httpRequest, Tenant.class);
     }
 
     /**
@@ -242,7 +232,7 @@ public class SecurityChecker {
         paramMap.put(Constants.PARAM_APP_ID, appId);
         paramMap.put(Constants.PARAM_APP_SECRET, appSecret);
         HttpRequest httpRequest = HttpRequest.buildGetRequest(requestURL, paramMap);
-        return execute(httpRequest, new TypeReference<WebResponse<Vendor>>() {});
+        return HTTPExecutor.execute(httpRequest, Vendor.class);
     }
 
     /**
@@ -260,7 +250,7 @@ public class SecurityChecker {
         request.token = token;
         Map<String, Object> body = JSON.parseObject(JSON.toJSONString(request));
         HttpRequest httpRequest = HttpRequest.buildPostRequest(requestURL, RequestFormat.JSON, body);
-        String newToken = execute(httpRequest, new TypeReference<WebResponse<String>>() {});
+        String newToken = HTTPExecutor.execute(httpRequest, String.class);
         if (StringUtils.isEmpty(newToken)) return false;
         SessionUtils.setToken(httpServletRequest, newToken);
         return true;
@@ -327,36 +317,5 @@ public class SecurityChecker {
         }
         SessionUtils.setVendor(httpRequest, vendor);
         return true;
-    }
-
-    /**
-     * 执行HTTP请求
-     *
-     * @param httpRequest HTTP请求
-     * @param typeReference 结果数据类型
-     * @return 成功返回结果，否则返回null
-     * @param <T>
-     */
-    private <T> T execute(HttpRequest httpRequest, TypeReference<WebResponse<T>> typeReference) {
-        Response httpResponse = httpClient.execute(httpRequest);
-        try {
-            if (httpResponse == null || !httpResponse.isSuccessful() || httpResponse.code() != 200) {
-                logger.error("request failed for url[{}]", httpRequest.requestURL);
-                return null;
-            }
-            String body = httpResponse.body().string();
-            WebResponse<T> response = JSON.parseObject(body, typeReference);
-            if (!response.status) {
-                logger.error("request failed for url[{}], message[{}]", httpRequest.requestURL, response.message);
-                return null;
-            }
-            return response.data;
-        } catch (Exception e) {
-            logger.error("request exception for url[{}], cause[{}]", httpRequest.requestURL, e.getMessage());
-            logger.error(e.getMessage(), e);
-            return null;
-        } finally {
-            if (httpResponse != null) httpResponse.close();
-        }
     }
 }

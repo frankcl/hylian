@@ -20,17 +20,25 @@ public class SessionManager {
     private static Map<String, HttpSession> sessionMap = new ConcurrentHashMap<>();
 
     /**
-     * 放入session进行管理
+     * 添加session
      *
      * @param httpSession HTTP session
      */
-    public static void putSession(HttpSession httpSession) {
-        if (httpSession == null) {
-            logger.warn("session is null");
-            return;
-        }
+    public static void put(HttpSession httpSession) {
+        if (httpSession == null) return;
         sessionMap.put(httpSession.getId(), httpSession);
-        logger.info("add session[{}]", httpSession.getId());
+        logger.info("put session[{}] success", httpSession.getId());
+    }
+
+    /**
+     * 移除session
+     *
+     * @param httpSession
+     */
+    public static void remove(HttpSession httpSession) {
+        if (httpSession == null || !sessionMap.containsKey(httpSession.getId())) return;
+        sessionMap.remove(httpSession.getId());
+        logger.info("remove session[{}] success", httpSession.getId());
     }
 
     /**
@@ -38,13 +46,13 @@ public class SessionManager {
      *
      * @param sessionId session ID
      */
-    public static void invalidateSession(String sessionId) {
-        HttpSession httpSession = sessionMap.remove(sessionId);
+    public static void invalidate(String sessionId) {
+        HttpSession httpSession = sessionMap.get(sessionId);
         if (httpSession == null) {
             logger.warn("session[{}] is not found", sessionId);
             return;
         }
-        logger.info("session[{}] is invalidated", httpSession.getId());
         httpSession.invalidate();
+        logger.info("session[{}] is invalidated", httpSession.getId());
     }
 }

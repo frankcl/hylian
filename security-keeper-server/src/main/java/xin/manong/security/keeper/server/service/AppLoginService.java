@@ -22,11 +22,29 @@ public interface AppLoginService {
     boolean add(AppLogin appLogin);
 
     /**
+     * 清除过期应用登录信息
+     *
+     * @param maxUpdateTime 最大更新时间，单位：毫秒
+     * @return 清除信息数量
+     */
+    int removeExpiredAppLogins(Long maxUpdateTime);
+
+    /**
      * 移除ticket相关应用登录信息
      *
      * @param ticketId ticket ID
+     * @return 成功返回true，否则返回false
      */
-    void removeAppLogins(String ticketId);
+    boolean removeAppLogins(String ticketId);
+
+    /**
+     * 移除会话相关应用登录信息
+     *
+     * @param sessionId 会话ID
+     * @param appId 应用ID
+     * @return 成功返回true，否则返回false
+     */
+    boolean removeAppLogin(String sessionId, String appId);
 
     /**
      * 指定用户session是否登录应用

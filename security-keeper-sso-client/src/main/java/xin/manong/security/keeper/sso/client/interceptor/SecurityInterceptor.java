@@ -7,18 +7,18 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 /**
- * 安全登录拦截器
+ * 安全拦截器
  *
  * @author frankcl
  * @date 2023-09-05 19:34:12
  */
-public class SecurityLoginInterceptor implements HandlerInterceptor {
+public class SecurityInterceptor implements HandlerInterceptor {
 
     private SecurityChecker securityChecker;
 
-    public SecurityLoginInterceptor(String appId,
-                                    String appSecret,
-                                    String serverURL) {
+    public SecurityInterceptor(String appId,
+                               String appSecret,
+                               String serverURL) {
         securityChecker = new SecurityChecker(appId, appSecret, serverURL);
     }
 

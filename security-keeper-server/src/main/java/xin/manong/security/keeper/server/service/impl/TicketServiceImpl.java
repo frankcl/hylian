@@ -38,7 +38,7 @@ public class TicketServiceImpl implements TicketService {
     @Override
     public String buildTicket(Profile profile, Long expiredTime) {
         Date expiresAt = new Date(System.currentTimeMillis() +
-                (expiredTime == null ? Constants.CACHE_TICKET_EXPIRED_TIME_MS : expiredTime));
+                (expiredTime == null ? Constants.COOKIE_TICKET_EXPIRED_TIME_MS : expiredTime));
         Map<String, Object> headers = new HashMap<>();
         headers.put(Constants.JWT_HEADER_CATEGORY, Constants.JWT_CATEGORY_TICKET);
         return jwtService.buildJWT(profile, expiresAt, Constants.ALGORITHM_HS256, headers);

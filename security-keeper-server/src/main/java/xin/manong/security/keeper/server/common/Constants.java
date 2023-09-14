@@ -15,7 +15,8 @@ public class Constants {
 
     public static final Long CACHE_CODE_EXPIRED_TIME_MS = 60000L;
     public static final Long CACHE_TOKEN_EXPIRED_TIME_MS = 600000L;
-    public static final Long CACHE_TICKET_EXPIRED_TIME_MS = 86400000L;
+    public static final Long CACHE_TICKET_EXPIRED_TIME_MS = 1800000L;
+    public static final Long COOKIE_TICKET_EXPIRED_TIME_MS = 86400000L;
 
     public static final String CODE_CACHE_PREFIX = "__SK_CODE_";
     public static final String TOKEN_CACHE_PREFIX = "__SK_TOKEN_";
