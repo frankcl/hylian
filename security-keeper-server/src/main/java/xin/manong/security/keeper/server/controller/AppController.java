@@ -46,7 +46,7 @@ public class AppController {
     @Path("get")
     @GetMapping("get")
     @EnableWebLogAspect
-    public App get(@QueryParam("id")  String id) {
+    public App get(@QueryParam("id") @RequestParam("id") String id) {
         if (StringUtils.isEmpty(id)) {
             logger.error("app id is empty");
             throw new BadRequestException("应用ID为空");
@@ -144,7 +144,7 @@ public class AppController {
     @Path("delete")
     @DeleteMapping("delete")
     @EnableWebLogAspect
-    public boolean delete(@QueryParam("id") String id) {
+    public boolean delete(@QueryParam("id") @RequestParam("id") String id) {
         if (StringUtils.isEmpty(id)) {
             logger.error("app id is empty");
             throw new BadRequestException("应用ID为空");

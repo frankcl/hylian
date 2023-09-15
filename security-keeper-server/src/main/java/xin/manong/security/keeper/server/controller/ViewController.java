@@ -5,6 +5,7 @@ import org.glassfish.jersey.server.mvc.Viewable;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import xin.manong.security.keeper.common.util.SessionUtils;
 import xin.manong.security.keeper.model.Tenant;
@@ -49,8 +50,12 @@ public class ViewController {
             viewModel.put(Constants.PARAM_USER_NAME, user.userName);
             viewModel.put(Constants.PARAM_NAME, user.name);
         }
-        if (tenant != null) viewModel.put(Constants.PARAM_TENANT, tenant.name);
-        if (vendor != null) viewModel.put(Constants.PARAM_VENDOR, vendor.name);
+        if (tenant != null) {
+            viewModel.put(Constants.PARAM_TENANT, tenant.name);
+        }
+        if (vendor != null) {
+            viewModel.put(Constants.PARAM_VENDOR, vendor.name);
+        }
         return new Viewable("/index", viewModel);
     }
 
@@ -59,7 +64,7 @@ public class ViewController {
     @Path("login")
     @GetMapping("login")
     @Template(name = "/login.ftl")
-    public Map<String, Object> login(@QueryParam("redirect_url") String redirectURL) {
+    public Map<String, Object> login(@QueryParam("redirect_url") @RequestParam("redirect_url") String redirectURL) {
         Map<String, Object> viewModel = new HashMap<>();
         viewModel.put(Constants.PARAM_REDIRECT_URL, redirectURL);
         return viewModel;

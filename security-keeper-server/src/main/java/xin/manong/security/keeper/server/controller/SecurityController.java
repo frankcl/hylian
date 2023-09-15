@@ -86,9 +86,9 @@ public class SecurityController {
     @Path("auth/applyCode")
     @GetMapping("auth/applyCode")
     @EnableWebLogAspect
-    public void applyCode(@QueryParam("app_id")  String appId,
-                          @QueryParam("app_secret") String appSecret,
-                          @QueryParam("redirect_url") String redirectURL,
+    public void applyCode(@QueryParam("app_id")  @RequestParam("app_id") String appId,
+                          @QueryParam("app_secret") @RequestParam("app_secret") String appSecret,
+                          @QueryParam("redirect_url") @RequestParam("redirect_url") String redirectURL,
                           @Context HttpServletRequest httpRequest,
                           @Context HttpServletResponse httpResponse) throws Exception {
         if (StringUtils.isEmpty(redirectURL)) {
@@ -121,9 +121,9 @@ public class SecurityController {
     @Path("auth/checkToken")
     @GetMapping("auth/checkToken")
     @EnableWebLogAspect
-    public boolean checkToken(@QueryParam("token") String token,
-                              @QueryParam("app_id")  String appId,
-                              @QueryParam("app_secret") String appSecret) {
+    public boolean checkToken(@QueryParam("token") @RequestParam("token") String token,
+                              @QueryParam("app_id") @RequestParam("app_id") String appId,
+                              @QueryParam("app_secret") @RequestParam("app_secret") String appSecret) {
         verifyApp(appId, appSecret);
         verifyToken(token);
         return true;
@@ -189,9 +189,9 @@ public class SecurityController {
     @Path("resource/getUser")
     @GetMapping("resource/getUser")
     @EnableWebLogAspect
-    public User getUser(@QueryParam("token")  String token,
-                        @QueryParam("app_id")  String appId,
-                        @QueryParam("app_secret") String appSecret,
+    public User getUser(@QueryParam("token") @RequestParam("token") String token,
+                        @QueryParam("app_id") @RequestParam("app_id") String appId,
+                        @QueryParam("app_secret") @RequestParam("app_secret") String appSecret,
                         @Context HttpServletRequest httpRequest) {
         verifyApp(appId, appSecret);
         verifyToken(token);
@@ -217,9 +217,9 @@ public class SecurityController {
     @Path("resource/getTenant")
     @GetMapping("resource/getTenant")
     @EnableWebLogAspect
-    public Tenant getTenant(@QueryParam("token")  String token,
-                            @QueryParam("app_id")  String appId,
-                            @QueryParam("app_secret") String appSecret,
+    public Tenant getTenant(@QueryParam("token") @RequestParam("token") String token,
+                            @QueryParam("app_id") @RequestParam("app_id") String appId,
+                            @QueryParam("app_secret") @RequestParam("app_secret") String appSecret,
                             @Context HttpServletRequest httpRequest) {
         verifyApp(appId, appSecret);
         verifyToken(token);
@@ -245,9 +245,9 @@ public class SecurityController {
     @Path("resource/getVendor")
     @GetMapping("resource/getVendor")
     @EnableWebLogAspect
-    public Vendor getVendor(@QueryParam("token")  String token,
-                            @QueryParam("app_id")  String appId,
-                            @QueryParam("app_secret") String appSecret,
+    public Vendor getVendor(@QueryParam("token") @RequestParam("token") String token,
+                            @QueryParam("app_id") @RequestParam("app_id") String appId,
+                            @QueryParam("app_secret") @RequestParam("app_secret") String appSecret,
                             @Context HttpServletRequest httpRequest) {
         verifyApp(appId, appSecret);
         verifyToken(token);
@@ -330,9 +330,9 @@ public class SecurityController {
     @Path("sso/logout")
     @GetMapping("sso/logout")
     @EnableWebLogAspect
-    public void logout(@QueryParam("app_id")  String appId,
-                       @QueryParam("app_secret") String appSecret,
-                       @QueryParam("redirect_url") String redirectURL,
+    public void logout(@QueryParam("app_id") @RequestParam("app_id") String appId,
+                       @QueryParam("app_secret") @RequestParam("app_secret") String appSecret,
+                       @QueryParam("redirect_url") @RequestParam("redirect_url") String redirectURL,
                        @Context HttpServletRequest httpRequest,
                        @Context HttpServletResponse httpResponse) throws IOException {
         if (StringUtils.isEmpty(redirectURL)) {
@@ -368,9 +368,9 @@ public class SecurityController {
     @Path("sso/login")
     @PostMapping("sso/login")
     @EnableWebLogAspect
-    public void login(@FormParam("user_name") String userName,
-                      @FormParam("password") String password,
-                      @FormParam("redirect_url") String redirectURL,
+    public void login(@FormParam("user_name") @RequestParam("user_name") String userName,
+                      @FormParam("password") @RequestParam("password") String password,
+                      @FormParam("redirect_url") @RequestParam("redirect_url") String redirectURL,
                       @Context HttpServletRequest httpRequest,
                       @Context HttpServletResponse httpResponse) throws IOException {
         if (isLogin(httpRequest)) {

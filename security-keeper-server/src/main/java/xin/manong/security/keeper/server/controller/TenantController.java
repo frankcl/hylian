@@ -50,7 +50,7 @@ public class TenantController {
     @Path("get")
     @GetMapping("get")
     @EnableWebLogAspect
-    public ViewTenant get(@QueryParam("id")  String id) {
+    public ViewTenant get(@QueryParam("id") @RequestParam("id") String id) {
         if (StringUtils.isEmpty(id)) {
             logger.error("tenant id is empty");
             throw new BadRequestException("租户ID为空");
@@ -119,7 +119,7 @@ public class TenantController {
     @Path("delete")
     @DeleteMapping("delete")
     @EnableWebLogAspect
-    public boolean delete(@QueryParam("id") String id) {
+    public boolean delete(@QueryParam("id") @RequestParam("id") String id) {
         if (StringUtils.isEmpty(id)) {
             logger.error("tenant id is empty");
             throw new BadRequestException("租户ID为空");

@@ -57,7 +57,7 @@ public class UserController {
     @Path("get")
     @GetMapping("get")
     @EnableWebLogAspect
-    public ViewUser get(@QueryParam("id")  String id) {
+    public ViewUser get(@QueryParam("id") @RequestParam("id") String id) {
         if (StringUtils.isEmpty(id)) {
             logger.error("user id is empty");
             throw new BadRequestException("用户ID为空");
@@ -127,7 +127,7 @@ public class UserController {
     @Path("delete")
     @DeleteMapping("delete")
     @EnableWebLogAspect
-    public boolean delete(@QueryParam("id") String id) {
+    public boolean delete(@QueryParam("id") @RequestParam("id") String id) {
         if (StringUtils.isEmpty(id)) {
             logger.error("user id is empty");
             throw new BadRequestException("用户ID为空");

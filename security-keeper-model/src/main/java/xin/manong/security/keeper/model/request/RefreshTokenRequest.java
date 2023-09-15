@@ -1,5 +1,6 @@
 package xin.manong.security.keeper.model.request;
 
+import com.alibaba.fastjson.annotation.JSONField;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
@@ -27,10 +28,13 @@ public class RefreshTokenRequest implements Serializable {
     private static final Logger logger = LoggerFactory.getLogger(RefreshTokenRequest.class);
 
     @JsonProperty("token")
+    @JSONField(name = "token")
     public String token;
     @JsonProperty("app_id")
+    @JSONField(name = "app_id")
     public String appId;
     @JsonProperty("app_secret")
+    @JSONField(name = "app_secret")
     public String appSecret;
 
     /**

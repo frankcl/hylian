@@ -43,7 +43,7 @@ public class VendorController {
     @Path("get")
     @GetMapping("get")
     @EnableWebLogAspect
-    public Vendor get(@QueryParam("id")  String id) {
+    public Vendor get(@QueryParam("id") @RequestParam("id") String id) {
         if (StringUtils.isEmpty(id)) {
             logger.error("vendor id is empty");
             throw new BadRequestException("供应商ID为空");
@@ -112,7 +112,7 @@ public class VendorController {
     @Path("delete")
     @DeleteMapping("delete")
     @EnableWebLogAspect
-    public boolean delete(@QueryParam("id") String id) {
+    public boolean delete(@QueryParam("id") @RequestParam("id") String id) {
         if (StringUtils.isEmpty(id)) {
             logger.error("vendor id is empty");
             throw new BadRequestException("供应商ID为空");

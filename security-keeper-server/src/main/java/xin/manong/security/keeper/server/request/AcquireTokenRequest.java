@@ -1,5 +1,6 @@
 package xin.manong.security.keeper.server.request;
 
+import com.alibaba.fastjson.annotation.JSONField;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
@@ -31,30 +32,35 @@ public class AcquireTokenRequest implements Serializable {
      * 安全码
      */
     @JsonProperty("code")
+    @JSONField(name = "code")
     @QueryParam("code")
     public String code;
     /**
      * 应用ID
      */
     @JsonProperty("app_id")
+    @JSONField(name = "app_id")
     @QueryParam("app_id")
     public String appId;
     /**
      * 应用秘钥
      */
     @JsonProperty("app_secret")
+    @JSONField(name = "app_secret")
     @QueryParam("app_secret")
     public String appSecret;
     /**
      * 应用会话ID
      */
     @JsonProperty("session_id")
+    @JSONField(name = "session_id")
     @QueryParam("session_id")
     public String sessionId;
     /**
      * 应用注销URL
      */
     @JsonProperty("logout_url")
+    @JSONField(name = "logout_url")
     @QueryParam("logout_url")
     public String logoutURL;
 

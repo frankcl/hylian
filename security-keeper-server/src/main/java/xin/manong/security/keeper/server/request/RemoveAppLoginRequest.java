@@ -1,5 +1,6 @@
 package xin.manong.security.keeper.server.request;
 
+import com.alibaba.fastjson.annotation.JSONField;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
@@ -30,16 +31,19 @@ public class RemoveAppLoginRequest implements Serializable {
      * 应用ID
      */
     @JsonProperty("app_id")
+    @JSONField(name = "app_id")
     public String appId;
     /**
      * 应用秘钥
      */
     @JsonProperty("app_secret")
+    @JSONField(name = "app_secret")
     public String appSecret;
     /**
      * 会话ID
      */
     @JsonProperty("session_id")
+    @JSONField(name = "session_id")
     public String sessionId;
 
     /**
