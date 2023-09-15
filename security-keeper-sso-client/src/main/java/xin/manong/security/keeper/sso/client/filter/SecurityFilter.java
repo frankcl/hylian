@@ -17,7 +17,8 @@ import java.util.List;
 import java.util.regex.Pattern;
 
 /**
- * 单点登录过滤器抽象实现
+ * 安全过滤器实现
+ * 单点登录servlet过滤实现
  *
  * @author frankcl
  * @date 2023-09-04 14:34:57

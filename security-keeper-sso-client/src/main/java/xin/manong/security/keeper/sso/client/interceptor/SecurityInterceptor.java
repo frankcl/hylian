@@ -1,6 +1,7 @@
 package xin.manong.security.keeper.sso.client.interceptor;
 
 import org.springframework.web.servlet.HandlerInterceptor;
+import xin.manong.security.keeper.sso.client.config.AppClientConfig;
 import xin.manong.security.keeper.sso.client.core.SecurityChecker;
 
 import javax.servlet.http.HttpServletRequest;
@@ -16,10 +17,9 @@ public class SecurityInterceptor implements HandlerInterceptor {
 
     private SecurityChecker securityChecker;
 
-    public SecurityInterceptor(String appId,
-                               String appSecret,
-                               String serverURL) {
-        securityChecker = new SecurityChecker(appId, appSecret, serverURL);
+    public SecurityInterceptor(AppClientConfig appClientConfig) {
+        securityChecker = new SecurityChecker(appClientConfig.appId,
+                appClientConfig.appSecret, appClientConfig.serverURL);
     }
 
     /**
@@ -31,7 +31,9 @@ public class SecurityInterceptor implements HandlerInterceptor {
      * @return 检测成功返回true，否则返回false
      * @throws Exception
      */
-    public boolean preHandle(HttpServletRequest httpRequest, HttpServletResponse httpResponse,
+    @Override
+    public boolean preHandle(HttpServletRequest httpRequest,
+                             HttpServletResponse httpResponse,
                              Object handler) throws Exception {
         return securityChecker.check(httpRequest, httpResponse);
     }

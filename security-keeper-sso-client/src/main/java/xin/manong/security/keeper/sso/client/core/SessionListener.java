@@ -3,6 +3,7 @@ package xin.manong.security.keeper.sso.client.core;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import xin.manong.security.keeper.sso.client.common.Constants;
+import xin.manong.security.keeper.sso.client.config.AppClientConfig;
 import xin.manong.weapon.base.http.HttpRequest;
 import xin.manong.weapon.base.http.RequestFormat;
 
@@ -26,14 +27,10 @@ public class SessionListener implements HttpSessionListener {
 
     private static final int MAX_SESSION_IDLE_TIME_SECONDS = 1800;
 
-    private String serverURL;
-    private String appId;
-    private String appSecret;
+    private AppClientConfig appClientConfig;
 
-    public SessionListener(String serverURL, String appId, String appSecret) {
-        this.serverURL = serverURL;
-        this.appId = appId;
-        this.appSecret = appSecret;
+    public SessionListener(AppClientConfig appClientConfig) {
+        this.appClientConfig = appClientConfig;
     }
 
     @Override
@@ -60,13 +57,14 @@ public class SessionListener implements HttpSessionListener {
      * @param sessionId 会话ID
      */
     private void removeAppLogin(String sessionId) {
-        String requestURL = String.format("%s%s", serverURL, Constants.SERVER_PATH_REMOVE_APP_LOGIN);
+        String requestURL = String.format("%s%s", appClientConfig.serverURL, Constants.SERVER_PATH_REMOVE_APP_LOGIN);
         Map<String, Object> body = new HashMap<>();
         body.put(Constants.PARAM_SESSION_ID, sessionId);
-        body.put(Constants.PARAM_APP_ID, appId);
-        body.put(Constants.PARAM_APP_SECRET, appSecret);
+        body.put(Constants.PARAM_APP_ID, appClientConfig.appId);
+        body.put(Constants.PARAM_APP_SECRET, appClientConfig.appSecret);
         HttpRequest httpRequest = HttpRequest.buildPostRequest(requestURL, RequestFormat.JSON, body);
         Boolean success = HTTPExecutor.execute(httpRequest, Boolean.class);
-        if (success == null || !success) logger.warn("remove app login failed for session[{}] and app[{}]", sessionId, appId);
+        if (success != null && success) return;
+        logger.warn("remove app login failed for session[{}] and app[{}]", sessionId, appClientConfig.appId);
     }
 }

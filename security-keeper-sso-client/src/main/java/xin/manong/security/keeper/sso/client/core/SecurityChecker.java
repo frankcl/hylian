@@ -40,6 +40,7 @@ public class SecurityChecker {
         this.appId = appId;
         this.appSecret = appSecret;
         this.serverURL = serverURL;
+        if (!this.serverURL.endsWith("/")) this.serverURL += "/";
     }
 
     /**

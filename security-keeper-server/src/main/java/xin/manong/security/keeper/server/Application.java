@@ -2,6 +2,7 @@ package xin.manong.security.keeper.server;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import xin.manong.security.keeper.sso.client.annotation.EnableSecurityFilter;
 import xin.manong.weapon.spring.boot.annotation.EnableRedisClient;
 
 /**
@@ -12,9 +13,9 @@ import xin.manong.weapon.spring.boot.annotation.EnableRedisClient;
  * @date 2022-08-24 12:58:39
  */
 @EnableRedisClient
-@SpringBootApplication(scanBasePackages = {"xin.manong.security.keeper.server",
-        "xin.manong.security.keeper.sso.client",
-        "xin.manong.weapon.spring.web.ws.aspect"})
+@EnableSecurityFilter
+@SpringBootApplication(scanBasePackages = {
+        "xin.manong.security.keeper.server", "xin.manong.weapon.spring.web.ws.aspect" })
 public class Application {
 
     /**

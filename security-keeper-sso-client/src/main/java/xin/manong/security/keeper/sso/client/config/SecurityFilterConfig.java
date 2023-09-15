@@ -7,14 +7,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
-import org.springframework.boot.web.servlet.ServletListenerRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import xin.manong.security.keeper.sso.client.common.Constants;
 import xin.manong.security.keeper.sso.client.common.URLPattern;
-import xin.manong.security.keeper.sso.client.core.SessionListener;
 import xin.manong.security.keeper.sso.client.filter.SecurityFilter;
 
+import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -33,10 +32,9 @@ public class SecurityFilterConfig {
 
     private static final int DEFAULT_FILTER_ORDER = -1000;
 
+    @Resource
+    public AppClientConfig appClientConfig;
     public int filterOrder = DEFAULT_FILTER_ORDER;
-    public String appId;
-    public String appSecret;
-    public String serverURL;
     public List<String> includePatterns;
     public List<String> excludePatterns;
 
@@ -47,7 +45,11 @@ public class SecurityFilterConfig {
      */
     @Bean
     public FilterRegistrationBean<SecurityFilter> buildSecurityFilter() {
-        checkInitParameters();
+        if (appClientConfig == null) {
+            logger.error("app client config is null");
+            throw new RuntimeException("应用客户端配置为空");
+        }
+        appClientConfig.check();
         FilterRegistrationBean<SecurityFilter> bean = new FilterRegistrationBean<>();
         initFilterParameters(bean);
         if (includePatterns == null) includePatterns = new ArrayList<>();
@@ -60,49 +62,18 @@ public class SecurityFilterConfig {
     }
 
     /**
-     * 构建session监听器
-     *
-     * @return session监听器bean
-     */
-    @Bean
-    public ServletListenerRegistrationBean<SessionListener> buildSessionListener() {
-        checkInitParameters();
-        ServletListenerRegistrationBean<SessionListener> bean = new ServletListenerRegistrationBean();
-        bean.setListener(new SessionListener(serverURL, appId, appSecret));
-        return bean;
-    }
-
-    /**
      * 初始化过滤器参数
      *
      * @param bean 安全过滤器bean
      */
     private void initFilterParameters(FilterRegistrationBean bean) {
-        bean.addInitParameter(Constants.PARAM_APP_ID, appId);
-        bean.addInitParameter(Constants.PARAM_APP_SECRET, appSecret);
-        bean.addInitParameter(Constants.PARAM_SERVER_URL, serverURL);
+        bean.addInitParameter(Constants.PARAM_APP_ID, appClientConfig.appId);
+        bean.addInitParameter(Constants.PARAM_APP_SECRET, appClientConfig.appSecret);
+        bean.addInitParameter(Constants.PARAM_SERVER_URL, appClientConfig.serverURL);
         if (excludePatterns != null && !excludePatterns.isEmpty()) {
             List<URLPattern> urlPatterns = new ArrayList<>();
             for (String excludePattern : excludePatterns) urlPatterns.add(processExcludePattern(excludePattern));
             bean.addInitParameter(Constants.PARAM_EXCLUDE_PATTERNS, JSON.toJSONString(urlPatterns));
-        }
-    }
-
-    /**
-     * 检测参数有效性，无效抛出异常
-     */
-    private void checkInitParameters() {
-        if (StringUtils.isEmpty(appId)) {
-            logger.error("app id is empty");
-            throw new RuntimeException("应用ID为空");
-        }
-        if (StringUtils.isEmpty(appSecret)) {
-            logger.error("app secret is empty");
-            throw new RuntimeException("应用秘钥为空");
-        }
-        if (StringUtils.isEmpty(serverURL)) {
-            logger.error("server URL is empty");
-            throw new RuntimeException("单点登录服务URL为空");
         }
     }
 
