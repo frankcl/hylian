@@ -11,6 +11,8 @@ import xin.manong.weapon.base.http.HttpClientConfig;
 import xin.manong.weapon.base.log.JSONLogger;
 
 /**
+ * security keeper服务配置
+ *
  * @author frankcl
  * @date 2023-08-31 17:34:10
  */

@@ -26,9 +26,9 @@ import javax.ws.rs.core.MediaType;
  */
 @RestController
 @Controller
-@Path("/loginApp")
-@RequestMapping("/loginApp")
-public class LoginAppController {
+@Path("/appLogin")
+@RequestMapping("/appLogin")
+public class AppLoginController {
 
     @Resource
     protected AppLoginService appLoginService;

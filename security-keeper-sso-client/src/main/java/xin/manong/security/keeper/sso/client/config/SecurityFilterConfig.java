@@ -12,6 +12,7 @@ import org.springframework.context.annotation.Configuration;
 import xin.manong.security.keeper.sso.client.common.Constants;
 import xin.manong.security.keeper.sso.client.common.URLPattern;
 import xin.manong.security.keeper.sso.client.filter.SecurityFilter;
+import xin.manong.weapon.base.util.CommonUtil;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
@@ -91,38 +92,16 @@ public class SecurityFilterConfig {
             throw new RuntimeException("URL排除模式为空");
         }
         int p = pattern.indexOf("*");
-        if (p == -1) return URLPattern.buildNormal(completeExcludePattern(pattern));
-        int n = computeCharNum(pattern, '*');
+        if (p == -1) return URLPattern.buildNormal(pattern.startsWith("/") ?
+                pattern : String.format("/%s", pattern));
+        int n = CommonUtil.characterOccurrence(pattern, '*');
         int len = pattern.length();
         if (n == 1 && len > 1 && (p == 0 || (p == len - 1 && pattern.charAt(len - 2) == '/'))) {
             String tempPattern = String.format("%s.%s", pattern.substring(0, p), pattern.substring(p));
-            return URLPattern.buildRegex(p == 0 ? tempPattern : completeExcludePattern(tempPattern));
+            return URLPattern.buildRegex(p == 0 ? tempPattern : (tempPattern.startsWith("/") ?
+                    tempPattern : String.format("/%s", tempPattern)));
         }
         logger.error("invalid exclude pattern[{}]", pattern);
         throw new RuntimeException(String.format("非法URL排除模式[%s]", pattern));
-    }
-
-    /**
-     * 补全URL排除模式
-     *
-     * @param pattern URL排除模式
-     * @return 完整URL排除模式
-     */
-    private String completeExcludePattern(String pattern) {
-        return pattern.startsWith("/") ? pattern : String.format("/%s", pattern);
-    }
-
-    /**
-     * 计算字符串中包含字符个数
-     *
-     * @param s 字符串
-     * @param c 字符
-     * @return 字符个数
-     */
-    private int computeCharNum(String s, char c) {
-        int n = 0;
-        if (StringUtils.isEmpty(s)) return n;
-        for (int i = 0; i < s.length(); i++) if (s.charAt(i) == c) n++;
-        return n;
     }
 }
