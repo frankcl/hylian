@@ -8,8 +8,8 @@ package xin.manong.security.keeper.common;
  */
 public class SessionConstants {
 
-    public static final String TOKEN = "__SESSION_TOKEN__";
-    public static final String USER = "__SESSION_USER__";
-    public static final String TENANT = "__SESSION_TENANT__";
-    public static final String VENDOR = "__SESSION_VENDOR__";
+    public static final String TOKEN = "__TOKEN__";
+    public static final String USER = "__USER__";
+    public static final String TENANT = "__TENANT__";
+    public static final String VENDOR = "__VENDOR__";
 }
