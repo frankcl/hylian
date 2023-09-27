@@ -34,7 +34,7 @@ public class Constants {
     public static final String SERVER_PATH_GET_TENANT = "security/resource/getTenant";
     public static final String SERVER_PATH_GET_VENDOR = "security/resource/getVendor";
 
-    public static final String CONTEXT_USER = "__user__";
-    public static final String CONTEXT_TENANT = "__tenant__";
-    public static final String CONTEXT_VENDOR = "__vendor__";
+    public static final String CURRENT_USER = "__user__";
+    public static final String CURRENT_TENANT = "__tenant__";
+    public static final String CURRENT_VENDOR = "__vendor__";
 }

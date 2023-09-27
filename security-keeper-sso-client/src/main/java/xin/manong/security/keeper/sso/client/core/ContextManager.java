@@ -26,7 +26,7 @@ public class ContextManager {
     public static User getUser() {
         Context context = ThreadContext.getContext();
         if (context == null) return null;
-        return (User) context.get(Constants.CONTEXT_USER);
+        return (User) context.get(Constants.CURRENT_USER);
     }
 
     /**
@@ -37,7 +37,7 @@ public class ContextManager {
     public static Tenant getTenant() {
         Context context = ThreadContext.getContext();
         if (context == null) return null;
-        return (Tenant) context.get(Constants.CONTEXT_TENANT);
+        return (Tenant) context.get(Constants.CURRENT_TENANT);
     }
 
     /**
@@ -48,7 +48,7 @@ public class ContextManager {
     public static Vendor getVendor() {
         Context context = ThreadContext.getContext();
         if (context == null) return null;
-        return (Vendor) context.get(Constants.CONTEXT_VENDOR);
+        return (Vendor) context.get(Constants.CURRENT_VENDOR);
     }
 
     /**
@@ -62,9 +62,9 @@ public class ContextManager {
     public static void fillContext(HttpServletRequest httpRequest) {
         Context context = ThreadContext.getContext();
         if (context == null) ThreadContext.setContext(new Context());
-        ThreadContext.commit(Constants.CONTEXT_USER, SessionUtils.getUser(httpRequest));
-        ThreadContext.commit(Constants.CONTEXT_TENANT, SessionUtils.getTenant(httpRequest));
-        ThreadContext.commit(Constants.CONTEXT_VENDOR, SessionUtils.getVendor(httpRequest));
+        ThreadContext.commit(Constants.CURRENT_USER, SessionUtils.getUser(httpRequest));
+        ThreadContext.commit(Constants.CURRENT_TENANT, SessionUtils.getTenant(httpRequest));
+        ThreadContext.commit(Constants.CURRENT_VENDOR, SessionUtils.getVendor(httpRequest));
     }
 
     /**
