@@ -6,7 +6,6 @@ import xin.manong.security.keeper.model.User;
 import xin.manong.security.keeper.model.Vendor;
 import xin.manong.security.keeper.sso.client.common.Constants;
 import xin.manong.weapon.base.common.Context;
-import xin.manong.weapon.base.common.ThreadContext;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -18,13 +17,15 @@ import javax.servlet.http.HttpServletRequest;
  */
 public class ContextManager {
 
+    private final static ThreadLocal<Context> THREAD_LOCAL_CONTEXT = new ThreadLocal<>();
+
     /**
      * 获取用户信息
      *
      * @return 成功返回用户信息，否则返回null
      */
     public static User getUser() {
-        Context context = ThreadContext.getContext();
+        Context context = THREAD_LOCAL_CONTEXT.get();
         if (context == null) return null;
         return (User) context.get(Constants.CURRENT_USER);
     }
@@ -35,7 +36,7 @@ public class ContextManager {
      * @return 成功返回租户信息，否则返回null
      */
     public static Tenant getTenant() {
-        Context context = ThreadContext.getContext();
+        Context context = THREAD_LOCAL_CONTEXT.get();
         if (context == null) return null;
         return (Tenant) context.get(Constants.CURRENT_TENANT);
     }
@@ -46,7 +47,7 @@ public class ContextManager {
      * @return 成功返回供应商信息，否则返回null
      */
     public static Vendor getVendor() {
-        Context context = ThreadContext.getContext();
+        Context context = THREAD_LOCAL_CONTEXT.get();
         if (context == null) return null;
         return (Vendor) context.get(Constants.CURRENT_VENDOR);
     }
@@ -60,18 +61,21 @@ public class ContextManager {
      * @param httpRequest HTTP请求
      */
     public static void fillContext(HttpServletRequest httpRequest) {
-        Context context = ThreadContext.getContext();
-        if (context == null) ThreadContext.setContext(new Context());
-        ThreadContext.commit(Constants.CURRENT_USER, SessionUtils.getUser(httpRequest));
-        ThreadContext.commit(Constants.CURRENT_TENANT, SessionUtils.getTenant(httpRequest));
-        ThreadContext.commit(Constants.CURRENT_VENDOR, SessionUtils.getVendor(httpRequest));
+        Context context = THREAD_LOCAL_CONTEXT.get();
+        if (context == null) {
+            context = new Context();
+            THREAD_LOCAL_CONTEXT.set(context);
+        }
+        context.put(Constants.CURRENT_USER, SessionUtils.getUser(httpRequest));
+        context.put(Constants.CURRENT_TENANT, SessionUtils.getTenant(httpRequest));
+        context.put(Constants.CURRENT_VENDOR, SessionUtils.getVendor(httpRequest));
     }
 
     /**
      * 清除线程上下文
      */
     public static void sweepContext() {
-        if (ThreadContext.getContext() == null) return;
-        ThreadContext.removeContext();
+        if (THREAD_LOCAL_CONTEXT.get() == null) return;
+        THREAD_LOCAL_CONTEXT.remove();
     }
 }
