@@ -8,6 +8,7 @@ import xin.manong.security.keeper.common.util.HTTPUtils;
 import xin.manong.security.keeper.sso.client.common.Constants;
 import xin.manong.security.keeper.sso.client.common.URLPattern;
 import xin.manong.security.keeper.sso.client.core.SecurityChecker;
+import xin.manong.security.keeper.sso.client.core.ContextManager;
 
 import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
@@ -72,7 +73,12 @@ public class SecurityFilter implements Filter {
         HttpServletResponse httpResponse = (HttpServletResponse) response;
         String requestPath = HTTPUtils.getRequestPath(httpRequest);
         if (matchExcludePath(requestPath) || securityChecker.check(httpRequest, httpResponse)) {
-            chain.doFilter(request, response);
+            try {
+                ContextManager.fillContext(httpRequest);
+                chain.doFilter(request, response);
+            } finally {
+                ContextManager.sweepContext();
+            }
         }
     }
 
