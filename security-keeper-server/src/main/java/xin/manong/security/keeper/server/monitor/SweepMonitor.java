@@ -17,9 +17,11 @@ public class SweepMonitor implements Runnable {
     private static final Logger logger = LoggerFactory.getLogger(SweepMonitor.class);
 
     private static final Long DEFAULT_CHECK_INTERVAL_MS = 300000L;
+    private static final Long DEFAULT_EXPIRED_INTERVAL_MS = 86400000L;
 
     private boolean running = false;
     private Long checkIntervalMs = DEFAULT_CHECK_INTERVAL_MS;
+    private Long expiredIntervalMs = DEFAULT_EXPIRED_INTERVAL_MS;
     private String name = "sweep-monitor";
     private Thread monitorThread;
     @Resource
@@ -58,7 +60,7 @@ public class SweepMonitor implements Runnable {
     public void run() {
         while (running) {
             try {
-                Long maxUpdateTime = System.currentTimeMillis() - 86400000L;
+                Long maxUpdateTime = System.currentTimeMillis() - expiredIntervalMs;
                 int n = appLoginService.removeExpiredAppLogins(maxUpdateTime);
                 logger.info("sweep expired app login records[{}]", n);
                 Thread.sleep(checkIntervalMs);
