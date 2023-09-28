@@ -4,7 +4,6 @@ import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import xin.manong.security.keeper.server.monitor.SweepMonitor;
 import xin.manong.weapon.base.http.HttpClient;
 import xin.manong.weapon.base.http.HttpClientConfig;
@@ -19,7 +18,7 @@ import xin.manong.weapon.base.log.JSONLogger;
 @Data
 @Configuration
 @ConfigurationProperties(prefix = "app.server")
-public class ServerConfig implements WebMvcConfigurer {
+public class ServerConfig {
 
     public String name;
     public String aspectLogFile;
