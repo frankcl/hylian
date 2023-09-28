@@ -10,11 +10,11 @@
 
 ### 登录时序图
 
-![login](https://github.com/frankcl/security-keeper/blob/main/images/sso_login.png)
+![login](https://github.com/frankcl/security-keeper/blob/main/security-keeper-sso-client/images/sso_login.png)
 
 ### 注销时序图
 
-![logout](https://github.com/frankcl/security-keeper/blob/main/images/sso_logout.png)
+![logout](https://github.com/frankcl/security-keeper/blob/main/security-keeper-sso-client/images/sso_logout.png)
 
 ### 如何使用
 
