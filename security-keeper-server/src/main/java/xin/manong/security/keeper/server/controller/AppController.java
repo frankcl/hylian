@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.*;
 import xin.manong.security.keeper.common.util.AppSecretUtils;
 import xin.manong.security.keeper.model.App;
 import xin.manong.security.keeper.model.Pager;
-import xin.manong.security.keeper.server.request.ViewApp;
+import xin.manong.security.keeper.server.request.AppRequest;
 import xin.manong.security.keeper.server.service.AppService;
 import xin.manong.security.keeper.server.service.request.AppSearchRequest;
 import xin.manong.weapon.base.util.RandomID;
@@ -62,7 +62,7 @@ public class AppController {
     /**
      * 增加应用信息
      *
-     * @param viewApp 应用信息
+     * @param appRequest 应用信息
      * @return 成功返回true，否则返回false
      */
     @POST
@@ -71,13 +71,13 @@ public class AppController {
     @Path("add")
     @PostMapping("add")
     @EnableWebLogAspect
-    public boolean add(@RequestBody ViewApp viewApp) {
-        if (viewApp == null || StringUtils.isEmpty(viewApp.name)) {
+    public boolean add(@RequestBody AppRequest appRequest) {
+        if (appRequest == null || StringUtils.isEmpty(appRequest.name)) {
             logger.error("add app is null");
             throw new BadRequestException("增加应用信息为空");
         }
         App app = new App();
-        app.name = viewApp.name;
+        app.name = appRequest.name;
         app.id = RandomID.build();
         app.secret = AppSecretUtils.buildSecret();
         app.check();
@@ -87,7 +87,7 @@ public class AppController {
     /**
      * 更新应用信息
      *
-     * @param viewApp 应用信息
+     * @param appRequest 应用信息
      * @return 成功返回true，否则返回false
      */
     @POST
@@ -96,18 +96,15 @@ public class AppController {
     @Path("update")
     @PostMapping("update")
     @EnableWebLogAspect
-    public boolean update(@RequestBody ViewApp viewApp) {
-        if (viewApp == null) {
+    public boolean update(@RequestBody AppRequest appRequest) {
+        if (appRequest == null) {
             logger.error("update app is null");
             throw new BadRequestException("更新应用信息为空");
         }
-        if (StringUtils.isEmpty(viewApp.id)) {
-            logger.error("app id is empty");
-            throw new BadRequestException("应用ID为空");
-        }
+        appRequest.check();
         App app = new App();
-        app.id = viewApp.id;
-        app.name = viewApp.name;
+        app.id = appRequest.id;
+        app.name = appRequest.name;
         return appService.update(app);
     }
 

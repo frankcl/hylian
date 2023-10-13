@@ -20,7 +20,8 @@ import xin.manong.security.keeper.server.service.VendorService;
 import xin.manong.security.keeper.server.service.request.UserSearchRequest;
 
 import javax.annotation.Resource;
-import javax.ws.rs.NotFoundException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * 用户服务实现
@@ -90,7 +91,7 @@ public class UserServiceImpl implements UserService {
     public boolean update(User user) {
         if (userMapper.selectById(user.id) == null) {
             logger.error("user is not found for id[{}]", user.id);
-            throw new NotFoundException(String.format("用户[%s]不存在", user.id));
+            throw new RuntimeException(String.format("用户[%s]不存在", user.id));
         }
         user.userName = null;
         if (user.password != null) user.password = DigestUtils.md5Hex(user.password);
@@ -101,9 +102,49 @@ public class UserServiceImpl implements UserService {
     public boolean delete(String id) {
         if (StringUtils.isEmpty(id)) {
             logger.error("user id is empty");
-            throw new NotFoundException("用户ID为空");
+            throw new RuntimeException("用户ID为空");
         }
         return userMapper.deleteById(id) > 0;
+    }
+
+    @Override
+    public boolean addRole(String userId, String roleId) {
+        User user = get(userId);
+        if (user == null) {
+            logger.warn("user[{}] is not found", userId);
+            return false;
+        }
+        List<String> roles = user.roles;
+        if (roles == null) roles = new ArrayList<>();
+        if (roles.contains(roleId)) {
+            logger.warn("role[{}] has existed", roleId);
+            return false;
+        }
+        roles.add(roleId);
+        User updateUser = new User();
+        updateUser.id = userId;
+        updateUser.roles = roles;
+        return update(updateUser);
+    }
+
+    @Override
+    public boolean removeRole(String userId, String roleId) {
+        User user = get(userId);
+        if (user == null) {
+            logger.warn("user[{}] is not found", userId);
+            return false;
+        }
+        List<String> roles = user.roles;
+        if (roles == null) roles = new ArrayList<>();
+        if (!roles.contains(roleId)) {
+            logger.warn("role[{}] is not found", roleId);
+            return false;
+        }
+        roles.remove(roleId);
+        User updateUser = new User();
+        updateUser.id = userId;
+        updateUser.roles = roles;
+        return update(updateUser);
     }
 
     @Override

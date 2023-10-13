@@ -53,6 +53,24 @@ public interface UserService {
     boolean delete(String id);
 
     /**
+     * 添加角色
+     *
+     * @param userId 用户ID
+     * @param roleId 角色ID
+     * @return 成功返回true，否则返回false
+     */
+    boolean addRole(String userId, String roleId);
+
+    /**
+     * 删除角色
+     *
+     * @param userId 用户ID
+     * @param roleId 角色ID
+     * @return 成功返回true，否则返回false
+     */
+    boolean removeRole(String userId, String roleId);
+
+    /**
      * 搜索用户信息
      *
      * @param searchRequest 搜索请求

@@ -73,7 +73,6 @@ public class Converter {
         viewUser.userName = user.userName;
         viewUser.name = user.name;
         viewUser.avatar = user.avatar;
-        viewUser.roles = user.roles;
         viewUser.createTime = user.createTime;
         viewUser.updateTime = user.updateTime;
         viewUser.tenant = tenant;

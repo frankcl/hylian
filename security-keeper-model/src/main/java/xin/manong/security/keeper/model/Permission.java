@@ -14,28 +14,26 @@ import lombok.experimental.Accessors;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import xin.manong.security.keeper.model.handler.JSONStringListTypeHandler;
 
 import javax.ws.rs.BadRequestException;
-import java.util.List;
 
 /**
- * 角色定义
+ * 权限定义
  *
  * @author frankcl
- * @date 2023-08-29 16:44:51
+ * @date 2023-10-13 11:44:49
  */
 @Getter
 @Setter
 @Accessors(chain = true)
-@TableName(value = "role", autoResultMap = true)
+@TableName(value = "permission", autoResultMap = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class Role extends Model {
+public class Permission extends Model {
 
-    private static final Logger logger = LoggerFactory.getLogger(Role.class);
+    private static final Logger logger = LoggerFactory.getLogger(Permission.class);
 
     /**
-     * 角色ID
+     * 权限ID
      */
     @TableId(value = "id")
     @JSONField(name = "id")
@@ -43,12 +41,20 @@ public class Role extends Model {
     public String id;
 
     /**
-     * 角色名
+     * 权限名
      */
     @TableField(value = "name")
     @JSONField(name = "name")
     @JsonProperty("name")
     public String name;
+
+    /**
+     * 访问资源
+     */
+    @TableField(value = "resource")
+    @JSONField(name = "resource")
+    @JsonProperty("resource")
+    public String resource;
 
     /**
      * 应用ID
@@ -57,14 +63,6 @@ public class Role extends Model {
     @JSONField(name = "app_id")
     @JsonProperty("app_id")
     public String appId;
-
-    /**
-     * 权限列表
-     */
-    @TableField(value = "permissions", typeHandler = JSONStringListTypeHandler.class)
-    @JSONField(name = "permissions")
-    @JsonProperty("permissions")
-    public List<String> permissions;
 
     /**
      * 创建时间
@@ -82,17 +80,21 @@ public class Role extends Model {
     public Long updateTime;
 
     /**
-     * 检测角色有效性
+     * 检测权限有效性
      * 无效抛出异常
      */
     public void check() {
         if (StringUtils.isEmpty(id)) {
-            logger.error("role id is empty");
-            throw new BadRequestException("角色ID为空");
+            logger.error("permission id is empty");
+            throw new BadRequestException("权限ID为空");
         }
         if (StringUtils.isEmpty(name)) {
-            logger.error("role name is empty");
-            throw new BadRequestException("角色名称为空");
+            logger.error("permission name is empty");
+            throw new BadRequestException("权限名称为空");
+        }
+        if (StringUtils.isEmpty(resource)) {
+            logger.error("resource is empty");
+            throw new BadRequestException("访问资源为空");
         }
         if (StringUtils.isEmpty(appId)) {
             logger.error("app id is empty");

@@ -12,8 +12,10 @@ import xin.manong.security.keeper.model.User;
 import xin.manong.security.keeper.model.Vendor;
 import xin.manong.security.keeper.server.converter.Converter;
 import xin.manong.security.keeper.server.request.PasswordRequest;
+import xin.manong.security.keeper.server.request.UserRoleRequest;
 import xin.manong.security.keeper.server.response.ViewTenant;
 import xin.manong.security.keeper.server.response.ViewUser;
+import xin.manong.security.keeper.server.service.RoleService;
 import xin.manong.security.keeper.server.service.TenantService;
 import xin.manong.security.keeper.server.service.UserService;
 import xin.manong.security.keeper.server.service.VendorService;
@@ -24,6 +26,7 @@ import javax.annotation.Resource;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * 用户控制器
@@ -45,6 +48,8 @@ public class UserController {
     protected TenantService tenantService;
     @Resource
     protected VendorService vendorService;
+    @Resource
+    protected RoleService roleService;
 
     /**
      * 获取用户信息
@@ -136,6 +141,48 @@ public class UserController {
     }
 
     /**
+     * 添加角色
+     *
+     * @param request 用户角色请求
+     * @return 成功返回true，否则返回false
+     */
+    @POST
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("addRole")
+    @PostMapping("addRole")
+    @EnableWebLogAspect
+    public boolean addRole(@RequestBody UserRoleRequest request) {
+        if (request == null) {
+            logger.error("user role request is null");
+            throw new BadRequestException("用户角色请求为空");
+        }
+        request.check();
+        return userService.addRole(request.userId, request.roleId);
+    }
+
+    /**
+     * 删除角色
+     *
+     * @param request 用户角色请求
+     * @return 成功返回true，否则返回false
+     */
+    @POST
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("removeRole")
+    @PostMapping("removeRole")
+    @EnableWebLogAspect
+    public boolean removeRole(@RequestBody UserRoleRequest request) {
+        if (request == null) {
+            logger.error("user role request is null");
+            throw new BadRequestException("用户角色请求为空");
+        }
+        request.check();
+        return userService.removeRole(request.userId, request.roleId);
+    }
+
+    /**
      * 搜索用户
      *
      * @param searchRequest 搜索请求
@@ -221,6 +268,18 @@ public class UserController {
             logger.error("convert view user failed");
             throw new RuntimeException("转换视图层用户信息失败");
         }
+        fillRoles(viewUser, user.roles);
         return viewUser;
+    }
+
+    /**
+     * 填充用户角色列表
+     *
+     * @param viewUser 视图用户信息
+     * @param roleIds 角色ID列表
+     */
+    private void fillRoles(ViewUser viewUser, List<String> roleIds) {
+        if (roleIds == null || roleIds.isEmpty()) return;
+        viewUser.roles = roleService.batchGet(roleIds);
     }
 }

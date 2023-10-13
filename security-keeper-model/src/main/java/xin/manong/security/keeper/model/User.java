@@ -11,7 +11,7 @@ import lombok.experimental.Accessors;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import xin.manong.security.keeper.model.handler.JSONRoleListTypeHandler;
+import xin.manong.security.keeper.model.handler.JSONStringListTypeHandler;
 import xin.manong.security.keeper.model.util.PasswordUtils;
 
 import javax.ws.rs.BadRequestException;
@@ -91,10 +91,10 @@ public class User extends Model {
     /**
      * 角色列表
      */
-    @TableField(value = "roles", typeHandler = JSONRoleListTypeHandler.class)
+    @TableField(value = "roles", typeHandler = JSONStringListTypeHandler.class)
     @JSONField(name = "roles")
     @JsonProperty("roles")
-    public List<Role> roles;
+    public List<String> roles;
 
     /**
      * 创建时间
