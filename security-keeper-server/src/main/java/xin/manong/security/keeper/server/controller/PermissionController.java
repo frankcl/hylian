@@ -15,6 +15,8 @@ import xin.manong.weapon.spring.web.ws.aspect.EnableWebLogAspect;
 import javax.annotation.Resource;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * 权限控制器
@@ -55,6 +57,23 @@ public class PermissionController {
             throw new NotFoundException(String.format("权限[%s]不存在", id));
         }
         return permission;
+    }
+
+    /**
+     * 批量获取权限
+     *
+     * @param ids 权限ID列表
+     * @return 权限列表
+     */
+    @POST
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("batchGet")
+    @PostMapping("batchGet")
+    @EnableWebLogAspect
+    public List<Permission> batchGet(@RequestBody List<String> ids) {
+        if (ids == null || ids.isEmpty()) return new ArrayList<>();
+        return permissionService.batchGet(ids);
     }
 
     /**
