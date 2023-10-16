@@ -1,4 +1,4 @@
-package xin.manong.security.keeper.model.request;
+package xin.manong.security.keeper.sso.client.core;
 
 import com.alibaba.fastjson.annotation.JSONField;
 import com.fasterxml.jackson.annotation.JsonInclude;

@@ -1,4 +1,4 @@
-package xin.manong.security.keeper.model.util;
+package xin.manong.security.keeper.common.util;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;

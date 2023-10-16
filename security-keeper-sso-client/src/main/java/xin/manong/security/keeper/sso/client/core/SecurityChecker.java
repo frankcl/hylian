@@ -9,7 +9,6 @@ import xin.manong.security.keeper.common.util.SessionUtils;
 import xin.manong.security.keeper.model.Tenant;
 import xin.manong.security.keeper.model.User;
 import xin.manong.security.keeper.model.Vendor;
-import xin.manong.security.keeper.model.request.RefreshTokenRequest;
 import xin.manong.security.keeper.sso.client.common.Constants;
 import xin.manong.weapon.base.http.HttpRequest;
 import xin.manong.weapon.base.http.RequestFormat;

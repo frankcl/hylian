@@ -1,4 +1,4 @@
-package xin.manong.security.keeper.model.util;
+package xin.manong.security.keeper.common.util;
 
 import org.junit.Assert;
 import org.junit.Test;

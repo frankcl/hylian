@@ -55,24 +55,6 @@ public interface RoleService {
     boolean delete(String id);
 
     /**
-     * 添加权限
-     *
-     * @param roleId 角色ID
-     * @param permissionId 权限ID
-     * @return 成功返回true，否则返回false
-     */
-    boolean addPermission(String roleId, String permissionId);
-
-    /**
-     * 删除权限
-     *
-     * @param roleId 角色ID
-     * @param permissionId 权限ID
-     * @return 成功返回true，否则返回false
-     */
-    boolean removePermission(String roleId, String permissionId);
-
-    /**
      * 搜索角色信息
      *
      * @param searchRequest 搜索请求

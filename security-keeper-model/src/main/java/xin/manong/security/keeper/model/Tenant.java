@@ -2,7 +2,6 @@ package xin.manong.security.keeper.model;
 
 import com.alibaba.fastjson.annotation.JSONField;
 import com.baomidou.mybatisplus.annotation.*;
-import com.baomidou.mybatisplus.extension.activerecord.Model;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
@@ -25,7 +24,7 @@ import javax.ws.rs.BadRequestException;
 @Accessors(chain = true)
 @TableName("tenant")
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class Tenant extends Model {
+public class Tenant extends BaseModel {
 
     private static final Logger logger = LoggerFactory.getLogger(Tenant.class);
 
@@ -43,16 +42,6 @@ public class Tenant extends Model {
     @JSONField(name = "vendor_id")
     @JsonProperty("vendor_id")
     public String vendorId;
-
-    @TableField(value = "create_time", fill = FieldFill.INSERT)
-    @JSONField(name = "create_time")
-    @JsonProperty("create_time")
-    public Long createTime;
-
-    @TableField(value = "update_time", fill = FieldFill.INSERT_UPDATE)
-    @JSONField(name = "update_time")
-    @JsonProperty("update_time")
-    public Long updateTime;
 
     /**
      * 检测有效性

@@ -3,10 +3,8 @@ package xin.manong.security.keeper.server.converter;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import xin.manong.security.keeper.model.Pager;
-import xin.manong.security.keeper.model.Tenant;
-import xin.manong.security.keeper.model.User;
-import xin.manong.security.keeper.model.Vendor;
+import xin.manong.security.keeper.model.*;
+import xin.manong.security.keeper.server.request.*;
 import xin.manong.security.keeper.server.response.ViewTenant;
 import xin.manong.security.keeper.server.response.ViewUser;
 
@@ -35,6 +33,213 @@ public class Converter {
         pager.size = page.getSize();
         pager.total = page.getTotal();
         return pager;
+    }
+
+    /**
+     * 转换用户请求为用户对象
+     *
+     * @param userRequest 用户请求
+     * @return 用户对象
+     */
+    public static User convert(UserRequest userRequest) {
+        if (userRequest == null) return null;
+        User user = new User();
+        user.userName = userRequest.userName;
+        user.password = userRequest.password;
+        user.name = userRequest.name;
+        user.tenantId = userRequest.tenantId;
+        user.avatar = userRequest.avatar;
+        return user;
+    }
+
+    /**
+     * 转换用户更新请求为用户对象
+     *
+     * @param userRequest 用户更新请求
+     * @return 用户对象
+     */
+    public static User convert(UserUpdateRequest userRequest) {
+        if (userRequest == null) return null;
+        User user = new User();
+        user.id = userRequest.id;
+        user.name = userRequest.name;
+        user.tenantId = userRequest.tenantId;
+        user.avatar = userRequest.avatar;
+        return user;
+    }
+
+    /**
+     * 转换租户请求为租户对象
+     *
+     * @param tenantRequest 租户请求
+     * @return 租户对象
+     */
+    public static Tenant convert(TenantRequest tenantRequest) {
+        if (tenantRequest == null) return null;
+        Tenant tenant = new Tenant();
+        tenant.name = tenantRequest.name;
+        tenant.vendorId = tenantRequest.vendorId;
+        return tenant;
+    }
+
+    /**
+     * 转换租户更新请求为租户对象
+     *
+     * @param tenantRequest 租户更新请求
+     * @return 租户对象
+     */
+    public static Tenant convert(TenantUpdateRequest tenantRequest) {
+        if (tenantRequest == null) return null;
+        Tenant tenant = new Tenant();
+        tenant.id = tenantRequest.id;
+        tenant.name = tenantRequest.name;
+        tenant.vendorId = tenantRequest.vendorId;
+        return tenant;
+    }
+
+    /**
+     * 转换供应商请求为供应商对象
+     *
+     * @param vendorRequest 供应商请求
+     * @return 供应商对象
+     */
+    public static Vendor convert(VendorRequest vendorRequest) {
+        if (vendorRequest == null) return null;
+        Vendor vendor = new Vendor();
+        vendor.name = vendorRequest.name;
+        return vendor;
+    }
+
+    /**
+     * 转换供应商更新请求为供应商对象
+     *
+     * @param vendorRequest 供应商更新请求
+     * @return 供应商对象
+     */
+    public static Vendor convert(VendorUpdateRequest vendorRequest) {
+        if (vendorRequest == null) return null;
+        Vendor vendor = new Vendor();
+        vendor.id = vendorRequest.id;
+        vendor.name = vendorRequest.name;
+        return vendor;
+    }
+
+    /**
+     * 转换用户角色关系请求为用户角色关系对象
+     *
+     * @param request 用户角色关系请求
+     * @return 用户角色关系对象
+     */
+    public static UserRole convert(UserRoleRequest request) {
+        if (request == null) return null;
+        UserRole userRole = new UserRole();
+        userRole.roleId = request.roleId;
+        userRole.userId = request.userId;
+        userRole.appId = request.appId;
+        return userRole;
+    }
+
+    /**
+     * 转换角色权限关系请求为角色权限关系对象
+     *
+     * @param request 角色权限关系请求
+     * @return 角色权限关系对象
+     */
+    public static RolePermission convert(RolePermissionRequest request) {
+        if (request == null) return null;
+        RolePermission rolePermission = new RolePermission();
+        rolePermission.roleId = request.roleId;
+        rolePermission.permissionId = request.permissionId;
+        return rolePermission;
+    }
+
+    /**
+     * 转换应用请求为应用对象
+     *
+     * @param appRequest 应用请求
+     * @return 应用对象
+     */
+    public static App convert(AppRequest appRequest) {
+        if (appRequest == null) return null;
+        App app = new App();
+        app.name = appRequest.name;
+        app.secret = appRequest.secret;
+        return app;
+    }
+
+    /**
+     * 转换更新应用请求为应用对象
+     *
+     * @param appRequest 更新应用请求
+     * @return 应用对象
+     */
+    public static App convert(AppUpdateRequest appRequest) {
+        if (appRequest == null) return null;
+        App app = new App();
+        app.id = appRequest.id;
+        app.name = appRequest.name;
+        app.secret = appRequest.secret;
+        return app;
+    }
+
+    /**
+     * 转换角色请求为角色对象
+     *
+     * @param roleRequest 角色请求
+     * @return 角色对象
+     */
+    public static Role convert(RoleRequest roleRequest) {
+        if (roleRequest == null) return null;
+        Role role = new Role();
+        role.name = role.name;
+        role.appId = role.appId;
+        return role;
+    }
+
+    /**
+     * 转换角色更新请求为角色对象
+     *
+     * @param roleRequest 角色更新请求
+     * @return 角色对象
+     */
+    public static Role convert(RoleUpdateRequest roleRequest) {
+        if (roleRequest == null) return null;
+        Role role = new Role();
+        role.id = roleRequest.id;
+        role.name = role.name;
+        role.appId = role.appId;
+        return role;
+    }
+
+    /**
+     * 转换权限请求为权限对象
+     *
+     * @param permissionRequest 权限请求
+     * @return 权限对象
+     */
+    public static Permission convert(PermissionRequest permissionRequest) {
+        if (permissionRequest == null) return null;
+        Permission permission = new Permission();
+        permission.name = permissionRequest.name;
+        permission.resource = permissionRequest.resource;
+        permission.appId = permissionRequest.appId;
+        return permission;
+    }
+
+    /**
+     * 转换权限更新请求为权限对象
+     *
+     * @param permissionRequest 权限更新请求
+     * @return 权限对象
+     */
+    public static Permission convert(PermissionUpdateRequest permissionRequest) {
+        if (permissionRequest == null) return null;
+        Permission permission = new Permission();
+        permission.id = permissionRequest.id;
+        permission.name = permissionRequest.name;
+        permission.resource = permissionRequest.resource;
+        permission.appId = permissionRequest.appId;
+        return permission;
     }
 
     /**

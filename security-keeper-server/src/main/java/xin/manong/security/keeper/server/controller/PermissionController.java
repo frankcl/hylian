@@ -7,6 +7,9 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import xin.manong.security.keeper.model.Pager;
 import xin.manong.security.keeper.model.Permission;
+import xin.manong.security.keeper.server.converter.Converter;
+import xin.manong.security.keeper.server.request.PermissionRequest;
+import xin.manong.security.keeper.server.request.PermissionUpdateRequest;
 import xin.manong.security.keeper.server.service.PermissionService;
 import xin.manong.security.keeper.server.service.request.PermissionSearchRequest;
 import xin.manong.weapon.base.util.RandomID;
@@ -79,7 +82,7 @@ public class PermissionController {
     /**
      * 增加权限信息
      *
-     * @param permission 权限信息
+     * @param permissionRequest 权限请求
      * @return 成功返回true，否则返回false
      */
     @POST
@@ -88,11 +91,13 @@ public class PermissionController {
     @Path("add")
     @PostMapping("add")
     @EnableWebLogAspect
-    public boolean add(@RequestBody Permission permission) {
-        if (permission == null) {
+    public boolean add(@RequestBody PermissionRequest permissionRequest) {
+        if (permissionRequest == null) {
             logger.error("add permission is null");
             throw new BadRequestException("增加权限信息为空");
         }
+        permissionRequest.check();
+        Permission permission = Converter.convert(permissionRequest);
         permission.id = RandomID.build();
         permission.check();
         return permissionService.add(permission);
@@ -101,7 +106,7 @@ public class PermissionController {
     /**
      * 更新权限信息
      *
-     * @param permission 权限信息
+     * @param permissionUpdateRequest 权限更新信息
      * @return 成功返回true，否则返回false
      */
     @POST
@@ -110,11 +115,13 @@ public class PermissionController {
     @Path("update")
     @PostMapping("update")
     @EnableWebLogAspect
-    public boolean update(@RequestBody Permission permission) {
-        if (permission == null || StringUtils.isEmpty(permission.id)) {
+    public boolean update(@RequestBody PermissionUpdateRequest permissionUpdateRequest) {
+        if (permissionUpdateRequest == null) {
             logger.error("update permission or id is null");
-            throw new BadRequestException("更新权限信息或ID为空");
+            throw new BadRequestException("更新权限信息");
         }
+        permissionUpdateRequest.check();
+        Permission permission = Converter.convert(permissionUpdateRequest);
         return permissionService.update(permission);
     }
 

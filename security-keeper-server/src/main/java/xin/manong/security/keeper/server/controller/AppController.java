@@ -8,7 +8,9 @@ import org.springframework.web.bind.annotation.*;
 import xin.manong.security.keeper.common.util.AppSecretUtils;
 import xin.manong.security.keeper.model.App;
 import xin.manong.security.keeper.model.Pager;
+import xin.manong.security.keeper.server.converter.Converter;
 import xin.manong.security.keeper.server.request.AppRequest;
+import xin.manong.security.keeper.server.request.AppUpdateRequest;
 import xin.manong.security.keeper.server.service.AppService;
 import xin.manong.security.keeper.server.service.request.AppSearchRequest;
 import xin.manong.weapon.base.util.RandomID;
@@ -72,14 +74,13 @@ public class AppController {
     @PostMapping("add")
     @EnableWebLogAspect
     public boolean add(@RequestBody AppRequest appRequest) {
-        if (appRequest == null || StringUtils.isEmpty(appRequest.name)) {
+        if (appRequest == null) {
             logger.error("add app is null");
             throw new BadRequestException("增加应用信息为空");
         }
-        App app = new App();
-        app.name = appRequest.name;
+        appRequest.check();
+        App app = Converter.convert(appRequest);
         app.id = RandomID.build();
-        app.secret = AppSecretUtils.buildSecret();
         app.check();
         return appService.add(app);
     }
@@ -96,38 +97,28 @@ public class AppController {
     @Path("update")
     @PostMapping("update")
     @EnableWebLogAspect
-    public boolean update(@RequestBody AppRequest appRequest) {
+    public boolean update(@RequestBody AppUpdateRequest appRequest) {
         if (appRequest == null) {
             logger.error("update app is null");
             throw new BadRequestException("更新应用信息为空");
         }
         appRequest.check();
-        App app = new App();
-        app.id = appRequest.id;
-        app.name = appRequest.name;
+        App app = Converter.convert(appRequest);
         return appService.update(app);
     }
 
     /**
-     * 更新应用秘钥
+     * 随机生成应用秘钥
      *
-     * @param id 应用ID
-     * @return 成功返回true，否则返回false
+     * @return 应用秘钥
      */
-    @POST
+    @GET
     @Produces(MediaType.APPLICATION_JSON)
-    @Path("updateSecret/{id}")
-    @PostMapping("updateSecret/{id}")
+    @Path("randomSecret")
+    @GetMapping("randomSecret")
     @EnableWebLogAspect
-    public boolean updateSecret(@PathParam("id") @PathVariable("id") String id) {
-        if (StringUtils.isEmpty(id)) {
-            logger.error("app id is empty");
-            throw new BadRequestException("应用ID为空");
-        }
-        App app = new App();
-        app.id = id;
-        app.secret = AppSecretUtils.buildSecret();
-        return appService.update(app);
+    public String randomSecret() {
+        return AppSecretUtils.buildSecret();
     }
 
     /**

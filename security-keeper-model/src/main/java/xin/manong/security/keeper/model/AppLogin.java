@@ -24,7 +24,7 @@ import javax.ws.rs.BadRequestException;
 @Accessors(chain = true)
 @TableName("app_login")
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class AppLogin {
+public class AppLogin extends BaseModel {
 
     private static final Logger logger = LoggerFactory.getLogger(AppLogin.class);
 
@@ -70,20 +70,6 @@ public class AppLogin {
     @JSONField(name = "logout_url")
     @JsonProperty("logout_url")
     public String logoutURL;
-    /**
-     * 创建时间，毫秒时间戳
-     */
-    @TableField(value = "create_time", fill = FieldFill.INSERT)
-    @JSONField(name = "create_time")
-    @JsonProperty("create_time")
-    public Long createTime;
-    /**
-     * 更新时间，毫秒时间戳
-     */
-    @TableField(value = "update_time", fill = FieldFill.INSERT_UPDATE)
-    @JSONField(name = "update_time")
-    @JsonProperty("update_time")
-    public Long updateTime;
 
     /**
      * 检测有效性，无效抛出异常BadRequestException

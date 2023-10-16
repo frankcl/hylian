@@ -6,9 +6,18 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import xin.manong.security.keeper.model.Pager;
+import xin.manong.security.keeper.model.Permission;
 import xin.manong.security.keeper.model.Role;
+import xin.manong.security.keeper.model.RolePermission;
+import xin.manong.security.keeper.server.common.Constants;
+import xin.manong.security.keeper.server.converter.Converter;
 import xin.manong.security.keeper.server.request.RolePermissionRequest;
+import xin.manong.security.keeper.server.request.RoleRequest;
+import xin.manong.security.keeper.server.request.RoleUpdateRequest;
+import xin.manong.security.keeper.server.service.PermissionService;
+import xin.manong.security.keeper.server.service.RolePermissionService;
 import xin.manong.security.keeper.server.service.RoleService;
+import xin.manong.security.keeper.server.service.request.RolePermissionSearchRequest;
 import xin.manong.security.keeper.server.service.request.RoleSearchRequest;
 import xin.manong.weapon.base.util.RandomID;
 import xin.manong.weapon.spring.web.ws.aspect.EnableWebLogAspect;
@@ -16,6 +25,9 @@ import xin.manong.weapon.spring.web.ws.aspect.EnableWebLogAspect;
 import javax.annotation.Resource;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * 角色控制器
@@ -33,6 +45,10 @@ public class RoleController {
 
     @Resource
     protected RoleService roleService;
+    @Resource
+    protected PermissionService permissionService;
+    @Resource
+    protected RolePermissionService rolePermissionService;
 
     /**
      * 获取角色信息
@@ -61,7 +77,7 @@ public class RoleController {
     /**
      * 增加角色信息
      *
-     * @param role 角色信息
+     * @param roleRequest 角色信息
      * @return 成功返回true，否则返回false
      */
     @POST
@@ -70,11 +86,13 @@ public class RoleController {
     @Path("add")
     @PostMapping("add")
     @EnableWebLogAspect
-    public boolean add(@RequestBody Role role) {
-        if (role == null) {
+    public boolean add(@RequestBody RoleRequest roleRequest) {
+        if (roleRequest == null) {
             logger.error("add role is null");
             throw new BadRequestException("增加角色信息为空");
         }
+        roleRequest.check();
+        Role role = Converter.convert(roleRequest);
         role.id = RandomID.build();
         role.check();
         return roleService.add(role);
@@ -83,7 +101,7 @@ public class RoleController {
     /**
      * 更新角色信息
      *
-     * @param role 角色信息
+     * @param roleUpdateRequest 更新角色信息
      * @return 成功返回true，否则返回false
      */
     @POST
@@ -92,54 +110,56 @@ public class RoleController {
     @Path("update")
     @PostMapping("update")
     @EnableWebLogAspect
-    public boolean update(@RequestBody Role role) {
-        if (role == null || StringUtils.isEmpty(role.id)) {
-            logger.error("update role or id is null");
-            throw new BadRequestException("更新角色信息或ID为空");
+    public boolean update(@RequestBody RoleUpdateRequest roleUpdateRequest) {
+        if (roleUpdateRequest == null) {
+            logger.error("update role is null");
+            throw new BadRequestException("更新角色信息为空");
         }
+        roleUpdateRequest.check();
+        Role role = Converter.convert(roleUpdateRequest);
         return roleService.update(role);
     }
 
     /**
-     * 增加权限
+     * 增加角色权限关系
      *
-     * @param request 角色权限请求
+     * @param request 角色权限关系
      * @return 成功返回true，否则返回false
      */
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    @Path("addPermission")
-    @PostMapping("addPermission")
+    @Path("addRolePermission")
+    @PostMapping("addRolePermission")
     @EnableWebLogAspect
-    public boolean addPermission(@RequestBody RolePermissionRequest request) {
+    public boolean addRolePermission(@RequestBody RolePermissionRequest request) {
         if (request == null) {
-            logger.error("role permission request is null");
-            throw new BadRequestException("角色权限请求为空");
+            logger.error("role permission is null");
+            throw new BadRequestException("角色权限关系为空");
         }
         request.check();
-        return roleService.addPermission(request.roleId, request.permissionId);
+        RolePermission rolePermission = Converter.convert(request);
+        rolePermission.check();
+        return rolePermissionService.add(rolePermission);
     }
 
     /**
-     * 删除权限
+     * 删除角色权限关系
      *
-     * @param request 角色权限请求
+     * @param id 关系ID
      * @return 成功返回true，否则返回false
      */
-    @POST
-    @Consumes(MediaType.APPLICATION_JSON)
+    @DELETE
     @Produces(MediaType.APPLICATION_JSON)
-    @Path("removePermission")
-    @PostMapping("removePermission")
+    @Path("removeRolePermission")
+    @DeleteMapping("removeRolePermission")
     @EnableWebLogAspect
-    public boolean removePermission(@RequestBody RolePermissionRequest request) {
-        if (request == null) {
-            logger.error("role permission request is null");
-            throw new BadRequestException("角色权限请求为空");
+    public boolean removeRolePermission(@QueryParam("id") @RequestParam("id") Long id) {
+        if (id == null) {
+            logger.error("role permission id is null");
+            throw new BadRequestException("角色权限关系ID为空");
         }
-        request.check();
-        return roleService.removePermission(request.roleId, request.permissionId);
+        return rolePermissionService.delete(id);
     }
 
     /**
@@ -159,6 +179,32 @@ public class RoleController {
             throw new BadRequestException("角色ID为空");
         }
         return roleService.delete(id);
+    }
+
+    /**
+     * 获取角色权限列表
+     *
+     * @param roleId 角色ID
+     * @return 权限列表
+     */
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("getRolePermissions")
+    @GetMapping("getRolePermissions")
+    @EnableWebLogAspect
+    public List<Permission> getRolePermissions(@QueryParam("role_id") @RequestParam("role_id") String roleId) {
+        if (StringUtils.isEmpty(roleId)) {
+            logger.error("role id is empty");
+            throw new BadRequestException("角色ID为空");
+        }
+        RolePermissionSearchRequest searchRequest = new RolePermissionSearchRequest();
+        searchRequest.roleId = roleId;
+        searchRequest.current = Constants.DEFAULT_CURRENT;
+        searchRequest.size = 100;
+        Pager<RolePermission> pager = rolePermissionService.search(searchRequest);
+        if (pager == null || pager.records == null) return new ArrayList<>();
+        List<String> permissionIds = pager.records.stream().map(r -> r.permissionId).collect(Collectors.toList());
+        return permissionService.batchGet(permissionIds);
     }
 
     /**

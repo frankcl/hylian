@@ -1,7 +1,5 @@
-package xin.manong.security.keeper.model;
+package xin.manong.security.keeper.server.request;
 
-import com.alibaba.fastjson.annotation.JSONField;
-import com.baomidou.mybatisplus.annotation.*;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
@@ -14,33 +12,27 @@ import org.slf4j.LoggerFactory;
 import javax.ws.rs.BadRequestException;
 
 /**
- * 供应商信息
+ * 供应商更新请求
  *
  * @author frankcl
- * @since 2023-08-29 17:28:08
+ * @date 2023-09-05 13:51:00
  */
 @Getter
 @Setter
 @Accessors(chain = true)
-@TableName("vendor")
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class Vendor extends BaseModel {
+public class VendorUpdateRequest extends VendorRequest {
 
-    private static final Logger logger = LoggerFactory.getLogger(Vendor.class);
+    private static final Logger logger = LoggerFactory.getLogger(VendorUpdateRequest.class);
 
-    @TableId(value = "id")
-    @JSONField(name = "id")
+    /**
+     * 供应商ID
+     */
     @JsonProperty("id")
     public String id;
 
-    @TableField(value = "name")
-    @JSONField(name = "name")
-    @JsonProperty("name")
-    public String name;
-
     /**
-     * 检测有效性
-     * 无效抛出异常
+     * 检测有效性，无效请求抛出异常
      */
     public void check() {
         if (StringUtils.isEmpty(id)) {
@@ -49,7 +41,7 @@ public class Vendor extends BaseModel {
         }
         if (StringUtils.isEmpty(name)) {
             logger.error("vendor name is empty");
-            throw new BadRequestException("供应商名称为空");
+            throw new BadRequestException("供应商名为空");
         }
     }
 }

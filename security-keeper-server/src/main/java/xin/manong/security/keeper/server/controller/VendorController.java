@@ -7,8 +7,11 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import xin.manong.security.keeper.model.Pager;
 import xin.manong.security.keeper.model.Vendor;
+import xin.manong.security.keeper.server.converter.Converter;
+import xin.manong.security.keeper.server.request.VendorRequest;
 import xin.manong.security.keeper.server.service.VendorService;
 import xin.manong.security.keeper.server.service.request.VendorSearchRequest;
+import xin.manong.weapon.base.util.RandomID;
 import xin.manong.weapon.spring.web.ws.aspect.EnableWebLogAspect;
 
 import javax.annotation.Resource;
@@ -59,7 +62,7 @@ public class VendorController {
     /**
      * 增加供应商信息
      *
-     * @param vendor 供应商信息
+     * @param vendorRequest 供应商信息
      * @return 成功返回true，否则返回false
      */
     @POST
@@ -68,11 +71,14 @@ public class VendorController {
     @Path("add")
     @PostMapping("add")
     @EnableWebLogAspect
-    public boolean add(@RequestBody Vendor vendor) {
-        if (vendor == null) {
+    public boolean add(@RequestBody VendorRequest vendorRequest) {
+        if (vendorRequest == null) {
             logger.error("add vendor is null");
             throw new BadRequestException("增加供应商信息为空");
         }
+        vendorRequest.check();
+        Vendor vendor = Converter.convert(vendorRequest);
+        vendor.id = RandomID.build();
         vendor.check();
         return vendorService.add(vendor);
     }
@@ -80,7 +86,7 @@ public class VendorController {
     /**
      * 更新供应商信息
      *
-     * @param vendor 供应商信息
+     * @param vendorRequest 供应商信息
      * @return 成功返回true，否则返回false
      */
     @POST
@@ -89,15 +95,13 @@ public class VendorController {
     @Path("update")
     @PostMapping("update")
     @EnableWebLogAspect
-    public boolean update(@RequestBody Vendor vendor) {
-        if (vendor == null) {
+    public boolean update(@RequestBody VendorRequest vendorRequest) {
+        if (vendorRequest == null) {
             logger.error("update vendor is null");
             throw new BadRequestException("更新供应商信息为空");
         }
-        if (StringUtils.isEmpty(vendor.id)) {
-            logger.error("vendor id is empty");
-            throw new BadRequestException("供应商ID为空");
-        }
+        vendorRequest.check();
+        Vendor vendor = Converter.convert(vendorRequest);
         return vendorService.update(vendor);
     }
 

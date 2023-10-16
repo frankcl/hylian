@@ -13,7 +13,7 @@ import javax.ws.rs.BadRequestException;
 import java.io.Serializable;
 
 /**
- * 用户角色请求
+ * 角色信息请求
  *
  * @author frankcl
  * @date 2023-09-05 13:51:00
@@ -22,20 +22,15 @@ import java.io.Serializable;
 @Setter
 @Accessors(chain = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class UserRoleRequest implements Serializable {
+public class RoleRequest implements Serializable {
 
-    private static final Logger logger = LoggerFactory.getLogger(UserRoleRequest.class);
+    private static final Logger logger = LoggerFactory.getLogger(RoleRequest.class);
 
     /**
-     * 用户ID
+     * 角色名
      */
-    @JsonProperty("user_id")
-    public String userId;
-    /**
-     * 角色ID
-     */
-    @JsonProperty("role_id")
-    public String roleId;
+    @JsonProperty("name")
+    public String name;
     /**
      * 应用ID
      */
@@ -46,13 +41,9 @@ public class UserRoleRequest implements Serializable {
      * 检测有效性，无效请求抛出异常
      */
     public void check() {
-        if (StringUtils.isEmpty(userId)) {
-            logger.error("user id is empty");
-            throw new BadRequestException("用户ID为空");
-        }
-        if (StringUtils.isEmpty(roleId)) {
-            logger.error("role id is empty");
-            throw new BadRequestException("角色ID为空");
+        if (StringUtils.isEmpty(name)) {
+            logger.error("role name is empty");
+            throw new BadRequestException("角色名为空");
         }
         if (StringUtils.isEmpty(appId)) {
             logger.error("app id is empty");

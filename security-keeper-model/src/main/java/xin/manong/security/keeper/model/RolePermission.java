@@ -16,60 +16,56 @@ import org.slf4j.LoggerFactory;
 import javax.ws.rs.BadRequestException;
 
 /**
- * 角色定义
+ * 角色权限关系
  *
  * @author frankcl
- * @date 2023-08-29 16:44:51
+ * @date 2023-03-06 15:40:19
  */
 @Getter
 @Setter
 @Accessors(chain = true)
-@TableName(value = "role", autoResultMap = true)
+@TableName(value = "role_permission", autoResultMap = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class Role extends BaseModel {
+public class RolePermission extends BaseModel {
 
-    private static final Logger logger = LoggerFactory.getLogger(Role.class);
+    private static final Logger logger = LoggerFactory.getLogger(RolePermission.class);
 
     /**
-     * 角色ID
+     * 自增ID
      */
     @TableId(value = "id")
     @JSONField(name = "id")
     @JsonProperty("id")
-    public String id;
+    public Long id;
 
     /**
-     * 角色名
+     * 权限ID
      */
-    @TableField(value = "name")
-    @JSONField(name = "name")
-    @JsonProperty("name")
-    public String name;
+    @TableField(value = "permission_id")
+    @JSONField(name = "permission_id")
+    @JsonProperty("permission_id")
+    public String permissionId;
 
     /**
-     * 应用ID
+     * 角色ID
      */
-    @TableField(value = "app_id")
-    @JSONField(name = "app_id")
-    @JsonProperty("app_id")
-    public String appId;
+    @TableField(value = "role_id")
+    @JSONField(name = "role_id")
+    @JsonProperty("role_id")
+    public String roleId;
 
     /**
-     * 检测角色有效性
+     * 检测角色权限关系有效性
      * 无效抛出异常
      */
     public void check() {
-        if (StringUtils.isEmpty(id)) {
+        if (StringUtils.isEmpty(permissionId)) {
+            logger.error("permission id is empty");
+            throw new BadRequestException("权限ID为空");
+        }
+        if (StringUtils.isEmpty(roleId)) {
             logger.error("role id is empty");
             throw new BadRequestException("角色ID为空");
-        }
-        if (StringUtils.isEmpty(name)) {
-            logger.error("role name is empty");
-            throw new BadRequestException("角色名称为空");
-        }
-        if (StringUtils.isEmpty(appId)) {
-            logger.error("app id is empty");
-            throw new BadRequestException("应用ID为空");
         }
     }
 }

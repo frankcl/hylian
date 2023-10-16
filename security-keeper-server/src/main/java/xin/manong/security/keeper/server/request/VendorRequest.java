@@ -13,7 +13,7 @@ import javax.ws.rs.BadRequestException;
 import java.io.Serializable;
 
 /**
- * 应用信息请求
+ * 供应商信息请求
  *
  * @author frankcl
  * @date 2023-09-05 13:51:00
@@ -22,32 +22,23 @@ import java.io.Serializable;
 @Setter
 @Accessors(chain = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class AppRequest implements Serializable {
+public class VendorRequest implements Serializable {
 
-    private static final Logger logger = LoggerFactory.getLogger(AppRequest.class);
+    private static final Logger logger = LoggerFactory.getLogger(VendorRequest.class);
 
     /**
-     * 应用名
+     * 供应商名
      */
     @JsonProperty("name")
     public String name;
-    /**
-     * 应用秘钥
-     */
-    @JsonProperty("secret")
-    public String secret;
 
     /**
      * 检测有效性，无效请求抛出异常
      */
     public void check() {
         if (StringUtils.isEmpty(name)) {
-            logger.error("app name is empty");
-            throw new BadRequestException("应用名为空");
-        }
-        if (StringUtils.isEmpty(secret)) {
-            logger.error("app secret is empty");
-            throw new BadRequestException("应用秘钥为空");
+            logger.error("vendor name is empty");
+            throw new BadRequestException("供应商名为空");
         }
     }
 }

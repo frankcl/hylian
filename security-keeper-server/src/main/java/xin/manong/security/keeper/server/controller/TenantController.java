@@ -9,10 +9,13 @@ import xin.manong.security.keeper.model.Pager;
 import xin.manong.security.keeper.model.Tenant;
 import xin.manong.security.keeper.model.Vendor;
 import xin.manong.security.keeper.server.converter.Converter;
+import xin.manong.security.keeper.server.request.TenantRequest;
+import xin.manong.security.keeper.server.request.TenantUpdateRequest;
 import xin.manong.security.keeper.server.response.ViewTenant;
 import xin.manong.security.keeper.server.service.TenantService;
 import xin.manong.security.keeper.server.service.VendorService;
 import xin.manong.security.keeper.server.service.request.TenantSearchRequest;
+import xin.manong.weapon.base.util.RandomID;
 import xin.manong.weapon.spring.web.ws.aspect.EnableWebLogAspect;
 
 import javax.annotation.Resource;
@@ -66,7 +69,7 @@ public class TenantController {
     /**
      * 增加租户信息
      *
-     * @param tenant 租户信息
+     * @param tenantRequest 租户信息
      * @return 成功返回true，否则返回false
      */
     @POST
@@ -75,11 +78,14 @@ public class TenantController {
     @Path("add")
     @PostMapping("add")
     @EnableWebLogAspect
-    public boolean add(@RequestBody Tenant tenant) {
-        if (tenant == null) {
+    public boolean add(@RequestBody TenantRequest tenantRequest) {
+        if (tenantRequest == null) {
             logger.error("add tenant is null");
             throw new BadRequestException("增加租户信息为空");
         }
+        tenantRequest.check();
+        Tenant tenant = Converter.convert(tenantRequest);
+        tenant.id = RandomID.build();
         tenant.check();
         return tenantService.add(tenant);
     }
@@ -87,7 +93,7 @@ public class TenantController {
     /**
      * 更新租户信息
      *
-     * @param tenant 租户信息
+     * @param tenantUpdateRequest 租户信息
      * @return 成功返回true，否则返回false
      */
     @POST
@@ -96,15 +102,13 @@ public class TenantController {
     @Path("update")
     @PostMapping("update")
     @EnableWebLogAspect
-    public boolean update(@RequestBody Tenant tenant) {
-        if (tenant == null) {
+    public boolean update(@RequestBody TenantUpdateRequest tenantUpdateRequest) {
+        if (tenantUpdateRequest == null) {
             logger.error("update tenant is null");
             throw new BadRequestException("更新租户信息为空");
         }
-        if (StringUtils.isEmpty(tenant.id)) {
-            logger.error("tenant id is empty");
-            throw new BadRequestException("租户ID为空");
-        }
+        tenantUpdateRequest.check();
+        Tenant tenant = Converter.convert(tenantUpdateRequest);
         return tenantService.update(tenant);
     }
 

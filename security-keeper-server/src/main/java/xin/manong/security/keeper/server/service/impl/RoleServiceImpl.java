@@ -98,46 +98,6 @@ public class RoleServiceImpl implements RoleService {
     }
 
     @Override
-    public boolean addPermission(String roleId, String permissionId) {
-        Role role = get(roleId);
-        if (role == null) {
-            logger.warn("role[{}] is not found", roleId);
-            return false;
-        }
-        List<String> permissions = role.getPermissions();
-        if (permissions == null) permissions = new ArrayList<>();
-        if (permissions.contains(permissionId)) {
-            logger.warn("permission[{}] has existed", permissionId);
-            return false;
-        }
-        permissions.add(permissionId);
-        Role updateRole = new Role();
-        updateRole.id = roleId;
-        updateRole.permissions = permissions;
-        return update(updateRole);
-    }
-
-    @Override
-    public boolean removePermission(String roleId, String permissionId) {
-        Role role = get(roleId);
-        if (role == null) {
-            logger.warn("role[{}] is not found", roleId);
-            return false;
-        }
-        List<String> permissions = role.getPermissions();
-        if (permissions == null) permissions = new ArrayList<>();
-        if (!permissions.contains(permissionId)) {
-            logger.warn("permission[{}] is not found", permissionId);
-            return false;
-        }
-        permissions.remove(permissionId);
-        Role updateRole = new Role();
-        updateRole.id = roleId;
-        updateRole.permissions = permissions;
-        return update(updateRole);
-    }
-
-    @Override
     public Pager<Role> search(RoleSearchRequest searchRequest) {
         if (searchRequest == null) searchRequest = new RoleSearchRequest();
         if (searchRequest.current == null || searchRequest.current < 1) searchRequest.current = Constants.DEFAULT_CURRENT;

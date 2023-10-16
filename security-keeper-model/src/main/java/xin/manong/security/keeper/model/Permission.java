@@ -1,11 +1,9 @@
 package xin.manong.security.keeper.model;
 
 import com.alibaba.fastjson.annotation.JSONField;
-import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-import com.baomidou.mybatisplus.extension.activerecord.Model;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
@@ -28,7 +26,7 @@ import javax.ws.rs.BadRequestException;
 @Accessors(chain = true)
 @TableName(value = "permission", autoResultMap = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class Permission extends Model {
+public class Permission extends BaseModel {
 
     private static final Logger logger = LoggerFactory.getLogger(Permission.class);
 
@@ -63,21 +61,6 @@ public class Permission extends Model {
     @JSONField(name = "app_id")
     @JsonProperty("app_id")
     public String appId;
-
-    /**
-     * 创建时间
-     */
-    @TableField(value = "create_time", fill = FieldFill.INSERT)
-    @JSONField(name = "create_time")
-    @JsonProperty("create_time")
-    public Long createTime;
-    /**
-     * 更新时间
-     */
-    @TableField(value = "update_time", fill = FieldFill.INSERT_UPDATE)
-    @JSONField(name = "update_time")
-    @JsonProperty("update_time")
-    public Long updateTime;
 
     /**
      * 检测权限有效性

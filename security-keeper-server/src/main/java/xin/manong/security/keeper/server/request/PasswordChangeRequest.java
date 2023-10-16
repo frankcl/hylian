@@ -8,7 +8,7 @@ import lombok.experimental.Accessors;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import xin.manong.security.keeper.model.util.PasswordUtils;
+import xin.manong.security.keeper.common.util.PasswordUtils;
 
 import javax.ws.rs.BadRequestException;
 import java.io.Serializable;
@@ -23,9 +23,9 @@ import java.io.Serializable;
 @Setter
 @Accessors(chain = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class PasswordRequest implements Serializable {
+public class PasswordChangeRequest implements Serializable {
 
-    private static final Logger logger = LoggerFactory.getLogger(PasswordRequest.class);
+    private static final Logger logger = LoggerFactory.getLogger(PasswordChangeRequest.class);
 
     /**
      * 用户名

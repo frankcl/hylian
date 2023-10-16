@@ -6,20 +6,19 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
-import xin.manong.security.keeper.model.Pager;
-import xin.manong.security.keeper.model.Tenant;
-import xin.manong.security.keeper.model.User;
-import xin.manong.security.keeper.model.Vendor;
+import xin.manong.security.keeper.model.*;
+import xin.manong.security.keeper.server.common.Constants;
 import xin.manong.security.keeper.server.converter.Converter;
-import xin.manong.security.keeper.server.request.PasswordRequest;
+import xin.manong.security.keeper.server.request.PasswordChangeRequest;
+import xin.manong.security.keeper.server.request.UserRequest;
 import xin.manong.security.keeper.server.request.UserRoleRequest;
+import xin.manong.security.keeper.server.request.UserUpdateRequest;
 import xin.manong.security.keeper.server.response.ViewTenant;
 import xin.manong.security.keeper.server.response.ViewUser;
-import xin.manong.security.keeper.server.service.RoleService;
-import xin.manong.security.keeper.server.service.TenantService;
-import xin.manong.security.keeper.server.service.UserService;
-import xin.manong.security.keeper.server.service.VendorService;
+import xin.manong.security.keeper.server.service.*;
+import xin.manong.security.keeper.server.service.request.UserRoleSearchRequest;
 import xin.manong.security.keeper.server.service.request.UserSearchRequest;
+import xin.manong.weapon.base.util.RandomID;
 import xin.manong.weapon.spring.web.ws.aspect.EnableWebLogAspect;
 
 import javax.annotation.Resource;
@@ -27,6 +26,7 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * 用户控制器
@@ -50,6 +50,8 @@ public class UserController {
     protected VendorService vendorService;
     @Resource
     protected RoleService roleService;
+    @Resource
+    protected UserRoleService userRoleService;
 
     /**
      * 获取用户信息
@@ -78,7 +80,7 @@ public class UserController {
     /**
      * 增加用户信息
      *
-     * @param user 用户信息
+     * @param userRequest 用户信息
      * @return 成功返回true，否则返回false
      */
     @POST
@@ -87,11 +89,20 @@ public class UserController {
     @Path("add")
     @PostMapping("add")
     @EnableWebLogAspect
-    public boolean add(@RequestBody User user) {
-        if (user == null) {
+    public boolean add(@RequestBody UserRequest userRequest) {
+        if (userRequest == null) {
             logger.error("add user is null");
             throw new BadRequestException("增加用户信息为空");
         }
+        userRequest.check();
+        User user = Converter.convert(userRequest);
+        user.id = RandomID.build();
+        Tenant tenant = tenantService.get(user.tenantId);
+        if (tenant == null) {
+            logger.error("tenant[{}] is not found", user.tenantId);
+            throw new BadRequestException(String.format("租户[%s]不存在", user.tenantId));
+        }
+        user.vendorId = tenant.vendorId;
         user.check();
         return userService.add(user);
     }
@@ -99,7 +110,7 @@ public class UserController {
     /**
      * 更新用户信息
      *
-     * @param user 用户信息
+     * @param userUpdateRequest 用户信息
      * @return 成功返回true，否则返回false
      */
     @POST
@@ -108,16 +119,21 @@ public class UserController {
     @Path("update")
     @PostMapping("update")
     @EnableWebLogAspect
-    public boolean update(@RequestBody User user) {
-        if (user == null) {
+    public boolean update(@RequestBody UserUpdateRequest userUpdateRequest) {
+        if (userUpdateRequest == null) {
             logger.error("update user is null");
             throw new BadRequestException("更新用户信息为空");
         }
-        if (StringUtils.isEmpty(user.id)) {
-            logger.error("user id is empty");
-            throw new BadRequestException("用户ID为空");
+        userUpdateRequest.check();
+        User user = Converter.convert(userUpdateRequest);
+        if (!StringUtils.isEmpty(user.tenantId)) {
+            Tenant tenant = tenantService.get(user.tenantId);
+            if (tenant == null) {
+                logger.error("tenant[{}] is not found", user.tenantId);
+                throw new BadRequestException(String.format("租户[%s]不存在", user.tenantId));
+            }
+            user.vendorId = tenant.vendorId;
         }
-        user.password = null;
         return userService.update(user);
     }
 
@@ -141,45 +157,78 @@ public class UserController {
     }
 
     /**
-     * 添加角色
+     * 添加用户角色关系
      *
-     * @param request 用户角色请求
+     * @param request 用户角色关系
      * @return 成功返回true，否则返回false
      */
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    @Path("addRole")
-    @PostMapping("addRole")
+    @Path("addUserRole")
+    @PostMapping("addUserRole")
     @EnableWebLogAspect
-    public boolean addRole(@RequestBody UserRoleRequest request) {
+    public boolean addUserRole(@RequestBody UserRoleRequest request) {
         if (request == null) {
-            logger.error("user role request is null");
-            throw new BadRequestException("用户角色请求为空");
+            logger.error("user role is null");
+            throw new BadRequestException("用户角色关系为空");
         }
         request.check();
-        return userService.addRole(request.userId, request.roleId);
+        UserRole userRole = Converter.convert(request);
+        userRole.check();
+        return userRoleService.add(userRole);
     }
 
     /**
-     * 删除角色
+     * 删除用户角色关系
      *
-     * @param request 用户角色请求
+     * @param id 用户角色关系ID
      * @return 成功返回true，否则返回false
      */
-    @POST
-    @Consumes(MediaType.APPLICATION_JSON)
+    @DELETE
     @Produces(MediaType.APPLICATION_JSON)
-    @Path("removeRole")
-    @PostMapping("removeRole")
+    @Path("removeUserRole")
+    @DeleteMapping("removeUserRole")
     @EnableWebLogAspect
-    public boolean removeRole(@RequestBody UserRoleRequest request) {
-        if (request == null) {
-            logger.error("user role request is null");
-            throw new BadRequestException("用户角色请求为空");
+    public boolean removeUserRole(@QueryParam("id") @RequestParam("id") Long id) {
+        if (id == null) {
+            logger.error("user role id is null");
+            throw new BadRequestException("用户角色关系ID为空");
         }
-        request.check();
-        return userService.removeRole(request.userId, request.roleId);
+        return userRoleService.delete(id);
+    }
+
+    /**
+     * 获取应用用户角色列表
+     *
+     * @param userId 用户ID
+     * @param appId 应用ID
+     * @return 角色列表
+     */
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("getAppUserRoles")
+    @GetMapping("getAppUserRoles")
+    @EnableWebLogAspect
+    public List<Role> getAppUserRoles(@QueryParam("user_id") @RequestParam("user_id") String userId,
+                                      @QueryParam("app_id") @RequestParam("app_id") String appId) {
+        if (StringUtils.isEmpty(userId)) {
+            logger.error("user id is empty");
+            throw new BadRequestException("用户ID为空");
+        }
+        if (StringUtils.isEmpty(appId)) {
+            logger.error("app id is empty");
+            throw new BadRequestException("应用ID为空");
+        }
+        UserRoleSearchRequest searchRequest = new UserRoleSearchRequest();
+        searchRequest.userId = userId;
+        searchRequest.appId = appId;
+        searchRequest.current = Constants.DEFAULT_CURRENT;
+        searchRequest.size = 100;
+        Pager<UserRole> pager = userRoleService.search(searchRequest);
+        if (pager == null || pager.records == null) return new ArrayList<>();
+        List<String> roleIds = pager.records.stream().map(r -> r.roleId).collect(Collectors.toList());
+        return roleService.batchGet(roleIds);
     }
 
     /**
@@ -220,7 +269,7 @@ public class UserController {
     @Path("changePassword")
     @PostMapping("changePassword")
     @EnableWebLogAspect
-    public boolean changePassword(@RequestBody PasswordRequest request) {
+    public boolean changePassword(@RequestBody PasswordChangeRequest request) {
         if (request == null) {
             logger.error("change password request is null");
             throw new BadRequestException("修改密码请求为空");
@@ -268,18 +317,6 @@ public class UserController {
             logger.error("convert view user failed");
             throw new RuntimeException("转换视图层用户信息失败");
         }
-        fillRoles(viewUser, user.roles);
         return viewUser;
-    }
-
-    /**
-     * 填充用户角色列表
-     *
-     * @param viewUser 视图用户信息
-     * @param roleIds 角色ID列表
-     */
-    private void fillRoles(ViewUser viewUser, List<String> roleIds) {
-        if (roleIds == null || roleIds.isEmpty()) return;
-        viewUser.roles = roleService.batchGet(roleIds);
     }
 }

@@ -146,9 +146,6 @@ public class UserServiceImplSuite {
             user.password = "xxxxxxx";
             user.avatar = "http://www.manong.xin/frankcl/avatar1.jpg";
             Assert.assertTrue(userService.update(user));
-            Assert.assertTrue(userService.addRole("xxx", "123"));
-            Assert.assertTrue(userService.addRole("xxx", "456"));
-            Assert.assertTrue(userService.removeRole("xxx", "123"));
         }
         {
             User user = userService.get("xxx");
@@ -162,8 +159,6 @@ public class UserServiceImplSuite {
             Assert.assertEquals("http://www.manong.xin/frankcl/avatar1.jpg", user.avatar);
             Assert.assertTrue(user.createTime > 0);
             Assert.assertTrue(user.updateTime > 0);
-            Assert.assertTrue(user.roles != null && user.roles.size() == 1);
-            Assert.assertEquals("456", user.roles.get(0));
         }
         {
             UserSearchRequest searchRequest = new UserSearchRequest();
