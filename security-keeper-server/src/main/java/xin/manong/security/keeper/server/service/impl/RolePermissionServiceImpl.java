@@ -60,7 +60,7 @@ public class RolePermissionServiceImpl implements RolePermissionService {
         if (searchRequest.size == null || searchRequest.size <= 0) searchRequest.size = Constants.DEFAULT_PAGE_SIZE;
         LambdaQueryWrapper<RolePermission> query = new LambdaQueryWrapper<>();
         query.orderByDesc(RolePermission::getCreateTime);
-        if (!StringUtils.isEmpty(searchRequest.roleId)) query.eq(RolePermission::getRoleId, searchRequest.roleId);
+        if (searchRequest.roleIds != null && !searchRequest.roleIds.isEmpty()) query.in(RolePermission::getRoleId, searchRequest.roleIds);
         if (!StringUtils.isEmpty(searchRequest.permissionId)) query.eq(RolePermission::getPermissionId, searchRequest.permissionId);
         IPage<RolePermission> page = rolePermissionMapper.selectPage(new Page<>(searchRequest.current, searchRequest.size), query);
         return Converter.convert(page);

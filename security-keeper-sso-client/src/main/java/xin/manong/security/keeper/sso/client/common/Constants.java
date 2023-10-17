@@ -19,6 +19,8 @@ public class Constants {
     public static final String PARAM_REDIRECT_URL = "redirect_url";
     public static final String PARAM_SERVER_URL = "server_url";
     public static final String PARAM_EXCLUDE_PATTERNS = "exclude_patterns";
+    public static final String PARAM_USER_ID = "user_id";
+    public static final String PARAM_ROLE_IDS = "role_ids";
 
     public static final String CLIENT_PATH_LOGOUT = "/logout";
     public static final String CLIENT_PATH_LOGOUT_DESTROY = "/logout/destroy";
@@ -33,6 +35,8 @@ public class Constants {
     public static final String SERVER_PATH_GET_USER = "security/resource/getUser";
     public static final String SERVER_PATH_GET_TENANT = "security/resource/getTenant";
     public static final String SERVER_PATH_GET_VENDOR = "security/resource/getVendor";
+    public static final String SERVER_PATH_GET_APP_USER_ROLES = "user/getAppUserRoles";
+    public static final String SERVER_PATH_GET_ROLE_PERMISSIONS = "role/getRolePermissions";
 
     public static final String CURRENT_USER = "__user__";
     public static final String CURRENT_TENANT = "__tenant__";

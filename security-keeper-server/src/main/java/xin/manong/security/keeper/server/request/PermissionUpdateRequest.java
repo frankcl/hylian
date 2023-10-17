@@ -8,6 +8,7 @@ import lombok.experimental.Accessors;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import xin.manong.security.keeper.common.util.PermissionUtils;
 
 import javax.ws.rs.BadRequestException;
 
@@ -42,6 +43,10 @@ public class PermissionUpdateRequest extends PermissionRequest {
         if (StringUtils.isEmpty(name) && StringUtils.isEmpty(resource) && StringUtils.isEmpty(appId)) {
             logger.error("update permission info is empty");
             throw new BadRequestException("更新权限信息为空");
+        }
+        if (!StringUtils.isEmpty(resource) && !PermissionUtils.validatePattern(resource)) {
+            logger.error("invalid resource[{}]", resource);
+            throw new BadRequestException("资源格式非法");
         }
     }
 }

@@ -3,6 +3,8 @@ package xin.manong.security.keeper.server.service.request;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import java.util.List;
+
 /**
  * 角色权限关系搜索请求
  *
@@ -13,10 +15,10 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public class RolePermissionSearchRequest extends SearchRequest {
 
     /**
-     * 角色ID
+     * 角色ID列表
      */
-    @JsonProperty("role_id")
-    public String roleId;
+    @JsonProperty("role_ids")
+    public List<String> roleIds;
     /**
      * 权限ID
      */

@@ -2,12 +2,14 @@ package xin.manong.security.keeper.common.util;
 
 import org.apache.commons.lang3.StringUtils;
 import xin.manong.security.keeper.common.SessionConstants;
+import xin.manong.security.keeper.model.Permission;
 import xin.manong.security.keeper.model.Tenant;
 import xin.manong.security.keeper.model.User;
 import xin.manong.security.keeper.model.Vendor;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
+import java.util.List;
 
 /**
  * session工具
@@ -73,6 +75,17 @@ public class SessionUtils {
     }
 
     /**
+     * 从session中获取权限列表
+     *
+     * @param httpRequest HTTP请求
+     * @return 成功返回权限列表，否则返回null
+     */
+    public static List<Permission> getPermissions(HttpServletRequest httpRequest) {
+        if (httpRequest == null) return null;
+        return (List<Permission>) httpRequest.getSession().getAttribute(SessionConstants.PERMISSIONS);
+    }
+
+    /**
      * 将token设置到session
      *
      * @param httpRequest HTTP请求
@@ -117,6 +130,17 @@ public class SessionUtils {
     }
 
     /**
+     * 将权限列表设置到session
+     *
+     * @param httpRequest HTTP请求
+     * @param permissions 权限列表
+     */
+    public static void setPermissions(HttpServletRequest httpRequest, List<Permission> permissions) {
+        if (httpRequest == null || permissions == null || permissions.isEmpty()) return;
+        httpRequest.getSession().setAttribute(SessionConstants.PERMISSIONS, permissions);
+    }
+
+    /**
      * 移除session资源
      *
      * @param httpRequest HTTP请求
@@ -128,5 +152,6 @@ public class SessionUtils {
         httpSession.removeAttribute(SessionConstants.USER);
         httpSession.removeAttribute(SessionConstants.TENANT);
         httpSession.removeAttribute(SessionConstants.VENDOR);
+        httpSession.removeAttribute(SessionConstants.PERMISSIONS);
     }
 }

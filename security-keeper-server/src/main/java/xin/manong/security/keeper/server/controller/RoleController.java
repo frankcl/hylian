@@ -11,6 +11,7 @@ import xin.manong.security.keeper.model.Role;
 import xin.manong.security.keeper.model.RolePermission;
 import xin.manong.security.keeper.server.common.Constants;
 import xin.manong.security.keeper.server.converter.Converter;
+import xin.manong.security.keeper.server.request.AllRolePermissionRequest;
 import xin.manong.security.keeper.server.request.RolePermissionRequest;
 import xin.manong.security.keeper.server.request.RoleRequest;
 import xin.manong.security.keeper.server.request.RoleUpdateRequest;
@@ -184,26 +185,29 @@ public class RoleController {
     /**
      * 获取角色权限列表
      *
-     * @param roleId 角色ID
+     * @param request 角色权限请求
      * @return 权限列表
      */
-    @GET
+    @POST
+    @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @Path("getRolePermissions")
-    @GetMapping("getRolePermissions")
+    @PostMapping("getRolePermissions")
     @EnableWebLogAspect
-    public List<Permission> getRolePermissions(@QueryParam("role_id") @RequestParam("role_id") String roleId) {
-        if (StringUtils.isEmpty(roleId)) {
-            logger.error("role id is empty");
-            throw new BadRequestException("角色ID为空");
+    public List<Permission> getRolePermissions(AllRolePermissionRequest request) {
+        if (request == null) {
+            logger.error("role permission request is null");
+            throw new BadRequestException("角色权限请求为空");
         }
+        request.check();
         RolePermissionSearchRequest searchRequest = new RolePermissionSearchRequest();
-        searchRequest.roleId = roleId;
+        searchRequest.roleIds = request.roleIds;
         searchRequest.current = Constants.DEFAULT_CURRENT;
-        searchRequest.size = 100;
+        searchRequest.size = request.size;
         Pager<RolePermission> pager = rolePermissionService.search(searchRequest);
         if (pager == null || pager.records == null) return new ArrayList<>();
-        List<String> permissionIds = pager.records.stream().map(r -> r.permissionId).collect(Collectors.toList());
+        List<String> permissionIds = pager.records.stream().map(r -> r.permissionId).collect(Collectors.toSet()).
+                stream().collect(Collectors.toList());
         return permissionService.batchGet(permissionIds);
     }
 

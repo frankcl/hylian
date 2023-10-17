@@ -8,6 +8,7 @@ import lombok.experimental.Accessors;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import xin.manong.security.keeper.common.util.PermissionUtils;
 
 import javax.ws.rs.BadRequestException;
 import java.io.Serializable;
@@ -59,6 +60,10 @@ public class PermissionRequest implements Serializable {
         if (StringUtils.isEmpty(appId)) {
             logger.error("app id is empty");
             throw new BadRequestException("应用ID为空");
+        }
+        if (!PermissionUtils.validatePattern(resource)) {
+            logger.error("invalid resource[{}]", resource);
+            throw new BadRequestException("资源格式非法");
         }
     }
 }
