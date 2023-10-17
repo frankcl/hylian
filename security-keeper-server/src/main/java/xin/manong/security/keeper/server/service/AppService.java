@@ -51,4 +51,13 @@ public interface AppService {
      * @return 应用分页列表
      */
     Pager<App> search(AppSearchRequest searchRequest);
+
+    /**
+     * 验证应用信息
+     * 验证失败抛出异常
+     *
+     * @param appId 应用ID
+     * @param appSecret 应用秘钥
+     */
+    void verifyApp(String appId, String appSecret);
 }

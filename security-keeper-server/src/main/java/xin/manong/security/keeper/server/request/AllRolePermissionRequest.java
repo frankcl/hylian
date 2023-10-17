@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,6 +36,18 @@ public class AllRolePermissionRequest implements Serializable {
     public List<String> roleIds;
 
     /**
+     * 应用ID
+     */
+    @JsonProperty("app_id")
+    public String appId;
+
+    /**
+     * 应用秘钥
+     */
+    @JsonProperty("app_secret")
+    public String appSecret;
+
+    /**
      * 获取数量
      */
     @JsonProperty("size")
@@ -47,6 +60,14 @@ public class AllRolePermissionRequest implements Serializable {
         if (roleIds == null || roleIds.isEmpty()) {
             logger.error("role id list is empty");
             throw new BadRequestException("角色ID列表为空");
+        }
+        if (StringUtils.isEmpty(appId)) {
+            logger.error("app id is empty");
+            throw new BadRequestException("应用ID为空");
+        }
+        if (StringUtils.isEmpty(appSecret)) {
+            logger.error("app secret is empty");
+            throw new BadRequestException("应用秘钥为空");
         }
         if (size == null || size <= 0) size = DEFAULT_SIZE;
     }

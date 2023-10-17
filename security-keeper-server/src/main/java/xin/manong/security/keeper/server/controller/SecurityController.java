@@ -95,7 +95,7 @@ public class SecurityController {
             logger.error("redirect url is empty");
             throw new BadRequestException("重定向URL为空");
         }
-        verifyApp(appId, appSecret);
+        appService.verifyApp(appId, appSecret);
         String ticket = CookieUtils.getCookie(httpRequest, Constants.COOKIE_TICKET);
         if (StringUtils.isEmpty(ticket) || !verifyTicket(ticket)) {
             if (ticket != null) CookieUtils.removeCookie(Constants.COOKIE_TICKET, "/", httpResponse);
@@ -124,7 +124,7 @@ public class SecurityController {
     public boolean checkToken(@QueryParam("token") @RequestParam("token") String token,
                               @QueryParam("app_id") @RequestParam("app_id") String appId,
                               @QueryParam("app_secret") @RequestParam("app_secret") String appSecret) {
-        verifyApp(appId, appSecret);
+        appService.verifyApp(appId, appSecret);
         verifyToken(token);
         return true;
     }
@@ -147,7 +147,7 @@ public class SecurityController {
             throw new BadRequestException("获取token请求为空");
         }
         request.check();
-        verifyApp(request.appId, request.appSecret);
+        appService.verifyApp(request.appId, request.appSecret);
         String ticket = codeService.getTicket(request.code);
         if (!verifyTicket(ticket)) {
             logger.error("ticket is not found for code[{}] or verify ticket failed", request.code);
@@ -193,7 +193,7 @@ public class SecurityController {
                         @QueryParam("app_id") @RequestParam("app_id") String appId,
                         @QueryParam("app_secret") @RequestParam("app_secret") String appSecret,
                         @Context HttpServletRequest httpRequest) {
-        verifyApp(appId, appSecret);
+        appService.verifyApp(appId, appSecret);
         verifyToken(token);
         Profile profile = jwtService.decodeProfile(token);
         User user = userService.get(profile.userId);
@@ -221,7 +221,7 @@ public class SecurityController {
                             @QueryParam("app_id") @RequestParam("app_id") String appId,
                             @QueryParam("app_secret") @RequestParam("app_secret") String appSecret,
                             @Context HttpServletRequest httpRequest) {
-        verifyApp(appId, appSecret);
+        appService.verifyApp(appId, appSecret);
         verifyToken(token);
         Profile profile = jwtService.decodeProfile(token);
         Tenant tenant = tenantService.get(profile.tenantId);
@@ -249,7 +249,7 @@ public class SecurityController {
                             @QueryParam("app_id") @RequestParam("app_id") String appId,
                             @QueryParam("app_secret") @RequestParam("app_secret") String appSecret,
                             @Context HttpServletRequest httpRequest) {
-        verifyApp(appId, appSecret);
+        appService.verifyApp(appId, appSecret);
         verifyToken(token);
         Profile profile = jwtService.decodeProfile(token);
         Vendor vendor = vendorService.get(profile.vendorId);
@@ -282,7 +282,7 @@ public class SecurityController {
             throw new BadRequestException("刷新token请求为空");
         }
         request.check();
-        verifyApp(request.appId, request.appSecret);
+        appService.verifyApp(request.appId, request.appSecret);
         verifyToken(request.token);
         String ticket = tokenService.getTicket(request.token);
         Profile profile = jwtService.decodeProfile(ticket);
@@ -313,7 +313,7 @@ public class SecurityController {
             throw new BadRequestException("移除应用登录记录请求为空");
         }
         request.check();
-        verifyApp(request.appId, request.appSecret);
+        appService.verifyApp(request.appId, request.appSecret);
         return appLoginService.removeAppLogin(request.sessionId, request.appId);
     }
 
@@ -339,7 +339,7 @@ public class SecurityController {
             logger.error("redirect url is empty");
             throw new BadRequestException("重定向URL为空");
         }
-        verifyApp(appId, appSecret);
+        appService.verifyApp(appId, appSecret);
         String ticket = CookieUtils.getCookie(httpRequest, Constants.COOKIE_TICKET);
         if (StringUtils.isEmpty(ticket)) {
             logger.error("ticket is not found from cookies");
@@ -451,33 +451,6 @@ public class SecurityController {
             if (response != null) response.close();
         }
         appLoginService.removeAppLogins(ticketId);
-    }
-
-    /**
-     * 验证应用信息
-     * 验证失败抛出异常
-     *
-     * @param appId 应用ID
-     * @param appSecret 应用秘钥
-     */
-    private void verifyApp(String appId, String appSecret) {
-        if (StringUtils.isEmpty(appId)) {
-            logger.error("app id is empty");
-            throw new BadRequestException("应用ID为空");
-        }
-        if (StringUtils.isEmpty(appSecret)) {
-            logger.error("app secret is empty");
-            throw new BadRequestException("应用秘钥为空");
-        }
-        App app = appService.get(appId);
-        if (app == null) {
-            logger.error("app[{}] is not found", appId);
-            throw new RuntimeException(String.format("应用[%s]不存在", appId));
-        }
-        if (!app.secret.equals(appSecret)) {
-            logger.error("app id and secret are not matched");
-            throw new RuntimeException("应用ID和秘钥不匹配");
-        }
     }
 
     /**

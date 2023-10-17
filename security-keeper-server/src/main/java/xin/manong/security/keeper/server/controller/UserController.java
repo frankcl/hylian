@@ -52,6 +52,8 @@ public class UserController {
     protected RoleService roleService;
     @Resource
     protected UserRoleService userRoleService;
+    @Resource
+    protected AppService appService;
 
     /**
      * 获取用户信息
@@ -211,15 +213,13 @@ public class UserController {
     @GetMapping("getAppUserRoles")
     @EnableWebLogAspect
     public List<Role> getAppUserRoles(@QueryParam("user_id") @RequestParam("user_id") String userId,
-                                      @QueryParam("app_id") @RequestParam("app_id") String appId) {
+                                      @QueryParam("app_id") @RequestParam("app_id") String appId,
+                                      @QueryParam("app_secret") @RequestParam("app_secret") String appSecret) {
         if (StringUtils.isEmpty(userId)) {
             logger.error("user id is empty");
             throw new BadRequestException("用户ID为空");
         }
-        if (StringUtils.isEmpty(appId)) {
-            logger.error("app id is empty");
-            throw new BadRequestException("应用ID为空");
-        }
+        appService.verifyApp(appId, appSecret);
         UserRoleSearchRequest searchRequest = new UserRoleSearchRequest();
         searchRequest.userId = userId;
         searchRequest.appId = appId;

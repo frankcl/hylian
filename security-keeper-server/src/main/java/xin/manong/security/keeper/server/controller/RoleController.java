@@ -15,6 +15,7 @@ import xin.manong.security.keeper.server.request.AllRolePermissionRequest;
 import xin.manong.security.keeper.server.request.RolePermissionRequest;
 import xin.manong.security.keeper.server.request.RoleRequest;
 import xin.manong.security.keeper.server.request.RoleUpdateRequest;
+import xin.manong.security.keeper.server.service.AppService;
 import xin.manong.security.keeper.server.service.PermissionService;
 import xin.manong.security.keeper.server.service.RolePermissionService;
 import xin.manong.security.keeper.server.service.RoleService;
@@ -50,6 +51,8 @@ public class RoleController {
     protected PermissionService permissionService;
     @Resource
     protected RolePermissionService rolePermissionService;
+    @Resource
+    protected AppService appService;
 
     /**
      * 获取角色信息
@@ -200,6 +203,7 @@ public class RoleController {
             throw new BadRequestException("角色权限请求为空");
         }
         request.check();
+        appService.verifyApp(request.appId, request.appSecret);
         RolePermissionSearchRequest searchRequest = new RolePermissionSearchRequest();
         searchRequest.roleIds = request.roleIds;
         searchRequest.current = Constants.DEFAULT_CURRENT;

@@ -26,6 +26,8 @@ app:
       excludePatterns:
         - security/*
         - health/*
+        - user/getAppUserRoles
+        - role/getRolePermissions
         - home/login
         - favicon.ico
   server:

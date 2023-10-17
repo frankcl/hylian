@@ -1,5 +1,7 @@
 package xin.manong.security.keeper.sso.client.aspect;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import org.aspectj.lang.JoinPoint;
@@ -25,6 +27,9 @@ import xin.manong.weapon.base.http.RequestFormat;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.ClientErrorException;
+import javax.ws.rs.ForbiddenException;
+import javax.ws.rs.NotAuthorizedException;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -81,21 +86,24 @@ public class ACLAspect {
             User user = ContextManager.getUser();
             if (user == null) {
                 logger.error("user not login");
-                throw new Exception("用户尚未登录");
+                throw new NotAuthorizedException("用户尚未登录");
             }
             List<Permission> permissions = getUserPermissions(user);
             if (permissions.isEmpty()) {
                 logger.error("permissions are not found for user[{}]", user.id);
-                throw new Exception("用户权限为空");
+                throw new ForbiddenException("用户权限为空");
             }
             if (!permissionAllow(permissions)) {
                 logger.error("permission are not allowed");
-                throw new Exception("无权访问");
+                throw new ForbiddenException("无权访问");
             }
             return joinPoint.proceed();
         } catch (Throwable t) {
-            logger.error(t.getMessage(), t);
-            throw new Exception(t.getMessage(), t);
+            if (t instanceof ClientErrorException) throw (ClientErrorException) t;
+            else {
+                logger.error(t.getMessage(), t);
+                throw new Exception(t.getMessage(), t);
+            }
         }
     }
 
@@ -149,14 +157,17 @@ public class ACLAspect {
                 Constants.SERVER_PATH_GET_APP_USER_ROLES);
         Map<String, Object> paramMap = new HashMap<>();
         paramMap.put(Constants.PARAM_APP_ID, appClientConfig.appId);
+        paramMap.put(Constants.PARAM_APP_SECRET, appClientConfig.appSecret);
         paramMap.put(Constants.PARAM_USER_ID, user.id);
         HttpRequest httpRequest = HttpRequest.buildGetRequest(requestURL, paramMap);
-        List<Role> roles = HTTPExecutor.execute(httpRequest, List.class);
-        if (roles == null || roles.isEmpty()) {
+        List<JSONObject> records = HTTPExecutor.execute(httpRequest, List.class);
+        if (records == null || records.isEmpty()) {
             logger.error("get roles failed or roles not existed for user[{}] and app[{}]",
                     user.id, appClientConfig.appId);
             return new ArrayList<>();
         }
+        List<Role> roles = new ArrayList<>();
+        for (JSONObject record : records) roles.add(JSON.toJavaObject(record, Role.class));
         return roles;
     }
 
@@ -173,13 +184,17 @@ public class ACLAspect {
                 Constants.SERVER_PATH_GET_ROLE_PERMISSIONS);
         Map<String, Object> requestBody = new HashMap<>();
         requestBody.put(Constants.PARAM_ROLE_IDS, roleIds);
+        requestBody.put(Constants.PARAM_APP_ID, appClientConfig.appId);
+        requestBody.put(Constants.PARAM_APP_SECRET, appClientConfig.appSecret);
         HttpRequest httpRequest = HttpRequest.buildPostRequest(requestURL, RequestFormat.JSON, requestBody);
-        List<Permission> permissions = HTTPExecutor.execute(httpRequest, List.class);
-        if (permissions == null || permissions.isEmpty()) {
+        List<JSONObject> records = HTTPExecutor.execute(httpRequest, List.class);
+        if (records == null || records.isEmpty()) {
             logger.error("get permissions failed or permissions not existed for user[{}] and app[{}]",
                     user.id, appClientConfig.appId);
             return new ArrayList<>();
         }
+        List<Permission> permissions = new ArrayList<>();
+        for (JSONObject record : records) permissions.add(JSON.toJavaObject(record, Permission.class));
         return permissions;
     }
 }

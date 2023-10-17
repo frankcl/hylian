@@ -16,6 +16,7 @@ import xin.manong.security.keeper.server.service.AppService;
 import xin.manong.security.keeper.server.service.request.AppSearchRequest;
 
 import javax.annotation.Resource;
+import javax.ws.rs.BadRequestException;
 
 /**
  * 应用服务实现
@@ -89,5 +90,26 @@ public class AppServiceImpl implements AppService {
         if (!StringUtils.isEmpty(searchRequest.name)) query.like(App::getName, searchRequest.name);
         IPage<App> page = appMapper.selectPage(new Page<>(searchRequest.current, searchRequest.size), query);
         return Converter.convert(page);
+    }
+
+    @Override
+    public void verifyApp(String appId, String appSecret) {
+        if (StringUtils.isEmpty(appId)) {
+            logger.error("app id is empty");
+            throw new BadRequestException("应用ID为空");
+        }
+        if (StringUtils.isEmpty(appSecret)) {
+            logger.error("app secret is empty");
+            throw new BadRequestException("应用秘钥为空");
+        }
+        App app = get(appId);
+        if (app == null) {
+            logger.error("app[{}] is not found", appId);
+            throw new RuntimeException(String.format("应用[%s]不存在", appId));
+        }
+        if (!app.secret.equals(appSecret)) {
+            logger.error("app id and secret are not matched");
+            throw new RuntimeException("应用ID和秘钥不匹配");
+        }
     }
 }
