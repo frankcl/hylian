@@ -18,6 +18,7 @@ import xin.manong.security.keeper.server.service.request.PermissionSearchRequest
 import javax.annotation.Resource;
 import javax.ws.rs.NotFoundException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
@@ -46,8 +47,8 @@ public class PermissionServiceImpl implements PermissionService {
 
     @Override
     public List<Permission> batchGet(List<String> ids) {
-        List<Permission> permissions = new ArrayList<>();
-        if (ids == null || ids.isEmpty()) return permissions;
+        if (ids == null || ids.isEmpty()) return new ArrayList<>();
+        List<Permission> permissions = Collections.synchronizedList(new ArrayList<>());
         CountDownLatch countDownLatch = new CountDownLatch(ids.size());
         ids.stream().parallel().forEach(id -> {
             try {
@@ -65,7 +66,7 @@ public class PermissionServiceImpl implements PermissionService {
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
         }
-        return permissions;
+        return new ArrayList<>(permissions);
     }
 
     @Override

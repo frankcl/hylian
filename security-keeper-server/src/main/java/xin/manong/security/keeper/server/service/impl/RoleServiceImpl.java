@@ -18,6 +18,7 @@ import xin.manong.security.keeper.server.service.request.RoleSearchRequest;
 import javax.annotation.Resource;
 import javax.ws.rs.NotFoundException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
@@ -46,8 +47,8 @@ public class RoleServiceImpl implements RoleService {
 
     @Override
     public List<Role> batchGet(List<String> ids) {
-        List<Role> roles = new ArrayList<>();
-        if (ids == null || ids.isEmpty()) return roles;
+        if (ids == null || ids.isEmpty()) return new ArrayList<>();
+        List<Role> roles = Collections.synchronizedList(new ArrayList<>());
         CountDownLatch countDownLatch = new CountDownLatch(ids.size());
         ids.stream().parallel().forEach(id -> {
             try {
@@ -65,7 +66,7 @@ public class RoleServiceImpl implements RoleService {
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
         }
-        return roles;
+        return new ArrayList<>(roles);
     }
 
     @Override
