@@ -56,7 +56,8 @@ public class RolePermissionServiceImplSuite {
         }
         {
             RolePermissionSearchRequest searchRequest = new RolePermissionSearchRequest();
-            searchRequest.roleId = "role_xxx";
+            searchRequest.roleIds = new ArrayList<>();
+            searchRequest.roleIds.add("role_xxx");
             Pager<RolePermission> pager = rolePermissionService.search(searchRequest);
             Assert.assertTrue(pager != null);
             Assert.assertEquals(2L, pager.total.longValue());
