@@ -19,7 +19,7 @@ public class SweepMonitor implements Runnable {
     private static final Long DEFAULT_CHECK_INTERVAL_MS = 300000L;
     private static final Long DEFAULT_EXPIRED_INTERVAL_MS = 86400000L;
 
-    private boolean running = false;
+    private volatile boolean running = false;
     private Long checkIntervalMs = DEFAULT_CHECK_INTERVAL_MS;
     private Long expiredIntervalMs = DEFAULT_EXPIRED_INTERVAL_MS;
     private String name = "sweep-monitor";
