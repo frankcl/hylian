@@ -2,10 +2,7 @@ package xin.manong.security.keeper.common.util;
 
 import org.apache.commons.lang3.StringUtils;
 import xin.manong.security.keeper.common.SessionConstants;
-import xin.manong.security.keeper.model.Permission;
-import xin.manong.security.keeper.model.Tenant;
-import xin.manong.security.keeper.model.User;
-import xin.manong.security.keeper.model.Vendor;
+import xin.manong.security.keeper.model.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
@@ -75,6 +72,17 @@ public class SessionUtils {
     }
 
     /**
+     * 从session中获取角色列表
+     *
+     * @param httpRequest HTTP请求
+     * @return 成功返回角色列表，否则返回null
+     */
+    public static List<Role> getRoles(HttpServletRequest httpRequest) {
+        if (httpRequest == null) return null;
+        return (List<Role>) httpRequest.getSession().getAttribute(SessionConstants.ROLES);
+    }
+
+    /**
      * 从session中获取权限列表
      *
      * @param httpRequest HTTP请求
@@ -127,6 +135,17 @@ public class SessionUtils {
     public static void setVendor(HttpServletRequest httpRequest, Vendor vendor) {
         if (httpRequest == null || vendor == null) return;
         httpRequest.getSession().setAttribute(SessionConstants.VENDOR, vendor);
+    }
+
+    /**
+     * 将角色列表设置到session
+     *
+     * @param httpRequest HTTP请求
+     * @param roles 角色列表
+     */
+    public static void setRoles(HttpServletRequest httpRequest, List<Role> roles) {
+        if (httpRequest == null || roles == null || roles.isEmpty()) return;
+        httpRequest.getSession().setAttribute(SessionConstants.ROLES, roles);
     }
 
     /**

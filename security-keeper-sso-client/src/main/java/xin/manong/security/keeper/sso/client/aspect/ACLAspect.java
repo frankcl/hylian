@@ -1,9 +1,5 @@
 package xin.manong.security.keeper.sso.client.aspect;
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.*;
@@ -14,16 +10,10 @@ import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 import xin.manong.security.keeper.common.util.HTTPUtils;
 import xin.manong.security.keeper.common.util.PermissionUtils;
-import xin.manong.security.keeper.common.util.SessionUtils;
 import xin.manong.security.keeper.model.Permission;
-import xin.manong.security.keeper.model.Role;
 import xin.manong.security.keeper.model.User;
-import xin.manong.security.keeper.sso.client.common.Constants;
-import xin.manong.security.keeper.sso.client.config.AppClientConfig;
+import xin.manong.security.keeper.sso.client.component.UserRolePermissionService;
 import xin.manong.security.keeper.sso.client.core.ContextManager;
-import xin.manong.security.keeper.sso.client.core.HTTPExecutor;
-import xin.manong.weapon.base.http.HttpRequest;
-import xin.manong.weapon.base.http.RequestFormat;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
@@ -31,8 +21,6 @@ import javax.ws.rs.ClientErrorException;
 import javax.ws.rs.ForbiddenException;
 import javax.ws.rs.NotAuthorizedException;
 import java.util.*;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 /**
  * 访问控制切面
@@ -46,21 +34,8 @@ public class ACLAspect {
 
     private static final Logger logger = LoggerFactory.getLogger(ACLAspect.class);
 
-    private static final int CACHE_CAPACITY = 300;
-
-    protected Cache<String, Long> permissionsCache;
-
     @Resource
-    protected AppClientConfig appClientConfig;
-
-    public ACLAspect() {
-        CacheBuilder<String, Long> builder = CacheBuilder.newBuilder()
-                .concurrencyLevel(1)
-                .maximumSize(CACHE_CAPACITY)
-                .expireAfterWrite(2, TimeUnit.MINUTES)
-                .removalListener(n -> logger.info("permissions are removed from cache for user[{}]", n.getKey()));
-        permissionsCache = builder.build();
-    }
+    protected UserRolePermissionService userRolePermissionService;
 
     @Pointcut("@annotation(xin.manong.security.keeper.sso.client.aspect.EnableACLAspect) && execution(public * *(..))")
     public void intercept() {
@@ -136,65 +111,6 @@ public class ACLAspect {
     private List<Permission> getUserPermissions(User user) {
         HttpServletRequest httpRequest = ((ServletRequestAttributes) RequestContextHolder.
                 currentRequestAttributes()).getRequest();
-        List<Permission> permissions = SessionUtils.getPermissions(httpRequest);
-        if (permissions != null && permissionsCache.getIfPresent(user.id) != null) return permissions;
-        List<Role> roles = getAppUserRoles(user);
-        if (roles.isEmpty()) return new ArrayList<>();
-        permissions = getUserPermissions(roles, user);
-        SessionUtils.setPermissions(httpRequest, permissions);
-        permissionsCache.put(user.id, System.currentTimeMillis());
-        return permissions;
-    }
-
-    /**
-     * 获取应用用户角色列表
-     *
-     * @param user 用户信息
-     * @return 角色列表
-     */
-    private List<Role> getAppUserRoles(User user) {
-        String requestURL = String.format("%s%s", appClientConfig.serverURL,
-                Constants.SERVER_PATH_GET_APP_USER_ROLES);
-        Map<String, Object> paramMap = new HashMap<>();
-        paramMap.put(Constants.PARAM_APP_ID, appClientConfig.appId);
-        paramMap.put(Constants.PARAM_APP_SECRET, appClientConfig.appSecret);
-        paramMap.put(Constants.PARAM_USER_ID, user.id);
-        HttpRequest httpRequest = HttpRequest.buildGetRequest(requestURL, paramMap);
-        List<JSONObject> records = HTTPExecutor.execute(httpRequest, List.class);
-        if (records == null || records.isEmpty()) {
-            logger.error("get roles failed or roles not existed for user[{}] and app[{}]",
-                    user.id, appClientConfig.appId);
-            return new ArrayList<>();
-        }
-        List<Role> roles = new ArrayList<>();
-        for (JSONObject record : records) roles.add(JSON.toJavaObject(record, Role.class));
-        return roles;
-    }
-
-    /**
-     * 获取用户权限列表
-     *
-     * @param roles 角色列表
-     * @param user 用户信息
-     * @return 权限列表
-     */
-    private List<Permission> getUserPermissions(List<Role> roles, User user) {
-        List<String> roleIds = roles.stream().map(role -> role.id).collect(Collectors.toList());
-        String requestURL = String.format("%s%s", appClientConfig.serverURL,
-                Constants.SERVER_PATH_GET_ROLE_PERMISSIONS);
-        Map<String, Object> requestBody = new HashMap<>();
-        requestBody.put(Constants.PARAM_ROLE_IDS, roleIds);
-        requestBody.put(Constants.PARAM_APP_ID, appClientConfig.appId);
-        requestBody.put(Constants.PARAM_APP_SECRET, appClientConfig.appSecret);
-        HttpRequest httpRequest = HttpRequest.buildPostRequest(requestURL, RequestFormat.JSON, requestBody);
-        List<JSONObject> records = HTTPExecutor.execute(httpRequest, List.class);
-        if (records == null || records.isEmpty()) {
-            logger.error("get permissions failed or permissions not existed for user[{}] and app[{}]",
-                    user.id, appClientConfig.appId);
-            return new ArrayList<>();
-        }
-        List<Permission> permissions = new ArrayList<>();
-        for (JSONObject record : records) permissions.add(JSON.toJavaObject(record, Permission.class));
-        return permissions;
+        return userRolePermissionService.getUserPermissions(user, httpRequest);
     }
 }

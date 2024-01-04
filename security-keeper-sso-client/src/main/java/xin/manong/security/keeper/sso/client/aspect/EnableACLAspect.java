@@ -1,6 +1,7 @@
 package xin.manong.security.keeper.sso.client.aspect;
 
 import org.springframework.context.annotation.Import;
+import xin.manong.security.keeper.sso.client.component.UserRolePermissionService;
 import xin.manong.security.keeper.sso.client.config.AppClientConfig;
 
 import java.lang.annotation.*;
@@ -14,6 +15,6 @@ import java.lang.annotation.*;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE, ElementType.METHOD})
 @Documented
-@Import({ AppClientConfig.class, ACLAspect.class })
+@Import({ AppClientConfig.class, ACLAspect.class, UserRolePermissionService.class })
 public @interface EnableACLAspect {
 }

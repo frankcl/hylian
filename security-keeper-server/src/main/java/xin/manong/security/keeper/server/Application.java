@@ -5,6 +5,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import xin.manong.security.keeper.sso.client.annotation.EnableSecurityFilter;
 import xin.manong.security.keeper.sso.client.aspect.EnableACLAspect;
 import xin.manong.weapon.spring.boot.annotation.EnableRedisClient;
+import xin.manong.weapon.spring.web.ws.aspect.EnableWebLogAspect;
 
 /**
  * 应用程序入口
@@ -16,8 +17,8 @@ import xin.manong.weapon.spring.boot.annotation.EnableRedisClient;
 @EnableRedisClient
 @EnableSecurityFilter
 @EnableACLAspect
-@SpringBootApplication(scanBasePackages = {
-        "xin.manong.security.keeper.server", "xin.manong.weapon.spring.web.ws.aspect" })
+@EnableWebLogAspect
+@SpringBootApplication(scanBasePackages = { "xin.manong.security.keeper.server" })
 public class Application {
 
     /**
@@ -26,6 +27,6 @@ public class Application {
      * @param args 参数
      */
     public static void main(String[] args) {
-        SpringApplication.run(Application.class);
+        SpringApplication.run(Application.class, args);
     }
 }
