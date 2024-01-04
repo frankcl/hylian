@@ -51,6 +51,11 @@
             <artifactId>spring-boot</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-configuration-processor</artifactId>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
             <groupId>xin.manong</groupId>
             <artifactId>weapon-spring-boot-starter</artifactId>
             <version>${weapon.version}</version>

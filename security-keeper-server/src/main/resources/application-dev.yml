@@ -9,11 +9,11 @@ spring:
 weapon:
   common:
     redis:
-      client:
+      client-map:
         default:
           mode: SINGLE
           connection-pool-size: 200
-          password: Yeshu123456
+          password: xxxxxx
           address: r-bp1fac3adaa6aa14.redis.rds.aliyuncs.com:6379
           db: 1
 
@@ -33,11 +33,5 @@ app:
   server:
     name: security_keeper_server
     aspectLogFile: ./log/aspect/web.log
-    jetty:
-      acceptors: 2
-      selectors: 4
-      min-threads: 8
-      max-threads: 200
-      max-http-post-size: 1048576
     jwtConfig:
       secretHS256: JWT_%x6xo7l7_u9bf_u!9#g#m*)*=ej@bek8)(@u3kh*84+unjv=
