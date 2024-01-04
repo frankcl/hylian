@@ -144,7 +144,7 @@ public class SessionUtils {
      * @param roles 角色列表
      */
     public static void setRoles(HttpServletRequest httpRequest, List<Role> roles) {
-        if (httpRequest == null || roles == null || roles.isEmpty()) return;
+        if (httpRequest == null || roles == null) return;
         httpRequest.getSession().setAttribute(SessionConstants.ROLES, roles);
     }
 
@@ -155,7 +155,7 @@ public class SessionUtils {
      * @param permissions 权限列表
      */
     public static void setPermissions(HttpServletRequest httpRequest, List<Permission> permissions) {
-        if (httpRequest == null || permissions == null || permissions.isEmpty()) return;
+        if (httpRequest == null || permissions == null) return;
         httpRequest.getSession().setAttribute(SessionConstants.PERMISSIONS, permissions);
     }
 
