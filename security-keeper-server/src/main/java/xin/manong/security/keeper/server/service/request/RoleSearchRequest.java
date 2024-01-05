@@ -2,6 +2,7 @@ package xin.manong.security.keeper.server.service.request;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import xin.manong.security.keeper.model.view.request.SearchRequest;
 
 /**
  * 角色搜索请求

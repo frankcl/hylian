@@ -1,4 +1,4 @@
-package xin.manong.security.keeper.server.response;
+package xin.manong.security.keeper.model.view.response;
 
 import com.alibaba.fastjson.annotation.JSONField;
 import com.fasterxml.jackson.annotation.JsonInclude;

@@ -5,8 +5,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import xin.manong.security.keeper.model.*;
 import xin.manong.security.keeper.server.request.*;
-import xin.manong.security.keeper.server.response.ViewTenant;
-import xin.manong.security.keeper.server.response.ViewUser;
+import xin.manong.security.keeper.model.view.response.ViewTenant;
+import xin.manong.security.keeper.model.view.response.ViewUser;
 
 /**
  * 数据转换器

@@ -2,7 +2,7 @@ package xin.manong.security.keeper.server.service;
 
 import xin.manong.security.keeper.model.Pager;
 import xin.manong.security.keeper.model.User;
-import xin.manong.security.keeper.server.service.request.UserSearchRequest;
+import xin.manong.security.keeper.model.view.request.UserSearchRequest;
 
 /**
  * 用户信息服务接口定义

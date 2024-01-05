@@ -12,7 +12,7 @@ import xin.manong.security.keeper.common.util.HTTPUtils;
 import xin.manong.security.keeper.common.util.PermissionUtils;
 import xin.manong.security.keeper.model.Permission;
 import xin.manong.security.keeper.model.User;
-import xin.manong.security.keeper.sso.client.component.UserRolePermissionService;
+import xin.manong.security.keeper.sso.client.component.UserServiceSupport;
 import xin.manong.security.keeper.sso.client.core.ContextManager;
 
 import javax.annotation.Resource;
@@ -35,7 +35,7 @@ public class ACLAspect {
     private static final Logger logger = LoggerFactory.getLogger(ACLAspect.class);
 
     @Resource
-    protected UserRolePermissionService userRolePermissionService;
+    protected UserServiceSupport userServiceSupport;
 
     @Pointcut("@annotation(xin.manong.security.keeper.sso.client.aspect.EnableACLAspect) && execution(public * *(..))")
     public void intercept() {
@@ -111,6 +111,6 @@ public class ACLAspect {
     private List<Permission> getUserPermissions(User user) {
         HttpServletRequest httpRequest = ((ServletRequestAttributes) RequestContextHolder.
                 currentRequestAttributes()).getRequest();
-        return userRolePermissionService.getUserPermissions(user, httpRequest);
+        return userServiceSupport.getUserPermissions(user, httpRequest);
     }
 }

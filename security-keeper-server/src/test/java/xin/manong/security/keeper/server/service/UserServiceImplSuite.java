@@ -14,7 +14,7 @@ import xin.manong.security.keeper.model.Pager;
 import xin.manong.security.keeper.model.Tenant;
 import xin.manong.security.keeper.model.User;
 import xin.manong.security.keeper.model.Vendor;
-import xin.manong.security.keeper.server.service.request.UserSearchRequest;
+import xin.manong.security.keeper.model.view.request.UserSearchRequest;
 
 import javax.annotation.Resource;
 

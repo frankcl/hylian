@@ -1,7 +1,7 @@
 package xin.manong.security.keeper.sso.client.annotation;
 
 import org.springframework.context.annotation.Import;
-import xin.manong.security.keeper.sso.client.component.UserRolePermissionService;
+import xin.manong.security.keeper.sso.client.component.UserServiceSupport;
 import xin.manong.security.keeper.sso.client.config.AppClientConfig;
 import xin.manong.security.keeper.sso.client.config.SecurityFilterConfig;
 import xin.manong.security.keeper.sso.client.config.SessionListenerConfig;
@@ -18,6 +18,6 @@ import java.lang.annotation.*;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE})
 @Documented
-@Import({ AppClientConfig.class, SecurityFilterConfig.class, SessionListenerConfig.class, UserRolePermissionService.class })
+@Import({ AppClientConfig.class, SecurityFilterConfig.class, SessionListenerConfig.class, UserServiceSupport.class })
 public @interface EnableSecurityFilter {
 }

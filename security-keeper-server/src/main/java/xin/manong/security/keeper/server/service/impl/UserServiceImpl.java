@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
+import xin.manong.security.keeper.model.view.request.UserSearchRequest;
 import xin.manong.security.keeper.server.common.Constants;
 import xin.manong.security.keeper.server.converter.Converter;
 import xin.manong.security.keeper.server.dao.mapper.UserMapper;
@@ -17,7 +18,6 @@ import xin.manong.security.keeper.model.User;
 import xin.manong.security.keeper.server.service.TenantService;
 import xin.manong.security.keeper.server.service.UserService;
 import xin.manong.security.keeper.server.service.VendorService;
-import xin.manong.security.keeper.server.service.request.UserSearchRequest;
 
 import javax.annotation.Resource;
 

@@ -8,9 +8,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import xin.manong.security.keeper.common.util.SessionUtils;
+import xin.manong.security.keeper.model.Pager;
 import xin.manong.security.keeper.model.Permission;
 import xin.manong.security.keeper.model.Role;
 import xin.manong.security.keeper.model.User;
+import xin.manong.security.keeper.model.view.request.UserSearchRequest;
+import xin.manong.security.keeper.model.view.response.ViewUser;
 import xin.manong.security.keeper.sso.client.common.Constants;
 import xin.manong.security.keeper.sso.client.config.AppClientConfig;
 import xin.manong.security.keeper.sso.client.core.HTTPExecutor;
@@ -27,15 +30,15 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
- * 用户角色权限服务
+ * 用户服务支持
  *
  * @author frankcl
  * @date 2024-01-04 16:03:31
  */
 @Component
-public class UserRolePermissionService {
+public class UserServiceSupport {
 
-    private static final Logger logger = LoggerFactory.getLogger(UserRolePermissionService.class);
+    private static final Logger logger = LoggerFactory.getLogger(UserServiceSupport.class);
 
     private static final int CACHE_CAPACITY = 300;
 
@@ -44,7 +47,7 @@ public class UserRolePermissionService {
     @Resource
     protected AppClientConfig appClientConfig;
 
-    public UserRolePermissionService() {
+    public UserServiceSupport() {
         {
             CacheBuilder<String, Long> builder = CacheBuilder.newBuilder()
                     .concurrencyLevel(1)
@@ -97,6 +100,31 @@ public class UserRolePermissionService {
         SessionUtils.setPermissions(httpRequest, permissions);
         permissionsCache.put(user.id, System.currentTimeMillis());
         return permissions;
+    }
+
+    /**
+     * 搜索用户信息
+     *
+     * @param searchRequest 搜索请求
+     * @return 成功返回分页用户信息，否则返回null
+     */
+    public Pager<ViewUser> searchUsers(UserSearchRequest searchRequest) {
+        String requestURL = String.format("%s%s", appClientConfig.serverURL,
+                Constants.SERVER_PATH_SEARCH_USER);
+        Map<String, Object> requestBody = JSON.parseObject(JSON.toJSONString(searchRequest));
+        HttpRequest httpRequest = HttpRequest.buildPostRequest(requestURL, RequestFormat.JSON, requestBody);
+        Pager<JSONObject> pager = HTTPExecutor.execute(httpRequest, Pager.class);
+        if (pager == null) {
+            logger.error("search users failed");
+            return null;
+        }
+        Pager<ViewUser> returnPager = new Pager<>();
+        returnPager.current = pager.current;
+        returnPager.size = pager.size;
+        returnPager.total = pager.total;
+        returnPager.records = new ArrayList<>();
+        for (JSONObject record : pager.records) returnPager.records.add(JSON.toJavaObject(record, ViewUser.class));
+        return returnPager;
     }
 
     /**
