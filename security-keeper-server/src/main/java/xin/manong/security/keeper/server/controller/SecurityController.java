@@ -94,10 +94,7 @@ public class SecurityController {
                             @Context HttpServletResponse httpResponse) {
         appService.verifyApp(appId, appSecret);
         String ticket = CookieUtils.getCookie(httpRequest, Constants.COOKIE_TICKET);
-        if (StringUtils.isEmpty(ticket) || !verifyTicket(ticket)) {
-            logger.error("ticket is not found in cookie or invalid");
-            throw new RuntimeException("未登录或ticket非法");
-        }
+        verifyTicket(ticket);
         return codeService.createCode(ticket);
     }
 
@@ -140,12 +137,8 @@ public class SecurityController {
         request.check();
         appService.verifyApp(request.appId, request.appSecret);
         String ticket = codeService.getTicket(request.code);
-        if (StringUtils.isEmpty(ticket)) {
-            logger.error("ticket is not found for code[{}]", request.code);
-            throw new RuntimeException("未找到code对应ticket");
-        }
-        if (!verifyTicket(ticket)) throw new RuntimeException("ticket验证失败");
         codeService.removeCode(request.code);
+        verifyTicket(ticket);
         Profile profile = jwtService.decodeProfile(ticket);
         String token = tokenService.buildToken(profile, Constants.CACHE_TOKEN_EXPIRED_TIME_MS);
         tokenService.putTokenTicket(token, ticket);
@@ -452,11 +445,7 @@ public class SecurityController {
     private boolean isLogin(HttpServletRequest httpRequest) {
         String ticket = CookieUtils.getCookie(httpRequest, Constants.COOKIE_TICKET);
         if (StringUtils.isEmpty(ticket)) return false;
-        if (!verifyTicket(ticket)) {
-            Profile profile = jwtService.decodeProfile(ticket);
-            if (profile != null) appLoginService.remove(profile.id);
-            return false;
-        }
+        verifyTicket(ticket);
         return true;
     }
 
@@ -478,42 +467,36 @@ public class SecurityController {
             throw new RuntimeException("验证token失败");
         }
         String ticket = tokenService.getTicket(token);
-        if (!verifyTicket(ticket)) {
-            logger.error("verify ticket failed for token[{}]", DigestUtils.md5Hex(token));
-            removeTokenResources(token);
-            throw new RuntimeException("未找到ticket或验证ticket失败");
-        }
+        verifyTicket(ticket);
     }
 
     /**
      * 验证ticket
      *
      * @param ticket 票据
-     * @return 成功返回true，否则返回false
      */
-    private boolean verifyTicket(String ticket) {
+    private void verifyTicket(String ticket) {
         if (StringUtils.isEmpty(ticket)) {
             logger.warn("ticket is empty");
-            return false;
+            throw new BadRequestException("ticket为空");
         }
         if (!ticketService.verifyTicket(ticket)) {
             logger.error("verify ticket failed");
             removeTicketResources(ticket);
-            return false;
+            throw new RuntimeException("验证ticket失败");
         }
         Profile profile = jwtService.decodeProfile(ticket);
         if (profile == null) {
             logger.error("decode profile failed from ticket");
             removeTicketResources(ticket);
-            return false;
+            throw new RuntimeException("非法ticket");
         }
         String cachedTicket = ticketService.getTicket(profile.id);
         if (StringUtils.isEmpty(cachedTicket) || !ticket.equals(cachedTicket)) {
             logger.error("cached ticket and provided ticket are not consistent");
             removeTicketResources(ticket);
-            return false;
+            throw new RuntimeException("非法ticket");
         }
-        return true;
     }
 
     /**
