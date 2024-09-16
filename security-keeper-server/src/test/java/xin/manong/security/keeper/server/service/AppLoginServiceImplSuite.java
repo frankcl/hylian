@@ -33,44 +33,31 @@ public class AppLoginServiceImplSuite {
         {
             AppLogin appLogin = new AppLogin();
             appLogin.setTicketId("xxx").setUserId("user1").setSessionId("session1").
-                    setAppId("app1").setLogoutURL("http://www.manong.xin/");
+                    setAppId("app1");
             Assert.assertTrue(appLoginService.add(appLogin));
         }
         {
             AppLogin appLogin = new AppLogin();
             appLogin.setTicketId("xxx").setUserId("user1").setSessionId("session2").
-                    setAppId("app2").setLogoutURL("http://www.sina.com.cn/");
+                    setAppId("app2");
             Assert.assertTrue(appLoginService.add(appLogin));
         }
         {
-            AppLoginSearchRequest searchRequest = new AppLoginSearchRequest();
-            searchRequest.appId = "app1";
-            searchRequest.sessionId = "session1";
-            searchRequest.userId = "user1";
-            Assert.assertTrue(appLoginService.isLoginApp(searchRequest));
+            Assert.assertTrue(appLoginService.isLogin("app1", "session1"));
         }
         {
-            AppLoginSearchRequest searchRequest = new AppLoginSearchRequest();
-            searchRequest.appId = "app2";
-            searchRequest.sessionId = "session2";
-            searchRequest.userId = "user1";
-            Assert.assertTrue(appLoginService.isLoginApp(searchRequest));
+            Assert.assertTrue(appLoginService.isLogin("app2", "session2"));
         }
         {
-            AppLoginSearchRequest searchRequest = new AppLoginSearchRequest();
-            searchRequest.appId = "app3";
-            searchRequest.sessionId = "session3";
-            searchRequest.userId = "user1";
-            Assert.assertFalse(appLoginService.isLoginApp(searchRequest));
+            Assert.assertFalse(appLoginService.isLogin("app3", "session3"));
         }
         {
-            List<AppLogin> appLogins = appLoginService.getAppLogins("xxx");
+            List<AppLogin> appLogins = appLoginService.getWithTicket("xxx");
             Assert.assertTrue(appLogins != null && appLogins.size() == 2);
             Assert.assertEquals("xxx", appLogins.get(0).ticketId);
             Assert.assertEquals("user1", appLogins.get(0).userId);
             Assert.assertEquals("app1", appLogins.get(0).appId);
             Assert.assertEquals("session1", appLogins.get(0).sessionId);
-            Assert.assertEquals("http://www.manong.xin/", appLogins.get(0).logoutURL);
             Assert.assertTrue(appLogins.get(0).createTime > 0);
             Assert.assertTrue(appLogins.get(0).updateTime > 0);
 
@@ -78,7 +65,6 @@ public class AppLoginServiceImplSuite {
             Assert.assertEquals("user1", appLogins.get(1).userId);
             Assert.assertEquals("app2", appLogins.get(1).appId);
             Assert.assertEquals("session2", appLogins.get(1).sessionId);
-            Assert.assertEquals("http://www.sina.com.cn/", appLogins.get(1).logoutURL);
             Assert.assertTrue(appLogins.get(1).createTime > 0);
             Assert.assertTrue(appLogins.get(1).updateTime > 0);
         }
@@ -90,8 +76,8 @@ public class AppLoginServiceImplSuite {
             Assert.assertTrue(pager != null && pager.total == 1 && pager.records.size() == 1);
         }
         {
-            appLoginService.removeAppLogins("xxx");
-            List<AppLogin> appLogins = appLoginService.getAppLogins("xxx");
+            appLoginService.remove("xxx");
+            List<AppLogin> appLogins = appLoginService.getWithTicket("xxx");
             Assert.assertTrue(appLogins == null || appLogins.isEmpty());
         }
     }

@@ -39,7 +39,7 @@ public class RoleServiceImpl implements RoleService {
     @Override
     public Role get(String id) {
         if (StringUtils.isEmpty(id)) {
-            logger.error("role id is empty");
+            logger.error("role id is empty for getting");
             throw new RuntimeException("角色ID为空");
         }
         return roleMapper.selectById(id);
@@ -75,7 +75,7 @@ public class RoleServiceImpl implements RoleService {
         query.eq(Role::getAppId, role.appId).eq(Role::getName, role.name);
         if (roleMapper.selectCount(query) > 0) {
             logger.error("role has existed for the same name[{}]", role.name);
-            throw new RuntimeException(String.format("同名[%s]角色存在", role.name));
+            throw new RuntimeException("角色存在");
         }
         return roleMapper.insert(role) > 0;
     }
@@ -84,7 +84,7 @@ public class RoleServiceImpl implements RoleService {
     public boolean update(Role role) {
         if (roleMapper.selectById(role.id) == null) {
             logger.error("role is not found for id[{}]", role.id);
-            throw new NotFoundException(String.format("角色[%s]不存在", role.id));
+            throw new NotFoundException("角色不存在");
         }
         return roleMapper.updateById(role) > 0;
     }
@@ -92,7 +92,7 @@ public class RoleServiceImpl implements RoleService {
     @Override
     public boolean delete(String id) {
         if (StringUtils.isEmpty(id)) {
-            logger.error("role id is empty");
+            logger.error("role id is empty for deleting");
             throw new RuntimeException("角色ID为空");
         }
         return roleMapper.deleteById(id) > 0;

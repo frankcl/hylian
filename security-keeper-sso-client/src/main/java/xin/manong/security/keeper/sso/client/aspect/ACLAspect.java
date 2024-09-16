@@ -91,10 +91,6 @@ public class ACLAspect {
     private boolean permissionAllow(List<Permission> permissions) {
         HttpServletRequest httpRequest = ((ServletRequestAttributes) RequestContextHolder.
                 currentRequestAttributes()).getRequest();
-        if (httpRequest == null) {
-            logger.error("get http servlet request failed");
-            return false;
-        }
         String path = HTTPUtils.getRequestPath(httpRequest);
         for (Permission permission : permissions) {
             if (PermissionUtils.match(permission.resource, path)) return true;

@@ -15,7 +15,7 @@ import org.springframework.context.annotation.Configuration;
  */
 @Data
 @Configuration
-@ConfigurationProperties(prefix = "app.security.sso")
+@ConfigurationProperties(prefix = "app.security.client")
 public class AppClientConfig {
 
     private static final Logger logger = LoggerFactory.getLogger(AppClientConfig.class);

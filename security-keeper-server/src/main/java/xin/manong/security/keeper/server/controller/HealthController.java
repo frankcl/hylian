@@ -18,8 +18,8 @@ import javax.ws.rs.core.MediaType;
  */
 @RestController
 @Controller
-@Path("/health")
-@RequestMapping("/health")
+@Path("api/health")
+@RequestMapping("api/health")
 public class HealthController {
 
     /**
@@ -32,6 +32,6 @@ public class HealthController {
     @Path("check")
     @GetMapping("check")
     public String check() {
-        return "security keeper server is ok";
+        return "server is ok";
     }
 }

@@ -27,7 +27,7 @@ public class SessionListener implements HttpSessionListener {
 
     private static final int MAX_SESSION_IDLE_TIME_SECONDS = 1800;
 
-    private AppClientConfig appClientConfig;
+    private final AppClientConfig appClientConfig;
 
     public SessionListener(AppClientConfig appClientConfig) {
         this.appClientConfig = appClientConfig;
@@ -63,7 +63,7 @@ public class SessionListener implements HttpSessionListener {
         body.put(Constants.PARAM_APP_ID, appClientConfig.appId);
         body.put(Constants.PARAM_APP_SECRET, appClientConfig.appSecret);
         HttpRequest httpRequest = HttpRequest.buildPostRequest(requestURL, RequestFormat.JSON, body);
-        Boolean success = HTTPExecutor.execute(httpRequest, Boolean.class);
+        Boolean success = HTTPExecutor.executeAndUnwrap(httpRequest, Boolean.class);
         if (success != null && success) return;
         logger.warn("remove app login failed for session[{}] and app[{}]", sessionId, appClientConfig.appId);
     }

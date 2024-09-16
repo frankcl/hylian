@@ -24,7 +24,7 @@ public interface TicketService {
     /**
      * 验证ticket
      *
-     * @param ticket
+     * @param ticket 票据
      * @return 有效返回true，否则返回false
      */
     boolean verifyTicket(String ticket);

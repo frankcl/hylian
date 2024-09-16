@@ -141,11 +141,6 @@
             <artifactId>weapon-spring-boot-starter</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.jersey.ext</groupId>
-            <artifactId>jersey-mvc-freemarker</artifactId>
-            <version>2.35</version>
-        </dependency>
-        <dependency>
             <groupId>xin.manong</groupId>
             <artifactId>security-keeper-common</artifactId>
             <version>${security-keeper.version}</version>

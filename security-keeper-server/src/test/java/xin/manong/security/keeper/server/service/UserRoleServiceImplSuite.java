@@ -62,7 +62,7 @@ public class UserRoleServiceImplSuite {
             searchRequest.userId = "user_xxx";
             searchRequest.appId = "test_app";
             Pager<UserRole> pager = userRoleService.search(searchRequest);
-            Assert.assertTrue(pager != null);
+            Assert.assertNotNull(pager);
             Assert.assertEquals(2L, pager.total.longValue());
             Assert.assertEquals(Constants.DEFAULT_PAGE_SIZE, pager.size.longValue());
             Assert.assertEquals(2, pager.records.size());
@@ -76,7 +76,7 @@ public class UserRoleServiceImplSuite {
             searchRequest.roleId = "role_xxx";
             searchRequest.appId = "test_app";
             Pager<UserRole> pager = userRoleService.search(searchRequest);
-            Assert.assertTrue(pager != null);
+            Assert.assertNotNull(pager);
             Assert.assertEquals(2L, pager.total.longValue());
             Assert.assertEquals(Constants.DEFAULT_PAGE_SIZE, pager.size.longValue());
             Assert.assertEquals(2, pager.records.size());

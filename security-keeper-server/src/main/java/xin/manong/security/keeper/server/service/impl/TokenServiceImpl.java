@@ -75,13 +75,11 @@ public class TokenServiceImpl implements TokenService {
     @Override
     public void removeTokenTicket(String token) {
         String tokenId = DigestUtils.md5Hex(token);
-        String key = String.format("%s%s", Constants.TOKEN_CACHE_PREFIX, tokenId);
-        RBucket<String> bucket = redisClient.getRedissonClient().getBucket(key);
-        bucket.delete();
+        removeTokenTicketWithId(tokenId);
     }
 
     @Override
-    public void removeTokenTicketById(String tokenId) {
+    public void removeTokenTicketWithId(String tokenId) {
         String key = String.format("%s%s", Constants.TOKEN_CACHE_PREFIX, tokenId);
         RBucket<String> bucket = redisClient.getRedissonClient().getBucket(key);
         bucket.delete();

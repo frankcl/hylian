@@ -26,7 +26,7 @@ import java.util.List;
  */
 @Data
 @Configuration
-@ConfigurationProperties(prefix = "app.security.sso")
+@ConfigurationProperties(prefix = "app.security.filter")
 public class SecurityFilterConfig {
 
     private static final Logger logger = LoggerFactory.getLogger(SecurityFilterConfig.class);
@@ -67,14 +67,14 @@ public class SecurityFilterConfig {
      *
      * @param bean 安全过滤器bean
      */
-    private void initFilterParameters(FilterRegistrationBean bean) {
+    private void initFilterParameters(FilterRegistrationBean<SecurityFilter> bean) {
         bean.addInitParameter(Constants.PARAM_APP_ID, appClientConfig.appId);
         bean.addInitParameter(Constants.PARAM_APP_SECRET, appClientConfig.appSecret);
         bean.addInitParameter(Constants.PARAM_SERVER_URL, appClientConfig.serverURL);
         if (excludePatterns != null && !excludePatterns.isEmpty()) {
-            List<URLPattern> urlPatterns = new ArrayList<>();
-            for (String excludePattern : excludePatterns) urlPatterns.add(processExcludePattern(excludePattern));
-            bean.addInitParameter(Constants.PARAM_EXCLUDE_PATTERNS, JSON.toJSONString(urlPatterns));
+            List<URLPattern> patterns = new ArrayList<>();
+            for (String excludePattern : excludePatterns) patterns.add(processExcludePattern(excludePattern));
+            bean.addInitParameter(Constants.PARAM_EXCLUDE_PATTERNS, JSON.toJSONString(patterns));
         }
     }
 

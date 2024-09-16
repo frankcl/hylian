@@ -46,6 +46,10 @@ public class UserRoleRequest implements Serializable {
      * 检测有效性，无效请求抛出异常
      */
     public void check() {
+        if (StringUtils.isEmpty(appId)) {
+            logger.error("app id is empty");
+            throw new BadRequestException("应用ID为空");
+        }
         if (StringUtils.isEmpty(userId)) {
             logger.error("user id is empty");
             throw new BadRequestException("用户ID为空");
@@ -53,10 +57,6 @@ public class UserRoleRequest implements Serializable {
         if (StringUtils.isEmpty(roleId)) {
             logger.error("role id is empty");
             throw new BadRequestException("角色ID为空");
-        }
-        if (StringUtils.isEmpty(appId)) {
-            logger.error("app id is empty");
-            throw new BadRequestException("应用ID为空");
         }
     }
 }

@@ -26,8 +26,8 @@ import javax.ws.rs.core.MediaType;
  */
 @RestController
 @Controller
-@Path("/vendor")
-@RequestMapping("/vendor")
+@Path("api/vendor")
+@RequestMapping("api/vendor")
 public class VendorController {
 
     private static final Logger logger = LoggerFactory.getLogger(VendorController.class);

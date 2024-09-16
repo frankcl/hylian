@@ -38,54 +38,49 @@ public class AppLoginServiceImpl implements AppLoginService {
         query.eq(AppLogin::getSessionId, appLogin.sessionId).eq(AppLogin::getAppId, appLogin.appId);
         if (appLoginMapper.selectCount(query) > 0) {
             logger.error("user has login for app[{}] and session[{}]", appLogin.appId, appLogin.sessionId);
-            throw new RuntimeException(String.format("用户已登录应用[%s]", appLogin.appId));
+            throw new RuntimeException("用户已登录应用");
         }
         return appLoginMapper.insert(appLogin) > 0;
     }
 
     @Override
-    public int removeExpiredAppLogins(Long maxUpdateTime) {
+    public int removeExpires(Long maxUpdateTime) {
         LambdaQueryWrapper<AppLogin> query = new LambdaQueryWrapper<>();
         query.lt(AppLogin::getUpdateTime, maxUpdateTime);
         return appLoginMapper.delete(query);
     }
 
     @Override
-    public boolean removeAppLogins(String ticketId) {
+    public boolean remove(String ticketId) {
         LambdaQueryWrapper<AppLogin> query = new LambdaQueryWrapper<>();
         query.eq(AppLogin::getTicketId, ticketId);
         return appLoginMapper.delete(query) > 0;
     }
 
     @Override
-    public boolean removeAppLogin(String sessionId, String appId) {
+    public boolean remove(String sessionId, String appId) {
         LambdaQueryWrapper<AppLogin> query = new LambdaQueryWrapper<>();
         query.eq(AppLogin::getSessionId, sessionId).eq(AppLogin::getAppId, appId);
         return appLoginMapper.delete(query) > 0;
     }
 
     @Override
-    public boolean isLoginApp(AppLoginSearchRequest searchRequest) {
-        if (StringUtils.isEmpty(searchRequest.userId)) {
-            logger.error("user id is empty");
-            throw new RuntimeException("用户ID为空");
-        }
-        if (StringUtils.isEmpty(searchRequest.appId)) {
+    public boolean isLogin(String appId, String sessionId) {
+        if (StringUtils.isEmpty(appId)) {
             logger.error("app id is empty");
             throw new RuntimeException("应用ID为空");
         }
-        if (StringUtils.isEmpty(searchRequest.sessionId)) {
+        if (StringUtils.isEmpty(sessionId)) {
             logger.error("session id is empty");
             throw new RuntimeException("会话ID为空");
         }
         LambdaQueryWrapper<AppLogin> query = new LambdaQueryWrapper<>();
-        query.eq(AppLogin::getUserId, searchRequest.userId).eq(AppLogin::getAppId, searchRequest.appId).
-                eq(AppLogin::getSessionId, searchRequest.sessionId);
+        query.eq(AppLogin::getAppId, appId).eq(AppLogin::getSessionId, sessionId);
         return appLoginMapper.selectCount(query) > 0;
     }
 
     @Override
-    public List<AppLogin> getAppLogins(String ticketId) {
+    public List<AppLogin> getWithTicket(String ticketId) {
         LambdaQueryWrapper<AppLogin> query = new LambdaQueryWrapper<>();
         query.eq(AppLogin::getTicketId, ticketId);
         return appLoginMapper.selectList(query);

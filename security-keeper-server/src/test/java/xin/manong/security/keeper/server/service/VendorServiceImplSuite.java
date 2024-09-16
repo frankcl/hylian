@@ -41,7 +41,7 @@ public class VendorServiceImplSuite {
             vendor.name = "test1";
             try {
                 Assert.assertFalse(vendorService.add(vendor));
-                Assert.assertTrue(false);
+                Assert.fail();
             } catch (Exception e) {
             }
         }
@@ -51,13 +51,13 @@ public class VendorServiceImplSuite {
             vendor.name = "test";
             try {
                 Assert.assertFalse(vendorService.add(vendor));
-                Assert.assertTrue(false);
+                Assert.fail();
             } catch (Exception e) {
             }
         }
         {
             Vendor vendor = vendorService.get("xxx");
-            Assert.assertTrue(vendor != null);
+            Assert.assertNotNull(vendor);
             Assert.assertEquals("xxx", vendor.id);
             Assert.assertEquals("test", vendor.name);
             Assert.assertTrue(vendor.createTime > 0);
@@ -71,7 +71,7 @@ public class VendorServiceImplSuite {
         }
         {
             Vendor vendor = vendorService.get("xxx");
-            Assert.assertTrue(vendor != null);
+            Assert.assertNotNull(vendor);
             Assert.assertEquals("xxx", vendor.id);
             Assert.assertEquals("test123", vendor.name);
             Assert.assertTrue(vendor.createTime > 0);

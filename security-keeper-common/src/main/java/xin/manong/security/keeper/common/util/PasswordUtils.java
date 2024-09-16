@@ -28,7 +28,7 @@ public class PasswordUtils {
     public static void checkPassword(String password) {
         password = password == null ? "" : password.trim();
         if (StringUtils.isEmpty(password) || password.length() < MIN_PASSWORD_LENGTH) {
-            logger.error("password length[{}] is invalid", password == null ? 0 : password.length());
+            logger.error("password length[{}] is invalid", password.length());
             throw new BadRequestException(String.format("秘钥最小长度[%d]", password.length()));
         }
         int lowerCaseLetters = 0, upperCaseLetters = 0, digits = 0, others = 0;

@@ -14,7 +14,7 @@ import java.io.Serializable;
 import java.util.List;
 
 /**
- * 所有角色权限请求
+ * 应用角色权限请求
  *
  * @author frankcl
  * @date 2023-09-05 13:51:00
@@ -23,9 +23,9 @@ import java.util.List;
 @Setter
 @Accessors(chain = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class AllRolePermissionRequest implements Serializable {
+public class AppRolePermissionsRequest implements Serializable {
 
-    private static final Logger logger = LoggerFactory.getLogger(AllRolePermissionRequest.class);
+    private static final Logger logger = LoggerFactory.getLogger(AppRolePermissionsRequest.class);
 
     private static final int DEFAULT_SIZE = 100;
 

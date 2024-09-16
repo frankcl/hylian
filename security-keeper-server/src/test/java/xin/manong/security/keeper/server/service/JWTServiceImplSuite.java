@@ -42,13 +42,13 @@ public class JWTServiceImplSuite {
         String token = jwtService.buildJWT(profile, expiresAt, Constants.ALGORITHM_HS256, headerMap);
         Assert.assertFalse(StringUtils.isEmpty(token));
         DecodedJWT decodedJWT = jwtService.decodeJWT(token);
-        Assert.assertTrue(decodedJWT != null);
+        Assert.assertNotNull(decodedJWT);
         Claim claim = decodedJWT.getHeaderClaim(Constants.JWT_HEADER_CATEGORY);
-        Assert.assertTrue(claim != null);
+        Assert.assertNotNull(claim);
         Assert.assertEquals(Constants.JWT_CATEGORY_TOKEN, claim.asString());
         Assert.assertTrue(jwtService.verify(decodedJWT));
         Profile decodedProfile = jwtService.decodeProfile(token);
-        Assert.assertTrue(decodedProfile != null);
+        Assert.assertNotNull(decodedProfile);
         Assert.assertEquals(profile.id, decodedProfile.id);
         Assert.assertEquals(profile.userId, decodedProfile.userId);
         Assert.assertEquals(profile.tenantId, decodedProfile.tenantId);

@@ -14,6 +14,7 @@ import java.util.List;
  * @author frankcl
  * @date 2023-09-04 14:53:57
  */
+@SuppressWarnings("unchecked")
 public class SessionUtils {
 
     /**
@@ -97,7 +98,7 @@ public class SessionUtils {
      * 将token设置到session
      *
      * @param httpRequest HTTP请求
-     * @param token
+     * @param token 令牌
      */
     public static void setToken(HttpServletRequest httpRequest, String token) {
         if (httpRequest == null || StringUtils.isEmpty(token)) return;
@@ -171,6 +172,7 @@ public class SessionUtils {
         httpSession.removeAttribute(SessionConstants.USER);
         httpSession.removeAttribute(SessionConstants.TENANT);
         httpSession.removeAttribute(SessionConstants.VENDOR);
+        httpSession.removeAttribute(SessionConstants.ROLES);
         httpSession.removeAttribute(SessionConstants.PERMISSIONS);
     }
 }

@@ -41,9 +41,9 @@ public class PermissionServiceImplSuite {
         }
         {
             Permission permission = permissionService.get("xxx");
-            Assert.assertTrue(permission != null);
-            Assert.assertTrue(permission.getCreateTime() != null);
-            Assert.assertTrue(permission.getUpdateTime() != null);
+            Assert.assertNotNull(permission);
+            Assert.assertNotNull(permission.getCreateTime());
+            Assert.assertNotNull(permission.getUpdateTime());
             Assert.assertEquals("测试权限", permission.name);
             Assert.assertEquals("app_xxx", permission.appId);
             Assert.assertEquals("/**", permission.resource);
@@ -57,9 +57,9 @@ public class PermissionServiceImplSuite {
         }
         {
             Permission permission = permissionService.get("xxx");
-            Assert.assertTrue(permission != null);
-            Assert.assertTrue(permission.getCreateTime() != null);
-            Assert.assertTrue(permission.getUpdateTime() != null);
+            Assert.assertNotNull(permission);
+            Assert.assertNotNull(permission.getCreateTime());
+            Assert.assertNotNull(permission.getUpdateTime());
             Assert.assertEquals("测试权限1", permission.name);
             Assert.assertEquals("app_xxx", permission.appId);
             Assert.assertEquals("/*", permission.resource);

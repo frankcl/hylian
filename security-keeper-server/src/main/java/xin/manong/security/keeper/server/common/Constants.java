@@ -25,18 +25,12 @@ public class Constants {
 
     public static final String COOKIE_TICKET = "TICKET";
 
-    public static final String PATH_HOME = "/home/index";
-    public static final String PATH_LOGIN = "/home/login";
-    public static final String PATH_LOGOUT = "/logout";
-
-    public static final String PARAM_CODE = "code";
     public static final String PARAM_NAME = "name";
     public static final String PARAM_TENANT = "tenant";
     public static final String PARAM_VENDOR = "vendor";
     public static final String PARAM_USER_NAME = "user_name";
     public static final String PARAM_LOGOUT_URL = "logout_url";
     public static final String PARAM_REDIRECT_URL = "redirect_url";
-    public static final String PARAM_SESSION_ID = "session_id";
 
     public static final String JWT_HEADER_ALGORITHM = "alg";
     public static final String JWT_HEADER_CATEGORY = "category";
@@ -45,5 +39,4 @@ public class Constants {
     public static final String JWT_CLAIM_PROFILE = "profile";
 
     public static final String ALGORITHM_HS256 = "HS256";
-    public static final String CHARSET_UTF8 = "UTF-8";
 }

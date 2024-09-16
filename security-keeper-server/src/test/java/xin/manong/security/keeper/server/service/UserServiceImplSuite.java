@@ -78,7 +78,7 @@ public class UserServiceImplSuite {
             user.avatar = "http://www.manong.xin/frankcl/avatar.jpg";
             try {
                 userService.add(user);
-                Assert.assertTrue(false);
+                Assert.fail();
             } catch (Exception e) {
             }
         }
@@ -93,7 +93,7 @@ public class UserServiceImplSuite {
             user.avatar = "http://www.manong.xin/frankcl/avatar.jpg";
             try {
                 userService.add(user);
-                Assert.assertTrue(false);
+                Assert.fail();
             } catch (Exception e) {
             }
         }
@@ -108,7 +108,7 @@ public class UserServiceImplSuite {
             user.avatar = "http://www.manong.xin/frankcl/avatar.jpg";
             try {
                 userService.add(user);
-                Assert.assertTrue(false);
+                Assert.fail();
             } catch (Exception e) {
             }
         }
@@ -123,13 +123,13 @@ public class UserServiceImplSuite {
             user.avatar = "http://www.manong.xin/frankcl/avatar.jpg";
             try {
                 userService.add(user);
-                Assert.assertTrue(false);
+                Assert.fail();
             } catch (Exception e) {
             }
         }
         {
             User user = userService.get("xxx");
-            Assert.assertTrue(user != null);
+            Assert.assertNotNull(user);
             Assert.assertEquals("xxx", user.id);
             Assert.assertEquals("abc", user.userName);
             Assert.assertEquals("frankcl", user.name);
@@ -149,7 +149,7 @@ public class UserServiceImplSuite {
         }
         {
             User user = userService.get("xxx");
-            Assert.assertTrue(user != null);
+            Assert.assertNotNull(user);
             Assert.assertEquals("xxx", user.id);
             Assert.assertEquals("abc", user.userName);
             Assert.assertEquals("frankcl", user.name);

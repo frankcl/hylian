@@ -11,7 +11,7 @@ public interface CodeService {
     /**
      * 根据ticket创建安全码
      *
-     * @param ticket
+     * @param ticket 票据
      * @return 安全码
      */
     String createCode(String ticket);

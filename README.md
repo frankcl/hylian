@@ -50,15 +50,16 @@
   ```yaml
   app:
   security:
-    sso:
+    client:
       appId: xxx                            #应用ID
       appSecret: xxxxxx                     #应用秘钥
       serverURL: http://security-keeper/    #单点登录服务地址
+    filter:
       filterOrder: 1                        #过滤器顺序，默认-1000
       includePatterns:                      #拦截URL列表，默认拦截/*
         - /*
       excludePatterns:                      #拦截排除URL列表
-        - /login
+        - /xxx
         - /favicon.ico
   ```
   
@@ -96,7 +97,7 @@
   ```yaml
   app:
   security:
-    sso:
+    client:
       appId: xxx                            #应用ID
       appSecret: xxxxxx                     #应用秘钥
       serverURL: http://security-keeper/    #单点登录服务地址

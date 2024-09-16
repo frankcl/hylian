@@ -93,13 +93,13 @@ public class User extends BaseModel {
             logger.error("user id is empty");
             throw new BadRequestException("用户ID为空");
         }
-        if (StringUtils.isEmpty(userName)) {
-            logger.error("user name is empty");
-            throw new BadRequestException("用户名为空");
-        }
         if (StringUtils.isEmpty(name)) {
             logger.error("real name is empty");
             throw new BadRequestException("用户真实名称为空");
+        }
+        if (StringUtils.isEmpty(userName)) {
+            logger.error("user name is empty");
+            throw new BadRequestException("用户名为空");
         }
         if (StringUtils.isEmpty(tenantId)) {
             logger.error("tenant id is empty");

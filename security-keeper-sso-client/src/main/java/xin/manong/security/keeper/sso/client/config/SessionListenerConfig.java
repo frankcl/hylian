@@ -37,7 +37,7 @@ public class SessionListenerConfig {
             throw new RuntimeException("应用客户端配置为空");
         }
         appClientConfig.check();
-        ServletListenerRegistrationBean<SessionListener> bean = new ServletListenerRegistrationBean();
+        ServletListenerRegistrationBean<SessionListener> bean = new ServletListenerRegistrationBean<>();
         bean.setListener(new SessionListener(appClientConfig));
         return bean;
     }

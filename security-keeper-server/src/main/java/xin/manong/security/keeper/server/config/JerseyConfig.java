@@ -3,7 +3,6 @@ package xin.manong.security.keeper.server.config;
 import org.glassfish.jersey.jackson.internal.jackson.jaxrs.json.JacksonJsonProvider;
 import org.glassfish.jersey.media.multipart.MultiPartFeature;
 import org.glassfish.jersey.server.ResourceConfig;
-import org.glassfish.jersey.server.mvc.freemarker.FreemarkerMvcFeature;
 import org.springframework.stereotype.Component;
 import xin.manong.weapon.spring.web.ws.filter.WebResponseFilter;
 import xin.manong.weapon.spring.web.ws.handler.ExceptionHandler;
@@ -23,7 +22,5 @@ public class JerseyConfig extends ResourceConfig {
         register(WebResponseFilter.class);
         register(ExceptionHandler.class);
         register(MultiPartFeature.class);
-        property(FreemarkerMvcFeature.TEMPLATE_BASE_PATH, "templates");
-        register(FreemarkerMvcFeature.class);
     }
 }

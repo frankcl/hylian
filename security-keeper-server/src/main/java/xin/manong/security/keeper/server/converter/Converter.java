@@ -191,8 +191,8 @@ public class Converter {
     public static Role convert(RoleRequest roleRequest) {
         if (roleRequest == null) return null;
         Role role = new Role();
-        role.name = role.name;
-        role.appId = role.appId;
+        role.name = roleRequest.name;
+        role.appId = roleRequest.appId;
         return role;
     }
 
@@ -206,8 +206,8 @@ public class Converter {
         if (roleRequest == null) return null;
         Role role = new Role();
         role.id = roleRequest.id;
-        role.name = role.name;
-        role.appId = role.appId;
+        role.name = roleRequest.name;
+        role.appId = roleRequest.appId;
         return role;
     }
 
@@ -258,7 +258,7 @@ public class Converter {
         viewTenant.updateTime = tenant.updateTime;
         viewTenant.vendor = vendor;
         if (vendor != null && !vendor.id.equals(tenant.vendorId)) {
-            logger.error("vendor ids are not consistent for {} and {}", tenant.vendorId, vendor.id);
+            logger.error("vendors are not consistent for tenant[{}] and vendor[{}]", tenant.vendorId, vendor.id);
             throw new RuntimeException("供应商ID不一致");
         }
         return viewTenant;
@@ -284,11 +284,11 @@ public class Converter {
         if (tenant != null) {
             viewUser.vendor = tenant.vendor;
             if (user.tenantId.equals(tenant.id)) {
-                logger.error("tenant ids are not consistent for {} and {}", user.tenantId, tenant.id);
+                logger.error("tenants are not consistent for user[{}] and tenant[{}]", user.tenantId, tenant.id);
                 throw new RuntimeException("租户ID不一致");
             }
             if (tenant.vendor != null && user.vendorId.equals(tenant.vendor.id)) {
-                logger.error("vendor ids are not consistent for {} and {}", user.vendorId, tenant.vendor.id);
+                logger.error("vendors are not consistent for user[{}] and vendor[{}]", user.vendorId, tenant.vendor.id);
                 throw new RuntimeException("供应商ID不一致");
             }
         }

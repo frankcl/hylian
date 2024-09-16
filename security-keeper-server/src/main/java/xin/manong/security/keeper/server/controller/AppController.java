@@ -28,8 +28,8 @@ import javax.ws.rs.core.MediaType;
  */
 @RestController
 @Controller
-@Path("/app")
-@RequestMapping("/app")
+@Path("api/app")
+@RequestMapping("api/app")
 public class AppController {
 
     private static final Logger logger = LoggerFactory.getLogger(AppController.class);
@@ -50,13 +50,13 @@ public class AppController {
     @EnableWebLogAspect
     public App get(@QueryParam("id") @RequestParam("id") String id) {
         if (StringUtils.isEmpty(id)) {
-            logger.error("app id is empty");
+            logger.error("app id is empty for getting");
             throw new BadRequestException("应用ID为空");
         }
         App app = appService.get(id);
         if (app == null) {
             logger.error("app[{}] is not found", id);
-            throw new NotFoundException(String.format("应用[%s]不存在", id));
+            throw new NotFoundException("应用不存在");
         }
         return app;
     }
@@ -134,7 +134,7 @@ public class AppController {
     @EnableWebLogAspect
     public boolean delete(@QueryParam("id") @RequestParam("id") String id) {
         if (StringUtils.isEmpty(id)) {
-            logger.error("app id is empty");
+            logger.error("app id is empty for deleting");
             throw new BadRequestException("应用ID为空");
         }
         return appService.delete(id);

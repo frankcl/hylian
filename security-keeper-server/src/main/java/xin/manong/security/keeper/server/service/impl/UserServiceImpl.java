@@ -44,7 +44,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public User get(String id) {
         if (StringUtils.isEmpty(id)) {
-            logger.error("user id is empty");
+            logger.error("user id is empty for getting");
             throw new RuntimeException("用户ID为空");
         }
         return userMapper.selectById(id);
@@ -69,17 +69,17 @@ public class UserServiceImpl implements UserService {
     public boolean add(User user) {
         if (tenantService.get(user.tenantId) == null) {
             logger.error("tenant[{}] is not found", user.tenantId);
-            throw new RuntimeException(String.format("租户[%s]不存在", user.tenantId));
+            throw new RuntimeException("租户不存在");
         }
         if (vendorService.get(user.vendorId) == null) {
             logger.error("vendor[{}] is not found", user.vendorId);
-            throw new RuntimeException(String.format("供应商[%s]不存在", user.vendorId));
+            throw new RuntimeException("供应商不存在");
         }
         LambdaQueryWrapper<User> query = new LambdaQueryWrapper<>();
         query.eq(User::getId, user.id).or().eq(User::getUserName, user.userName);
         if (userMapper.selectCount(query) > 0) {
             logger.error("user has existed for the same id[{}] or username[{}]", user.id, user.userName);
-            throw new RuntimeException(String.format("同名用户ID[%s]或用户名[%s]已存在", user.id, user.userName));
+            throw new RuntimeException("同名用户ID或用户名已存在");
         }
         user.password = DigestUtils.md5Hex(user.password.trim());
         return userMapper.insert(user) > 0;
@@ -89,7 +89,7 @@ public class UserServiceImpl implements UserService {
     public boolean update(User user) {
         if (userMapper.selectById(user.id) == null) {
             logger.error("user is not found for id[{}]", user.id);
-            throw new RuntimeException(String.format("用户[%s]不存在", user.id));
+            throw new RuntimeException("用户不存在");
         }
         user.userName = null;
         if (user.password != null) user.password = DigestUtils.md5Hex(user.password);
@@ -99,7 +99,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public boolean delete(String id) {
         if (StringUtils.isEmpty(id)) {
-            logger.error("user id is empty");
+            logger.error("user id is empty for deleting");
             throw new RuntimeException("用户ID为空");
         }
         return userMapper.deleteById(id) > 0;

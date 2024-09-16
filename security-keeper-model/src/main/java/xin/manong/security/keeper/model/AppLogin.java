@@ -63,13 +63,6 @@ public class AppLogin extends BaseModel {
     @JSONField(name = "app_id")
     @JsonProperty("app_id")
     public String appId;
-    /**
-     * 应用注销URL
-     */
-    @TableField(value = "logout_url")
-    @JSONField(name = "logout_url")
-    @JsonProperty("logout_url")
-    public String logoutURL;
 
     /**
      * 检测有效性，无效抛出异常BadRequestException
@@ -90,10 +83,6 @@ public class AppLogin extends BaseModel {
         if (StringUtils.isEmpty(appId)) {
             logger.error("app id is empty");
             throw new BadRequestException("应用ID为空");
-        }
-        if (StringUtils.isEmpty(logoutURL)) {
-            logger.error("logout url is empty");
-            throw new BadRequestException("注销URL为空");
         }
     }
 }

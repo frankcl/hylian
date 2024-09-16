@@ -61,7 +61,7 @@ public class TenantServiceImplSuite {
             tenant.vendorId = "v_xxx";
             try {
                 tenantService.add(tenant);
-                Assert.assertTrue(false);
+                Assert.fail();
             } catch (Exception e) {
             }
         }
@@ -72,7 +72,7 @@ public class TenantServiceImplSuite {
             tenant.vendorId = "v_abc";
             try {
                 tenantService.add(tenant);
-                Assert.assertTrue(false);
+                Assert.fail();
             } catch (Exception e) {
             }
         }
@@ -83,13 +83,13 @@ public class TenantServiceImplSuite {
             tenant.vendorId = "v_abc";
             try {
                 tenantService.add(tenant);
-                Assert.assertTrue(false);
+                Assert.fail();
             } catch (Exception e) {
             }
         }
         {
             Tenant tenant = tenantService.get("xxx");
-            Assert.assertTrue(tenant != null);
+            Assert.assertNotNull(tenant);
             Assert.assertEquals("xxx", tenant.id);
             Assert.assertEquals("test", tenant.name);
             Assert.assertEquals("v_abc", tenant.vendorId);
@@ -104,7 +104,7 @@ public class TenantServiceImplSuite {
         }
         {
             Tenant tenant = tenantService.get("xxx");
-            Assert.assertTrue(tenant != null);
+            Assert.assertNotNull(tenant);
             Assert.assertEquals("xxx", tenant.id);
             Assert.assertEquals("test123", tenant.name);
             Assert.assertEquals("v_abc", tenant.vendorId);

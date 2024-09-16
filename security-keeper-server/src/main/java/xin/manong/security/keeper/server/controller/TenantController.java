@@ -31,8 +31,8 @@ import java.util.ArrayList;
  */
 @RestController
 @Controller
-@Path("/tenant")
-@RequestMapping("/tenant")
+@Path("api/tenant")
+@RequestMapping("api/tenant")
 public class TenantController {
 
     private static final Logger logger = LoggerFactory.getLogger(TenantController.class);
@@ -55,13 +55,13 @@ public class TenantController {
     @EnableWebLogAspect
     public ViewTenant get(@QueryParam("id") @RequestParam("id") String id) {
         if (StringUtils.isEmpty(id)) {
-            logger.error("tenant id is empty");
+            logger.error("tenant id is empty for getting");
             throw new BadRequestException("租户ID为空");
         }
         Tenant tenant = tenantService.get(id);
         if (tenant == null) {
             logger.error("tenant[{}] is not found", id);
-            throw new NotFoundException(String.format("租户[%s]不存在", id));
+            throw new NotFoundException("租户不存在");
         }
         return fillAndConvertTenant(tenant);
     }
@@ -125,7 +125,7 @@ public class TenantController {
     @EnableWebLogAspect
     public boolean delete(@QueryParam("id") @RequestParam("id") String id) {
         if (StringUtils.isEmpty(id)) {
-            logger.error("tenant id is empty");
+            logger.error("tenant id is empty for deleting");
             throw new BadRequestException("租户ID为空");
         }
         return tenantService.delete(id);
@@ -167,13 +167,8 @@ public class TenantController {
         Vendor vendor = vendorService.get(tenant.vendorId);
         if (vendor == null) {
             logger.error("vendor[{}] is not found", tenant.vendorId);
-            throw new NotFoundException(String.format("供应商[%s]不存在", tenant.vendorId));
+            throw new NotFoundException("供应商不存在");
         }
-        ViewTenant viewTenant = Converter.convert(tenant, vendor);
-        if (viewTenant == null) {
-            logger.error("convert view tenant failed");
-            throw new RuntimeException("转换视图层租户信息失败");
-        }
-        return viewTenant;
+        return Converter.convert(tenant, vendor);
     }
 }

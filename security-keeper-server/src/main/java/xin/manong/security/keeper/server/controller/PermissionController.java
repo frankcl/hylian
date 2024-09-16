@@ -29,8 +29,8 @@ import java.util.List;
  */
 @RestController
 @Controller
-@Path("/permission")
-@RequestMapping("/permission")
+@Path("api/permission")
+@RequestMapping("api/permission")
 public class PermissionController {
 
     private static final Logger logger = LoggerFactory.getLogger(PermissionController.class);
@@ -51,13 +51,13 @@ public class PermissionController {
     @EnableWebLogAspect
     public Permission get(@QueryParam("id") @RequestParam("id") String id) {
         if (StringUtils.isEmpty(id)) {
-            logger.error("permission id is empty");
+            logger.error("permission id is empty for getting");
             throw new BadRequestException("权限ID为空");
         }
         Permission permission = permissionService.get(id);
         if (permission == null) {
             logger.error("permission[{}] is not found", id);
-            throw new NotFoundException(String.format("权限[%s]不存在", id));
+            throw new NotFoundException("权限不存在");
         }
         return permission;
     }
@@ -138,7 +138,7 @@ public class PermissionController {
     @EnableWebLogAspect
     public boolean delete(@QueryParam("id") @RequestParam("id") String id) {
         if (StringUtils.isEmpty(id)) {
-            logger.error("permission id is empty");
+            logger.error("permission id is empty for deleting");
             throw new BadRequestException("权限ID为空");
         }
         return permissionService.delete(id);

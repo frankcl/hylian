@@ -1,7 +1,6 @@
 package xin.manong.security.keeper.sso.client.component;
 
 import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import org.slf4j.Logger;
@@ -35,6 +34,7 @@ import java.util.stream.Collectors;
  * @author frankcl
  * @date 2024-01-04 16:03:31
  */
+@SuppressWarnings("unchecked")
 @Component
 public class UserServiceSupport {
 
@@ -103,31 +103,6 @@ public class UserServiceSupport {
     }
 
     /**
-     * 搜索用户信息
-     *
-     * @param searchRequest 搜索请求
-     * @return 成功返回分页用户信息，否则返回null
-     */
-    public Pager<ViewUser> searchUsers(UserSearchRequest searchRequest) {
-        String requestURL = String.format("%s%s", appClientConfig.serverURL,
-                Constants.SERVER_PATH_SEARCH_USER);
-        Map<String, Object> requestBody = JSON.parseObject(JSON.toJSONString(searchRequest));
-        HttpRequest httpRequest = HttpRequest.buildPostRequest(requestURL, RequestFormat.JSON, requestBody);
-        Pager<JSONObject> pager = HTTPExecutor.execute(httpRequest, Pager.class);
-        if (pager == null) {
-            logger.error("search users failed");
-            return null;
-        }
-        Pager<ViewUser> returnPager = new Pager<>();
-        returnPager.current = pager.current;
-        returnPager.size = pager.size;
-        returnPager.total = pager.total;
-        returnPager.records = new ArrayList<>();
-        for (JSONObject record : pager.records) returnPager.records.add(JSON.toJavaObject(record, ViewUser.class));
-        return returnPager;
-    }
-
-    /**
      * 获取用户角色列表
      *
      * @param user 用户信息
@@ -141,15 +116,8 @@ public class UserServiceSupport {
         paramMap.put(Constants.PARAM_APP_SECRET, appClientConfig.appSecret);
         paramMap.put(Constants.PARAM_USER_ID, user.id);
         HttpRequest httpRequest = HttpRequest.buildGetRequest(requestURL, paramMap);
-        List<JSONObject> records = HTTPExecutor.execute(httpRequest, List.class);
-        if (records == null || records.isEmpty()) {
-            logger.error("get roles failed or roles not existed for user[{}] and app[{}]",
-                    user.id, appClientConfig.appId);
-            return new ArrayList<>();
-        }
-        List<Role> roles = new ArrayList<>();
-        for (JSONObject record : records) roles.add(JSON.toJavaObject(record, Role.class));
-        return roles;
+        List<Role> roles = HTTPExecutor.executeAndUnwrap(httpRequest, List.class, Role.class);
+        return roles == null ? new ArrayList<>() : roles;
     }
 
     /**
@@ -163,20 +131,13 @@ public class UserServiceSupport {
         if (roles == null || roles.isEmpty()) return new ArrayList<>();
         List<String> roleIds = roles.stream().map(role -> role.id).collect(Collectors.toList());
         String requestURL = String.format("%s%s", appClientConfig.serverURL,
-                Constants.SERVER_PATH_GET_ROLE_PERMISSIONS);
+                Constants.SERVER_PATH_GET_APP_ROLE_PERMISSIONS);
         Map<String, Object> requestBody = new HashMap<>();
         requestBody.put(Constants.PARAM_ROLE_IDS, roleIds);
         requestBody.put(Constants.PARAM_APP_ID, appClientConfig.appId);
         requestBody.put(Constants.PARAM_APP_SECRET, appClientConfig.appSecret);
         HttpRequest httpRequest = HttpRequest.buildPostRequest(requestURL, RequestFormat.JSON, requestBody);
-        List<JSONObject> records = HTTPExecutor.execute(httpRequest, List.class);
-        if (records == null || records.isEmpty()) {
-            logger.error("get permissions failed or permissions not existed for user[{}] and app[{}]",
-                    user.id, appClientConfig.appId);
-            return new ArrayList<>();
-        }
-        List<Permission> permissions = new ArrayList<>();
-        for (JSONObject record : records) permissions.add(JSON.toJavaObject(record, Permission.class));
-        return permissions;
+        List<Permission> permissions = HTTPExecutor.executeAndUnwrap(httpRequest, List.class, Permission.class);
+        return permissions == null ? new ArrayList<>() : permissions;
     }
 }

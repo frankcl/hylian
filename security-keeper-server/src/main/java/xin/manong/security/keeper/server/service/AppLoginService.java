@@ -27,7 +27,7 @@ public interface AppLoginService {
      * @param maxUpdateTime 最大更新时间，单位：毫秒
      * @return 清除信息数量
      */
-    int removeExpiredAppLogins(Long maxUpdateTime);
+    int removeExpires(Long maxUpdateTime);
 
     /**
      * 移除ticket相关应用登录信息
@@ -35,7 +35,7 @@ public interface AppLoginService {
      * @param ticketId ticket ID
      * @return 成功返回true，否则返回false
      */
-    boolean removeAppLogins(String ticketId);
+    boolean remove(String ticketId);
 
     /**
      * 移除会话相关应用登录信息
@@ -44,15 +44,16 @@ public interface AppLoginService {
      * @param appId 应用ID
      * @return 成功返回true，否则返回false
      */
-    boolean removeAppLogin(String sessionId, String appId);
+    boolean remove(String sessionId, String appId);
 
     /**
      * 指定用户session是否登录应用
      *
-     * @param searchRequest 搜索请求
+     * @param appId 应用ID
+     * @param sessionId 会话ID
      * @return 已登录返回true，否则返回false
      */
-    boolean isLoginApp(AppLoginSearchRequest searchRequest);
+    boolean isLogin(String appId, String sessionId);
 
     /**
      * 获取ticket相关应用登录列表
@@ -60,7 +61,7 @@ public interface AppLoginService {
      * @param ticketId ticket ID
      * @return 应用登录列表
      */
-    List<AppLogin> getAppLogins(String ticketId);
+    List<AppLogin> getWithTicket(String ticketId);
 
     /**
      * 应用登录信息搜索

@@ -26,8 +26,8 @@ import javax.ws.rs.core.MediaType;
  */
 @RestController
 @Controller
-@Path("/appLogin")
-@RequestMapping("/appLogin")
+@Path("api/appLogin")
+@RequestMapping("api/appLogin")
 public class AppLoginController {
 
     @Resource

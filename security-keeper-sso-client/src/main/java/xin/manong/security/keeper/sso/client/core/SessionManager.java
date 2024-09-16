@@ -17,12 +17,12 @@ public class SessionManager {
 
     private static final Logger logger = LoggerFactory.getLogger(SessionManager.class);
 
-    private static Map<String, HttpSession> sessionMap = new ConcurrentHashMap<>();
+    private static final Map<String, HttpSession> sessionMap = new ConcurrentHashMap<>();
 
     /**
      * 添加session
      *
-     * @param httpSession HTTP session
+     * @param httpSession HTTP会话
      */
     public static void put(HttpSession httpSession) {
         if (httpSession == null) return;
@@ -33,7 +33,7 @@ public class SessionManager {
     /**
      * 移除session
      *
-     * @param httpSession
+     * @param httpSession HTTP会话
      */
     public static void remove(HttpSession httpSession) {
         if (httpSession == null || !sessionMap.containsKey(httpSession.getId())) return;
@@ -44,7 +44,7 @@ public class SessionManager {
     /**
      * 失效session
      *
-     * @param sessionId session ID
+     * @param sessionId 会话ID
      */
     public static void invalidate(String sessionId) {
         HttpSession httpSession = sessionMap.get(sessionId);

@@ -46,7 +46,7 @@ public class JWTServiceImpl implements JWTService {
             return null;
         }
         if (!SUPPORT_ALGORITHMS.contains(algoName)) {
-            logger.error("unsupported encrypt algorithm[{}]", algoName);
+            logger.error("unsupported encrypt algorithm[{}] for building", algoName);
             return null;
         }
         Algorithm algorithm = null;
@@ -66,13 +66,14 @@ public class JWTServiceImpl implements JWTService {
         }
         String algoName = claim.asString();
         if (!SUPPORT_ALGORITHMS.contains(algoName)) {
-            logger.error("unsupported encrypt algorithm[{}]", algoName);
+            logger.error("unsupported encrypt algorithm[{}] for verifying", algoName);
             return false;
         }
         Algorithm algorithm = null;
         if (algoName.equals(Constants.ALGORITHM_HS256)) {
             algorithm = Algorithm.HMAC256(serverConfig.jwtConfig.getSecretHS256());
         }
+        assert algorithm != null;
         JWTVerifier verifier = JWT.require(algorithm).build();
         try {
             verifier.verify(decodedJWT);

@@ -13,7 +13,7 @@ public interface TokenService {
     /**
      * 验证token
      *
-     * @param token
+     * @param token 令牌
      * @return 有效返回true，否则返回false
      */
     boolean verifyToken(String token);
@@ -30,7 +30,7 @@ public interface TokenService {
     /**
      * 根据token获取ticket
      *
-     * @param token
+     * @param token 令牌
      * @return 存在返回ticket，否则返回null
      */
     String getTicket(String token);
@@ -38,22 +38,22 @@ public interface TokenService {
     /**
      * 添加token和ticket映射
      *
-     * @param token
-     * @param ticket
+     * @param token 令牌
+     * @param ticket 票据
      */
     void putTokenTicket(String token, String ticket);
 
     /**
      * 移除token和ticket映射
      *
-     * @param token
+     * @param token 令牌
      */
     void removeTokenTicket(String token);
 
     /**
-     * 移除token和ticket映射
+     * 根据ID移除token和ticket映射
      *
-     * @param tokenId token ID
+     * @param tokenId 令牌ID
      */
-    void removeTokenTicketById(String tokenId);
+    void removeTokenTicketWithId(String tokenId);
 }

@@ -41,7 +41,7 @@ public class VendorServiceImpl implements VendorService {
     @Override
     public Vendor get(String id) {
         if (StringUtils.isEmpty(id)) {
-            logger.error("vendor id is empty");
+            logger.error("vendor id is empty for getting");
             throw new RuntimeException("供应商ID为空");
         }
         return vendorMapper.selectById(id);
@@ -53,7 +53,7 @@ public class VendorServiceImpl implements VendorService {
         query.eq(Vendor::getId, vendor.id).or().eq(Vendor::getName, vendor.name);
         if (vendorMapper.selectCount(query) > 0) {
             logger.error("vendor has existed for the same id[{}] or name[{}]", vendor.id, vendor.name);
-            throw new RuntimeException(String.format("相同ID[%s]或名称[%s]供应商已存在", vendor.id, vendor.name));
+            throw new RuntimeException("同名供应商已存在");
         }
         return vendorMapper.insert(vendor) > 0;
     }
@@ -63,7 +63,7 @@ public class VendorServiceImpl implements VendorService {
         Vendor prevVendor = vendorMapper.selectById(vendor.id);
         if (prevVendor == null) {
             logger.error("vendor is not found for id[{}]", vendor.id);
-            throw new RuntimeException(String.format("供应商[%s]不存在", vendor.id));
+            throw new RuntimeException("供应商不存在");
         }
         if (StringUtils.isEmpty(vendor.name)) vendor.name = null;
         if (vendor.name != null && !vendor.name.equals(prevVendor.name)) {
@@ -71,7 +71,7 @@ public class VendorServiceImpl implements VendorService {
             query.eq(Vendor::getName, vendor.name);
             if (vendorMapper.selectCount(query) > 0) {
                 logger.error("vendor has existed for the same name[{}]", vendor.name);
-                throw new RuntimeException(String.format("同名供应商[%s]已存在", vendor.name));
+                throw new RuntimeException("同名供应商已存在");
             }
         }
         return vendorMapper.updateById(vendor) > 0;
@@ -80,7 +80,7 @@ public class VendorServiceImpl implements VendorService {
     @Override
     public boolean delete(String id) {
         if (StringUtils.isEmpty(id)) {
-            logger.error("vendor id is empty");
+            logger.error("vendor id is empty for deleting");
             throw new RuntimeException("供应商ID为空");
         }
         TenantSearchRequest searchRequest = new TenantSearchRequest();

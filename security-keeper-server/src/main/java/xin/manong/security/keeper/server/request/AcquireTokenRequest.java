@@ -56,13 +56,6 @@ public class AcquireTokenRequest implements Serializable {
     @JSONField(name = "session_id")
     @QueryParam("session_id")
     public String sessionId;
-    /**
-     * 应用注销URL
-     */
-    @JsonProperty("logout_url")
-    @JSONField(name = "logout_url")
-    @QueryParam("logout_url")
-    public String logoutURL;
 
     /**
      * 检测有效性，无效抛出异常BadRequestException
@@ -83,10 +76,6 @@ public class AcquireTokenRequest implements Serializable {
         if (StringUtils.isEmpty(sessionId)) {
             logger.error("app session id is empty");
             throw new BadRequestException("应用会话ID为空");
-        }
-        if (StringUtils.isEmpty(logoutURL)) {
-            logger.error("app logout url is empty");
-            throw new BadRequestException("应用注销URL为空");
         }
     }
 }

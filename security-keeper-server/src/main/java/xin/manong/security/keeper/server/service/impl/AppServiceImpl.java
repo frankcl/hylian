@@ -35,7 +35,7 @@ public class AppServiceImpl implements AppService {
     @Override
     public App get(String id) {
         if (StringUtils.isEmpty(id)) {
-            logger.error("app id is empty");
+            logger.error("app id is empty when getting");
             throw new RuntimeException("应用ID为空");
         }
         return appMapper.selectById(id);
@@ -47,7 +47,7 @@ public class AppServiceImpl implements AppService {
         query.eq(App::getId, app.id).or().eq(App::getName, app.name);
         if (appMapper.selectCount(query) > 0) {
             logger.error("app has existed for the same id[{}] or name[{}]", app.id, app.name);
-            throw new RuntimeException(String.format("同名应用ID[%s]或应用名[%s]已存在", app.id, app.name));
+            throw new RuntimeException("同名应用已存在");
         }
         return appMapper.insert(app) > 0;
     }
@@ -57,7 +57,7 @@ public class AppServiceImpl implements AppService {
         App prevApp = appMapper.selectById(app.id);
         if (prevApp == null) {
             logger.error("app is not found for id[{}]", app.id);
-            throw new RuntimeException(String.format("应用[%s]不存在", app.id));
+            throw new RuntimeException("应用不存在");
         }
         if (StringUtils.isEmpty(app.name)) app.name = null;
         if (app.name != null && !app.name.equals(prevApp.name)) {
@@ -65,7 +65,7 @@ public class AppServiceImpl implements AppService {
             query.eq(App::getName, app.name);
             if (appMapper.selectCount(query) > 0) {
                 logger.error("app has existed for the same name[{}]", app.name);
-                throw new RuntimeException(String.format("同名应用[%s]已存在", app.name));
+                throw new RuntimeException("同名应用已存在");
             }
         }
         return appMapper.updateById(app) > 0;
@@ -74,7 +74,7 @@ public class AppServiceImpl implements AppService {
     @Override
     public boolean delete(String id) {
         if (StringUtils.isEmpty(id)) {
-            logger.error("app id is empty");
+            logger.error("app id is empty when deleting");
             throw new RuntimeException("应用ID为空");
         }
         return appMapper.deleteById(id) > 0;
@@ -105,11 +105,11 @@ public class AppServiceImpl implements AppService {
         App app = get(appId);
         if (app == null) {
             logger.error("app[{}] is not found", appId);
-            throw new RuntimeException(String.format("应用[%s]不存在", appId));
+            throw new RuntimeException("应用不存在");
         }
         if (!app.secret.equals(appSecret)) {
-            logger.error("app id and secret are not matched");
-            throw new RuntimeException("应用ID和秘钥不匹配");
+            logger.error("app secret not matched");
+            throw new RuntimeException("应用秘钥不匹配");
         }
     }
 }

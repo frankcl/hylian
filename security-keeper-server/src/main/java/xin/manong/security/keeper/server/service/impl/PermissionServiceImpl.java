@@ -39,7 +39,7 @@ public class PermissionServiceImpl implements PermissionService {
     @Override
     public Permission get(String id) {
         if (StringUtils.isEmpty(id)) {
-            logger.error("permission id is empty");
+            logger.error("permission id is empty for getting");
             throw new RuntimeException("权限ID为空");
         }
         return permissionMapper.selectById(id);
@@ -77,12 +77,10 @@ public class PermissionServiceImpl implements PermissionService {
             wrapper.eq(Permission::getResource, permission.resource);
             wrapper.or().eq(Permission::getName, permission.name);
         });
-        query.eq(Permission::getResource, permission.resource).or().eq(Permission::getName, permission.name);
         if (permissionMapper.selectCount(query) > 0) {
             logger.error("permission has existed for the same name[{}] or resource[{}]",
                     permission.name, permission.resource);
-            throw new RuntimeException(String.format("同名[%s]或相同访问资源[%s]权限存在",
-                    permission.name, permission.resource));
+            throw new RuntimeException("权限已存在");
         }
         return permissionMapper.insert(permission) > 0;
     }
@@ -91,7 +89,7 @@ public class PermissionServiceImpl implements PermissionService {
     public boolean update(Permission permission) {
         if (permissionMapper.selectById(permission.id) == null) {
             logger.error("permission is not found for id[{}]", permission.id);
-            throw new NotFoundException(String.format("权限[%s]不存在", permission.id));
+            throw new NotFoundException("权限不存在");
         }
         return permissionMapper.updateById(permission) > 0;
     }

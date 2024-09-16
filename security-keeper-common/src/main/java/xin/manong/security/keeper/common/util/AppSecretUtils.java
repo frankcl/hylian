@@ -41,8 +41,8 @@ public class AppSecretUtils {
     public static String buildSecret(int n) {
         Random random = new Random();
         if (n <= 0) n = DEFAULT_SECRET_CHAR_NUM;
-        StringBuffer buffer = new StringBuffer();
-        for (int i = 0; i < n; i++) buffer.append(CHARS[random.nextInt(CHARS.length)]);
-        return buffer.toString();
+        StringBuilder builder = new StringBuilder();
+        for (int i = 0; i < n; i++) builder.append(CHARS[random.nextInt(CHARS.length)]);
+        return builder.toString();
     }
 }

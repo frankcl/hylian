@@ -106,21 +106,21 @@ public class HTTPUtils {
             URL requestURL = new URL(url);
             String queryString = requestURL.getQuery();
             if (StringUtils.isEmpty(queryString)) return url;
-            StringBuffer buffer = new StringBuffer();
+            StringBuilder builder = new StringBuilder();
             String[] queryList = queryString.split("&");
             for (String query : queryList) {
                 int index = query.indexOf("=");
                 String key = index == -1 ? query : query.substring(0, index);
                 if (queryKeys.contains(key)) continue;
-                if (buffer.length() > 0) buffer.append("&");
-                buffer.append(query);
+                if (builder.length() > 0) builder.append("&");
+                builder.append(query);
             }
             String protocol = requestURL.getProtocol();
             int port = requestURL.getPort();
             String path = port < 0 ?
                     String.format("%s://%s%s", protocol, requestURL.getHost(), requestURL.getPath()) :
                     String.format("%s://%s:%d%s", protocol, requestURL.getHost(), port, requestURL.getPath());
-            return buffer.length() > 0 ? String.format("%s?%s", path, buffer) : path;
+            return builder.length() > 0 ? String.format("%s?%s", path, builder) : path;
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
             return url;

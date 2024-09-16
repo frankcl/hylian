@@ -42,6 +42,6 @@ public class TokenServiceImplSuite {
         tokenService.putTokenTicket(token, ticket);
         Assert.assertEquals(ticket, tokenService.getTicket(token));
         tokenService.removeTokenTicket(token);
-        Assert.assertTrue(tokenService.getTicket(token) == null);
+        Assert.assertNull(tokenService.getTicket(token));
     }
 }

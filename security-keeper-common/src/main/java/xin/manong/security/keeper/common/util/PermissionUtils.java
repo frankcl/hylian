@@ -31,7 +31,7 @@ public class PermissionUtils {
         }
         if (pattern.endsWith("/*")) pattern = pattern.substring(0, pattern.length() - 2);
         if (pattern.endsWith("/**")) pattern = pattern.substring(0, pattern.length() - 3);
-        if (pattern.indexOf("*") != -1) {
+        if (pattern.contains("*")) {
             logger.error("invalid pattern[{}]", pattern);
             return false;
         }
@@ -55,7 +55,7 @@ public class PermissionUtils {
             String prefix = pattern.substring(0, pattern.length() - 1);
             if (!path.startsWith(prefix)) return false;
             String rest = path.substring(prefix.length());
-            return rest.indexOf("/") == -1;
+            return !rest.contains("/");
         } else {
             return pattern.equals(path);
         }

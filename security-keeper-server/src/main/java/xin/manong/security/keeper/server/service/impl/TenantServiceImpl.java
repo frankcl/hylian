@@ -45,7 +45,7 @@ public class TenantServiceImpl implements TenantService {
     @Override
     public Tenant get(String id) {
         if (StringUtils.isEmpty(id)) {
-            logger.error("tenant id is empty");
+            logger.error("tenant id is empty for getting");
             throw new RuntimeException("租户ID为空");
         }
         return tenantMapper.selectById(id);
@@ -55,7 +55,7 @@ public class TenantServiceImpl implements TenantService {
     public boolean add(Tenant tenant) {
         if (vendorService.get(tenant.vendorId) == null) {
             logger.error("vendor[{}] is not found", tenant.vendorId);
-            throw new RuntimeException(String.format("供应商[%s]未找到", tenant.vendorId));
+            throw new RuntimeException("供应商不存在");
         }
         LambdaQueryWrapper<Tenant> query = new LambdaQueryWrapper<>();
         query.eq(Tenant::getId, tenant.id);
@@ -63,8 +63,7 @@ public class TenantServiceImpl implements TenantService {
         if (tenantMapper.selectCount(query) > 0) {
             logger.error("tenant has existed for the same id[{}] or name[{}] of vendor[{}]",
                     tenant.id, tenant.name, tenant.vendorId);
-            throw new RuntimeException(String.format("相同ID[%s]或名称[%s]租户已存在",
-                    tenant.id, tenant.name));
+            throw new RuntimeException("同名租户已存在");
         }
         return tenantMapper.insert(tenant) > 0;
     }
@@ -74,7 +73,7 @@ public class TenantServiceImpl implements TenantService {
         Tenant prevTenant = tenantMapper.selectById(tenant.id);
         if (prevTenant == null) {
             logger.error("tenant is not found for id[{}]", tenant.id);
-            throw new RuntimeException(String.format("租户[%s]不存在", tenant.id));
+            throw new RuntimeException("租户不存在");
         }
         if (StringUtils.isEmpty(tenant.name)) tenant.name = null;
         if (StringUtils.isEmpty(tenant.vendorId)) tenant.vendorId = null;
@@ -88,8 +87,7 @@ public class TenantServiceImpl implements TenantService {
             if (tenantMapper.selectCount(query) > 0) {
                 logger.error("tenant has existed for the same name[{}] of vendor[{}]",
                         name, vendorId);
-                throw new RuntimeException(String.format("供应商[%s]同名租户[%s]已存在",
-                        vendorId, name));
+                throw new RuntimeException("同名租户已存在");
             }
         }
         return tenantMapper.updateById(tenant) > 0;
@@ -98,7 +96,7 @@ public class TenantServiceImpl implements TenantService {
     @Override
     public boolean delete(String id) {
         if (StringUtils.isEmpty(id)) {
-            logger.error("tenant id is empty");
+            logger.error("tenant id is empty for deleting");
             throw new RuntimeException("租户ID为空");
         }
         UserSearchRequest searchRequest = new UserSearchRequest();

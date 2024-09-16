@@ -9,14 +9,12 @@ import org.springframework.web.bind.annotation.*;
 import xin.manong.security.keeper.model.*;
 import xin.manong.security.keeper.model.view.response.ViewTenant;
 import xin.manong.security.keeper.model.view.response.ViewUser;
-import xin.manong.security.keeper.server.common.Constants;
 import xin.manong.security.keeper.server.converter.Converter;
 import xin.manong.security.keeper.server.request.PasswordChangeRequest;
 import xin.manong.security.keeper.server.request.UserRequest;
 import xin.manong.security.keeper.server.request.UserRoleRequest;
 import xin.manong.security.keeper.server.request.UserUpdateRequest;
 import xin.manong.security.keeper.server.service.*;
-import xin.manong.security.keeper.server.service.request.UserRoleSearchRequest;
 import xin.manong.security.keeper.model.view.request.UserSearchRequest;
 import xin.manong.weapon.base.util.RandomID;
 import xin.manong.weapon.spring.web.ws.aspect.EnableWebLogAspect;
@@ -25,8 +23,6 @@ import javax.annotation.Resource;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * 用户控制器
@@ -36,8 +32,8 @@ import java.util.stream.Collectors;
  */
 @RestController
 @Controller
-@Path("/user")
-@RequestMapping("/user")
+@Path("api/user")
+@RequestMapping("api/user")
 public class UserController {
 
     private static final Logger logger = LoggerFactory.getLogger(UserController.class);
@@ -68,13 +64,13 @@ public class UserController {
     @EnableWebLogAspect
     public ViewUser get(@QueryParam("id") @RequestParam("id") String id) {
         if (StringUtils.isEmpty(id)) {
-            logger.error("user id is empty");
+            logger.error("user id is empty for getting");
             throw new BadRequestException("用户ID为空");
         }
         User user = userService.get(id);
         if (user == null) {
             logger.error("user[{}] is not found", id);
-            throw new NotFoundException(String.format("用户[%s]不存在", id));
+            throw new NotFoundException("用户不存在");
         }
         return fillAndConvertUser(user);
     }
@@ -101,8 +97,8 @@ public class UserController {
         user.id = RandomID.build();
         Tenant tenant = tenantService.get(user.tenantId);
         if (tenant == null) {
-            logger.error("tenant[{}] is not found", user.tenantId);
-            throw new BadRequestException(String.format("租户[%s]不存在", user.tenantId));
+            logger.error("tenant[{}] is not found for adding", user.tenantId);
+            throw new BadRequestException("租户不存在");
         }
         user.vendorId = tenant.vendorId;
         user.check();
@@ -131,8 +127,8 @@ public class UserController {
         if (!StringUtils.isEmpty(user.tenantId)) {
             Tenant tenant = tenantService.get(user.tenantId);
             if (tenant == null) {
-                logger.error("tenant[{}] is not found", user.tenantId);
-                throw new BadRequestException(String.format("租户[%s]不存在", user.tenantId));
+                logger.error("tenant[{}] is not found for updating", user.tenantId);
+                throw new BadRequestException("租户不存在");
             }
             user.vendorId = tenant.vendorId;
         }
@@ -152,7 +148,7 @@ public class UserController {
     @EnableWebLogAspect
     public boolean delete(@QueryParam("id") @RequestParam("id") String id) {
         if (StringUtils.isEmpty(id)) {
-            logger.error("user id is empty");
+            logger.error("user id is empty for deleting");
             throw new BadRequestException("用户ID为空");
         }
         return userService.delete(id);
@@ -198,37 +194,6 @@ public class UserController {
             throw new BadRequestException("用户角色关系ID为空");
         }
         return userRoleService.delete(id);
-    }
-
-    /**
-     * 获取应用用户角色列表
-     *
-     * @param userId 用户ID
-     * @param appId 应用ID
-     * @return 角色列表
-     */
-    @GET
-    @Produces(MediaType.APPLICATION_JSON)
-    @Path("getAppUserRoles")
-    @GetMapping("getAppUserRoles")
-    @EnableWebLogAspect
-    public List<Role> getAppUserRoles(@QueryParam("user_id") @RequestParam("user_id") String userId,
-                                      @QueryParam("app_id") @RequestParam("app_id") String appId,
-                                      @QueryParam("app_secret") @RequestParam("app_secret") String appSecret) {
-        if (StringUtils.isEmpty(userId)) {
-            logger.error("user id is empty");
-            throw new BadRequestException("用户ID为空");
-        }
-        appService.verifyApp(appId, appSecret);
-        UserRoleSearchRequest searchRequest = new UserRoleSearchRequest();
-        searchRequest.userId = userId;
-        searchRequest.appId = appId;
-        searchRequest.current = Constants.DEFAULT_CURRENT;
-        searchRequest.size = 100;
-        Pager<UserRole> pager = userRoleService.search(searchRequest);
-        if (pager == null || pager.records == null) return new ArrayList<>();
-        List<String> roleIds = pager.records.stream().map(r -> r.roleId).collect(Collectors.toList());
-        return roleService.batchGet(roleIds);
     }
 
     /**
@@ -278,7 +243,7 @@ public class UserController {
         User user = userService.getByUserName(request.userName);
         if (user == null) {
             logger.error("user is not found for username[{}]", request.userName);
-            throw new NotFoundException(String.format("用户[%s]不存在", request.userName));
+            throw new NotFoundException("用户不存在");
         }
         if (!user.password.equals(DigestUtils.md5Hex(request.password))) {
             logger.error("password is not correct");
@@ -287,7 +252,7 @@ public class UserController {
         User updateUser = new User();
         updateUser.id = user.id;
         updateUser.password = request.newPassword.trim();
-        return userService.update(user);
+        return userService.update(updateUser);
     }
 
     /**
@@ -300,12 +265,12 @@ public class UserController {
         Vendor vendor = vendorService.get(user.vendorId);
         if (vendor == null) {
             logger.error("vendor[{}] is not found", user.vendorId);
-            throw new NotFoundException(String.format("供应商[%s]不存在", user.vendorId));
+            throw new NotFoundException("供应商不存在");
         }
         Tenant tenant = tenantService.get(user.tenantId);
         if (tenant == null) {
             logger.error("tenant[{}] is not found", user.tenantId);
-            throw new NotFoundException(String.format("租户[%s]不存在", user.tenantId));
+            throw new NotFoundException("租户不存在");
         }
         ViewTenant viewTenant = Converter.convert(tenant, vendor);
         if (viewTenant == null) {

@@ -1,5 +1,6 @@
 package xin.manong.security.keeper.sso.client.interceptor;
 
+import org.jetbrains.annotations.NotNull;
 import org.springframework.web.servlet.HandlerInterceptor;
 import xin.manong.security.keeper.sso.client.config.AppClientConfig;
 import xin.manong.security.keeper.sso.client.core.SecurityChecker;
@@ -16,7 +17,7 @@ import javax.servlet.http.HttpServletResponse;
  */
 public class SecurityInterceptor implements HandlerInterceptor {
 
-    private SecurityChecker securityChecker;
+    private final SecurityChecker securityChecker;
 
     public SecurityInterceptor(AppClientConfig appClientConfig) {
         securityChecker = new SecurityChecker(appClientConfig.appId,
@@ -30,15 +31,16 @@ public class SecurityInterceptor implements HandlerInterceptor {
      * @param httpResponse HTTP响应
      * @param handler 目标处理对象
      * @return 检测成功返回true，否则返回false
-     * @throws Exception
      */
     @Override
-    public boolean preHandle(HttpServletRequest httpRequest,
-                             HttpServletResponse httpResponse,
-                             Object handler) throws Exception {
-        boolean status = securityChecker.check(httpRequest, httpResponse);
-        if (status) ContextManager.fillContext(httpRequest);
-        return status;
+    public boolean preHandle(@NotNull HttpServletRequest httpRequest,
+                             @NotNull HttpServletResponse httpResponse,
+                             @NotNull Object handler) throws Exception {
+        if (securityChecker.check(httpRequest, httpResponse)) {
+            ContextManager.fillContext(httpRequest);
+            return true;
+        }
+        return false;
     }
 
     /**
@@ -48,12 +50,11 @@ public class SecurityInterceptor implements HandlerInterceptor {
      * @param httpResponse HTTP响应
      * @param handler 目标处理对象
      * @param e 异常对象
-     * @throws Exception
      */
     @Override
-    public void afterCompletion(HttpServletRequest httpRequest,
-                                HttpServletResponse httpResponse,
-                                Object handler, Exception e) throws Exception {
+    public void afterCompletion(@NotNull HttpServletRequest httpRequest,
+                                @NotNull HttpServletResponse httpResponse,
+                                @NotNull Object handler, Exception e) throws Exception {
         ContextManager.sweepContext();
     }
 }

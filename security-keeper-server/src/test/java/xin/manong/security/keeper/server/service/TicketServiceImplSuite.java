@@ -43,7 +43,7 @@ public class TicketServiceImplSuite {
         ticketService.putTicket(profile.id, ticket);
         Assert.assertEquals(ticket, ticketService.getTicket(profile.id));
         ticketService.removeTicket(profile.id);
-        Assert.assertTrue(ticketService.getTicket(profile.id) == null);
+        Assert.assertNull(ticketService.getTicket(profile.id));
         ticketService.addToken(profile.id, "token1");
         ticketService.addToken(profile.id, "token2");
         Set<String> tokens = ticketService.getTicketTokens(profile.id);

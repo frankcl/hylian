@@ -59,7 +59,7 @@ public class RolePermissionServiceImplSuite {
             searchRequest.roleIds = new ArrayList<>();
             searchRequest.roleIds.add("role_xxx");
             Pager<RolePermission> pager = rolePermissionService.search(searchRequest);
-            Assert.assertTrue(pager != null);
+            Assert.assertNotNull(pager);
             Assert.assertEquals(2L, pager.total.longValue());
             Assert.assertEquals(Constants.DEFAULT_PAGE_SIZE, pager.size.longValue());
             Assert.assertEquals(2, pager.records.size());
@@ -72,7 +72,7 @@ public class RolePermissionServiceImplSuite {
             RolePermissionSearchRequest searchRequest = new RolePermissionSearchRequest();
             searchRequest.permissionId = "permission_xxx";
             Pager<RolePermission> pager = rolePermissionService.search(searchRequest);
-            Assert.assertTrue(pager != null);
+            Assert.assertNotNull(pager);
             Assert.assertEquals(2L, pager.total.longValue());
             Assert.assertEquals(Constants.DEFAULT_PAGE_SIZE, pager.size.longValue());
             Assert.assertEquals(2, pager.records.size());

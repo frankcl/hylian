@@ -38,11 +38,11 @@ public class RoleServiceImplSuite {
         }
         {
             Role role = roleService.get("xxx");
-            Assert.assertTrue(role != null);
+            Assert.assertNotNull(role);
             Assert.assertEquals("测试角色", role.name);
             Assert.assertEquals("app_xxx", role.appId);
-            Assert.assertTrue(role.createTime != null);
-            Assert.assertTrue(role.updateTime != null);
+            Assert.assertNotNull(role.createTime);
+            Assert.assertNotNull(role.updateTime);
         }
         {
             Role role = new Role();
@@ -52,11 +52,11 @@ public class RoleServiceImplSuite {
         }
         {
             Role role = roleService.get("xxx");
-            Assert.assertTrue(role != null);
+            Assert.assertNotNull(role);
             Assert.assertEquals("测试角色1", role.name);
             Assert.assertEquals("app_xxx", role.appId);
-            Assert.assertTrue(role.createTime != null);
-            Assert.assertTrue(role.updateTime != null);
+            Assert.assertNotNull(role.createTime);
+            Assert.assertNotNull(role.updateTime);
         }
         {
             RoleSearchRequest searchRequest = new RoleSearchRequest();

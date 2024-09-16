@@ -13,22 +13,20 @@ weapon:
         default:
           mode: SINGLE
           connection-pool-size: 200
-          password: xxxxxx
-          address: r-bp1fac3adaa6aa14.redis.rds.aliyuncs.com:6379
+          password: xmjjyhy28p
+          address: 127.0.0.1:6379
           db: 1
 
 app:
   security:
-    sso:
+    client:
       appId: security-keeper
       appSecret: 123456
       serverURL: http://localhost:8080/
+    filter:
       excludePatterns:
-        - security/*
-        - health/*
-        - user/getAppUserRoles
-        - role/getRolePermissions
-        - home/login
+        - api/security/*
+        - api/health/*
         - favicon.ico
   server:
     name: security_keeper_server

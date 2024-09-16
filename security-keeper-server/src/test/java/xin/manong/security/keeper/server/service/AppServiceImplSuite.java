@@ -1,6 +1,5 @@
 package xin.manong.security.keeper.server.service;
 
-import org.apache.commons.codec.digest.DigestUtils;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -44,7 +43,7 @@ public class AppServiceImplSuite {
             app.secret = "abc";
             try {
                 Assert.assertFalse(appService.add(app));
-                Assert.assertTrue(false);
+                Assert.fail();
             } catch (Exception e) {
             }
         }
@@ -55,13 +54,13 @@ public class AppServiceImplSuite {
             app.secret = "abc";
             try {
                 Assert.assertFalse(appService.add(app));
-                Assert.assertTrue(false);
+                Assert.fail();
             } catch (Exception e) {
             }
         }
         {
             App app = appService.get("xxx");
-            Assert.assertTrue(app != null);
+            Assert.assertNotNull(app);
             Assert.assertEquals("xxx", app.id);
             Assert.assertEquals("test", app.name);
             Assert.assertEquals("abc", app.secret);
@@ -77,7 +76,7 @@ public class AppServiceImplSuite {
         }
         {
             App app = appService.get("xxx");
-            Assert.assertTrue(app != null);
+            Assert.assertNotNull(app);
             Assert.assertEquals("xxx", app.id);
             Assert.assertEquals("test123", app.name);
             Assert.assertEquals("abcd", app.secret);
@@ -93,6 +92,5 @@ public class AppServiceImplSuite {
         {
             Assert.assertTrue(appService.delete("xxx"));
         }
-        System.out.println("AAA:" + DigestUtils.md5Hex("123456"));
     }
 }

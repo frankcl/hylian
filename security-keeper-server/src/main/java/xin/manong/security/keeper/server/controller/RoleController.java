@@ -6,20 +6,14 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import xin.manong.security.keeper.model.Pager;
-import xin.manong.security.keeper.model.Permission;
 import xin.manong.security.keeper.model.Role;
 import xin.manong.security.keeper.model.RolePermission;
-import xin.manong.security.keeper.server.common.Constants;
 import xin.manong.security.keeper.server.converter.Converter;
-import xin.manong.security.keeper.server.request.AllRolePermissionRequest;
 import xin.manong.security.keeper.server.request.RolePermissionRequest;
 import xin.manong.security.keeper.server.request.RoleRequest;
 import xin.manong.security.keeper.server.request.RoleUpdateRequest;
-import xin.manong.security.keeper.server.service.AppService;
-import xin.manong.security.keeper.server.service.PermissionService;
 import xin.manong.security.keeper.server.service.RolePermissionService;
 import xin.manong.security.keeper.server.service.RoleService;
-import xin.manong.security.keeper.server.service.request.RolePermissionSearchRequest;
 import xin.manong.security.keeper.server.service.request.RoleSearchRequest;
 import xin.manong.weapon.base.util.RandomID;
 import xin.manong.weapon.spring.web.ws.aspect.EnableWebLogAspect;
@@ -27,9 +21,6 @@ import xin.manong.weapon.spring.web.ws.aspect.EnableWebLogAspect;
 import javax.annotation.Resource;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * 角色控制器
@@ -39,8 +30,8 @@ import java.util.stream.Collectors;
  */
 @RestController
 @Controller
-@Path("/role")
-@RequestMapping("/role")
+@Path("api/role")
+@RequestMapping("api/role")
 public class RoleController {
 
     private static final Logger logger = LoggerFactory.getLogger(RoleController.class);
@@ -48,11 +39,7 @@ public class RoleController {
     @Resource
     protected RoleService roleService;
     @Resource
-    protected PermissionService permissionService;
-    @Resource
     protected RolePermissionService rolePermissionService;
-    @Resource
-    protected AppService appService;
 
     /**
      * 获取角色信息
@@ -67,13 +54,13 @@ public class RoleController {
     @EnableWebLogAspect
     public Role get(@QueryParam("id") @RequestParam("id") String id) {
         if (StringUtils.isEmpty(id)) {
-            logger.error("role id is empty");
+            logger.error("role id is empty for getting");
             throw new BadRequestException("角色ID为空");
         }
         Role role = roleService.get(id);
         if (role == null) {
             logger.error("role[{}] is not found", id);
-            throw new NotFoundException(String.format("角色[%s]不存在", id));
+            throw new NotFoundException("角色不存在");
         }
         return role;
     }
@@ -179,40 +166,10 @@ public class RoleController {
     @EnableWebLogAspect
     public boolean delete(@QueryParam("id") @RequestParam("id") String id) {
         if (StringUtils.isEmpty(id)) {
-            logger.error("role id is empty");
+            logger.error("role id is empty for deleting");
             throw new BadRequestException("角色ID为空");
         }
         return roleService.delete(id);
-    }
-
-    /**
-     * 获取角色权限列表
-     *
-     * @param request 角色权限请求
-     * @return 权限列表
-     */
-    @POST
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
-    @Path("getRolePermissions")
-    @PostMapping("getRolePermissions")
-    @EnableWebLogAspect
-    public List<Permission> getRolePermissions(AllRolePermissionRequest request) {
-        if (request == null) {
-            logger.error("role permission request is null");
-            throw new BadRequestException("角色权限请求为空");
-        }
-        request.check();
-        appService.verifyApp(request.appId, request.appSecret);
-        RolePermissionSearchRequest searchRequest = new RolePermissionSearchRequest();
-        searchRequest.roleIds = request.roleIds;
-        searchRequest.current = Constants.DEFAULT_CURRENT;
-        searchRequest.size = request.size;
-        Pager<RolePermission> pager = rolePermissionService.search(searchRequest);
-        if (pager == null || pager.records == null) return new ArrayList<>();
-        List<String> permissionIds = pager.records.stream().map(r -> r.permissionId).collect(Collectors.toSet()).
-                stream().collect(Collectors.toList());
-        return permissionService.batchGet(permissionIds);
     }
 
     /**
