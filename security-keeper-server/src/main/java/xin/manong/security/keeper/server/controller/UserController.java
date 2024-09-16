@@ -45,11 +45,7 @@ public class UserController {
     @Resource
     protected VendorService vendorService;
     @Resource
-    protected RoleService roleService;
-    @Resource
     protected UserRoleService userRoleService;
-    @Resource
-    protected AppService appService;
 
     /**
      * 获取用户信息
