@@ -183,7 +183,7 @@ public class SecurityController {
         User user = userService.get(profile.userId);
         if (user == null) {
             logger.error("user[{}] is not found", profile.userId);
-            throw new RuntimeException(String.format("用户[%s]不存在", profile.userId));
+            throw new NotFoundException(String.format("用户[%s]不存在", profile.userId));
         }
         return user;
     }
@@ -211,7 +211,7 @@ public class SecurityController {
         Tenant tenant = tenantService.get(profile.tenantId);
         if (tenant == null) {
             logger.error("tenant[{}] is not found", profile.tenantId);
-            throw new RuntimeException(String.format("租户[%s]不存在", profile.tenantId));
+            throw new NotFoundException(String.format("租户[%s]不存在", profile.tenantId));
         }
         return tenant;
     }
@@ -239,7 +239,7 @@ public class SecurityController {
         Vendor vendor = vendorService.get(profile.vendorId);
         if (vendor == null) {
             logger.error("vendor[{}] is not found", profile.vendorId);
-            throw new RuntimeException(String.format("供应商[%s]不存在", profile.vendorId));
+            throw new NotFoundException(String.format("供应商[%s]不存在", profile.vendorId));
         }
         return vendor;
     }

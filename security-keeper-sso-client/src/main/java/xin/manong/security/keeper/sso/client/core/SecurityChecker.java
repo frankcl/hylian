@@ -168,7 +168,11 @@ public class SecurityChecker {
         String requestURL = String.format("%s%s", serverURL, Constants.SERVER_PATH_GET_USER);
         Map<String, Object> paramMap = buildTokenRequest(token);
         HttpRequest httpRequest = HttpRequest.buildGetRequest(requestURL, paramMap);
-        return HTTPExecutor.executeAndUnwrap(httpRequest, User.class);
+        WebResponse<User> response = HTTPExecutor.execute(httpRequest, User.class);
+        if (response == null || (!response.status && response.code == 404)) {
+            throw new NotAuthorizedException("用户不存在");
+        }
+        return response.data;
     }
 
     /**
@@ -181,7 +185,11 @@ public class SecurityChecker {
         String requestURL = String.format("%s%s", serverURL, Constants.SERVER_PATH_GET_TENANT);
         Map<String, Object> paramMap = buildTokenRequest(token);
         HttpRequest httpRequest = HttpRequest.buildGetRequest(requestURL, paramMap);
-        return HTTPExecutor.executeAndUnwrap(httpRequest, Tenant.class);
+        WebResponse<Tenant> response = HTTPExecutor.execute(httpRequest, Tenant.class);
+        if (response == null || (!response.status && response.code == 404)) {
+            throw new NotAuthorizedException("租户不存在");
+        }
+        return response.data;
     }
 
     /**
@@ -194,7 +202,11 @@ public class SecurityChecker {
         String requestURL = String.format("%s%s", serverURL, Constants.SERVER_PATH_GET_VENDOR);
         Map<String, Object> paramMap = buildTokenRequest(token);
         HttpRequest httpRequest = HttpRequest.buildGetRequest(requestURL, paramMap);
-        return HTTPExecutor.executeAndUnwrap(httpRequest, Vendor.class);
+        WebResponse<Vendor> response = HTTPExecutor.execute(httpRequest, Vendor.class);
+        if (response == null || (!response.status && response.code == 404)) {
+            throw new NotAuthorizedException("供应商不存在");
+        }
+        return response.data;
     }
 
     /**
