@@ -18,6 +18,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.NotAuthorizedException;
 import java.io.IOException;
+import java.net.URLEncoder;
 import java.util.*;
 
 /**
@@ -68,10 +69,14 @@ public class SecurityChecker {
                     refreshToken(token, httpRequest)) return true;
         }
         SessionUtils.removeResources(httpRequest);
-        String code = applyCode();
+        String code = httpRequest.getParameter(Constants.PARAM_CODE);
         if (StringUtils.isEmpty(code)) {
-            logger.error("apply code failed");
-            throw new NotAuthorizedException("申请安全码失败");
+            String redirectURL = HTTPUtils.getRequestURL(httpRequest);
+            httpResponse.sendRedirect(String.format("%s%s?%s=%s&%s=%s&%s=%s", serverURL,
+                    Constants.SERVER_PATH_APPLY_CODE, Constants.PARAM_APP_ID, appId,
+                    Constants.PARAM_APP_SECRET, appSecret, Constants.PARAM_REDIRECT_URL,
+                    URLEncoder.encode(redirectURL, Constants.CHARSET_UTF8)));
+            return false;
         }
         String token = acquireToken(code, httpRequest);
         if (StringUtils.isEmpty(token)) {

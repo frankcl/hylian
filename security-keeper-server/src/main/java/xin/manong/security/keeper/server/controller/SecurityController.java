@@ -27,6 +27,7 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import java.io.IOException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -79,6 +80,7 @@ public class SecurityController {
      *
      * @param appId 应用ID
      * @param appSecret 应用秘钥
+     * @param redirectURL 重定向URL
      * @param httpRequest HTTP请求对象
      * @param httpResponse HTTP响应对象
      * @return 申请码
@@ -90,12 +92,17 @@ public class SecurityController {
     @EnableWebLogAspect
     public String applyCode(@QueryParam("app_id")  @RequestParam("app_id") String appId,
                             @QueryParam("app_secret") @RequestParam("app_secret") String appSecret,
+                            @QueryParam("redirect_url") @RequestParam("redirect_url") String redirectURL,
                             @Context HttpServletRequest httpRequest,
-                            @Context HttpServletResponse httpResponse) {
+                            @Context HttpServletResponse httpResponse) throws IOException {
         appService.verifyApp(appId, appSecret);
         String ticket = CookieUtils.getCookie(httpRequest, Constants.COOKIE_TICKET);
         verifyTicket(ticket);
-        return codeService.createCode(ticket);
+        String code = codeService.createCode(ticket);
+        boolean hasQuery = !StringUtils.isEmpty(new URL(redirectURL).getQuery());
+        httpResponse.sendRedirect(String.format("%s%s%s=%s", redirectURL,
+                hasQuery ? "&" : "?", Constants.PARAM_CODE, code));
+        return code;
     }
 
     /**
@@ -478,24 +485,24 @@ public class SecurityController {
     private void verifyTicket(String ticket) {
         if (StringUtils.isEmpty(ticket)) {
             logger.warn("ticket is empty");
-            throw new BadRequestException("ticket为空");
+            throw new NotAuthorizedException("ticket为空");
         }
         if (!ticketService.verifyTicket(ticket)) {
             logger.error("verify ticket failed");
             removeTicketResources(ticket);
-            throw new RuntimeException("验证ticket失败");
+            throw new NotAuthorizedException("验证ticket失败");
         }
         Profile profile = jwtService.decodeProfile(ticket);
         if (profile == null) {
             logger.error("decode profile failed from ticket");
             removeTicketResources(ticket);
-            throw new RuntimeException("非法ticket");
+            throw new NotAuthorizedException("非法ticket");
         }
         String cachedTicket = ticketService.getTicket(profile.id);
         if (StringUtils.isEmpty(cachedTicket) || !ticket.equals(cachedTicket)) {
             logger.error("cached ticket and provided ticket are not consistent");
             removeTicketResources(ticket);
-            throw new RuntimeException("非法ticket");
+            throw new NotAuthorizedException("非法ticket");
         }
     }
 

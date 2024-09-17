@@ -25,12 +25,7 @@ public class Constants {
 
     public static final String COOKIE_TICKET = "TICKET";
 
-    public static final String PARAM_NAME = "name";
-    public static final String PARAM_TENANT = "tenant";
-    public static final String PARAM_VENDOR = "vendor";
-    public static final String PARAM_USER_NAME = "user_name";
-    public static final String PARAM_LOGOUT_URL = "logout_url";
-    public static final String PARAM_REDIRECT_URL = "redirect_url";
+    public static final String PARAM_CODE = "code";
 
     public static final String JWT_HEADER_ALGORITHM = "alg";
     public static final String JWT_HEADER_CATEGORY = "category";

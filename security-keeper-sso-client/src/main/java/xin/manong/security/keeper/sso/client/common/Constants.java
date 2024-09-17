@@ -12,6 +12,7 @@ public class Constants {
     public static final String PARAM_TOKEN = "token";
     public static final String PARAM_APP_ID = "app_id";
     public static final String PARAM_APP_SECRET = "app_secret";
+    public static final String PARAM_REDIRECT_URL = "redirect_url";
     public static final String PARAM_SESSION_ID = "session_id";
     public static final String PARAM_SERVER_URL = "server_url";
     public static final String PARAM_EXCLUDE_PATTERNS = "exclude_patterns";
@@ -36,4 +37,6 @@ public class Constants {
     public static final String CURRENT_USER = "__user__";
     public static final String CURRENT_TENANT = "__tenant__";
     public static final String CURRENT_VENDOR = "__vendor__";
+
+    public static final String CHARSET_UTF8 = "UTF-8";
 }
