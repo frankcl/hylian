@@ -1,5 +1,6 @@
 package xin.manong.security.keeper.sso.client.interceptor;
 
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.web.servlet.HandlerInterceptor;
 import xin.manong.security.keeper.sso.client.config.AppClientConfig;
@@ -17,9 +18,11 @@ import javax.servlet.http.HttpServletResponse;
  */
 public class SecurityInterceptor implements HandlerInterceptor {
 
+    private final AppClientConfig appClientConfig;
     private final SecurityChecker securityChecker;
 
     public SecurityInterceptor(AppClientConfig appClientConfig) {
+        this.appClientConfig = appClientConfig;
         securityChecker = new SecurityChecker(appClientConfig.appId,
                 appClientConfig.appSecret, appClientConfig.serverURL);
     }
@@ -36,6 +39,7 @@ public class SecurityInterceptor implements HandlerInterceptor {
     public boolean preHandle(@NotNull HttpServletRequest httpRequest,
                              @NotNull HttpServletResponse httpResponse,
                              @NotNull Object handler) throws Exception {
+        addAllowOriginResponseHeaders(httpResponse);
         if (securityChecker.check(httpRequest, httpResponse)) {
             ContextManager.fillContext(httpRequest);
             return true;
@@ -56,5 +60,18 @@ public class SecurityInterceptor implements HandlerInterceptor {
                                 @NotNull HttpServletResponse httpResponse,
                                 @NotNull Object handler, Exception e) throws Exception {
         ContextManager.sweepContext();
+    }
+
+    /**
+     * 设置跨域HTTP响应头
+     *
+     * @param httpResponse HTTP响应头
+     */
+    private void addAllowOriginResponseHeaders(HttpServletResponse httpResponse) {
+        if (StringUtils.isEmpty(appClientConfig.allowOrigin)) return;
+        httpResponse.addHeader("Access-Control-Allow-Origin", appClientConfig.allowOrigin);
+        httpResponse.addHeader("Access-Control-Allow-Credentials", "true");
+        httpResponse.addHeader("Access-Control-Allow-Methods", "GET, POST, DELETE, PUT, OPTIONS");
+        httpResponse.addHeader("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
     }
 }

@@ -55,7 +55,9 @@ public class SecurityChecker {
                          HttpServletResponse httpResponse) throws IOException {
         String path = HTTPUtils.getRequestPath(httpRequest);
         if (path != null && path.equals(Constants.CLIENT_PATH_LOGOUT)) {
-            serverLogout();
+            httpResponse.sendRedirect(String.format("%s%s?%s=%s&%s=%s", serverURL,
+                    Constants.SERVER_PATH_LOGOUT, Constants.PARAM_APP_ID, appId,
+                    Constants.PARAM_APP_SECRET, appSecret));
             return false;
         } else if (path != null && path.equals(Constants.CLIENT_PATH_SWEEP)) {
             clientSweep(httpRequest);
@@ -98,19 +100,6 @@ public class SecurityChecker {
         Map<String, String> queryMap = HTTPUtils.getRequestQueryMap(httpRequest);
         String sessionId = queryMap.getOrDefault(Constants.PARAM_SESSION_ID, null);
         SessionManager.invalidate(sessionId);
-    }
-
-    /**
-     * security keeper服务端注销
-     */
-    private void serverLogout() {
-        String requestURL = String.format("%s%s", serverURL, Constants.SERVER_PATH_LOGOUT);
-        Map<String, Object> paramMap = new HashMap<>();
-        paramMap.put(Constants.PARAM_APP_ID, appId);
-        paramMap.put(Constants.PARAM_APP_SECRET, appSecret);
-        HttpRequest request = HttpRequest.buildGetRequest(requestURL, paramMap);
-        WebResponse<Boolean> response = HTTPExecutor.execute(request, Boolean.class);
-        if (response != null && !response.status) logger.warn("server logout failed");
     }
 
     /**

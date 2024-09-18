@@ -1,26 +1,45 @@
 import axios from 'axios'
+import router from '@/router'
+import { ElMessage } from 'element-plus'
 
-const httpExecutor = axios.create()
+const httpClient = axios.create()
 
-httpExecutor.interceptors.request.use(
-  (config) => config,
-  (error) => Promise.reject(error)
+httpClient.interceptors.request.use(
+  config => config,
+  error => Promise.reject(error)
 )
 
-httpExecutor.interceptors.response.use(
-  (response) => response,
-  (error) => Promise.reject(error)
+httpClient.interceptors.response.use(
+  async response => {
+    const code = response.data.code
+    const message = response.data.message
+    switch (code) {
+      case 200:
+        return response.data
+      default:
+        ElMessage.error(message)
+        if (code === 401) await router.push('/')
+        return Promise.reject(new Error(message))
+    }
+  },
+  async error => {
+    const code = error.response ? error.response.status : -1
+    if (code >= 400) {
+      ElMessage.error(error.message)
+      if (code === 401) await router.push('/')
+    }
+    return Promise.reject(error)
+  }
 )
 
 export const httpRequest = (config) => {
   const defaultConfig = {
-    timeout: 3000,
-    baseURL: import.meta.env.VITE_BASE_URL,
+    timeout: 6000,
     method: 'get',
     withCredentials: true,
     headers: {
       'Content-Type': 'application/json',
     }
   }
-  return httpExecutor({ ...defaultConfig, ...config })
+  return httpClient({ ...defaultConfig, ...config })
 }

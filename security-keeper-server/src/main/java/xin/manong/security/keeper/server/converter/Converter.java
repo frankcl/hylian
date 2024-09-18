@@ -283,11 +283,11 @@ public class Converter {
         viewUser.tenant = tenant;
         if (tenant != null) {
             viewUser.vendor = tenant.vendor;
-            if (user.tenantId.equals(tenant.id)) {
+            if (!user.tenantId.equals(tenant.id)) {
                 logger.error("tenants are not consistent for user[{}] and tenant[{}]", user.tenantId, tenant.id);
                 throw new RuntimeException("租户ID不一致");
             }
-            if (tenant.vendor != null && user.vendorId.equals(tenant.vendor.id)) {
+            if (tenant.vendor != null && !user.vendorId.equals(tenant.vendor.id)) {
                 logger.error("vendors are not consistent for user[{}] and vendor[{}]", user.vendorId, tenant.vendor.id);
                 throw new RuntimeException("供应商ID不一致");
             }

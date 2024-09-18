@@ -71,6 +71,9 @@ public class SecurityFilterConfig {
         bean.addInitParameter(Constants.PARAM_APP_ID, appClientConfig.appId);
         bean.addInitParameter(Constants.PARAM_APP_SECRET, appClientConfig.appSecret);
         bean.addInitParameter(Constants.PARAM_SERVER_URL, appClientConfig.serverURL);
+        if (StringUtils.isNotEmpty(appClientConfig.allowOrigin)) {
+            bean.addInitParameter(Constants.PARAM_ALLOW_ORIGIN, appClientConfig.allowOrigin);
+        }
         if (excludePatterns != null && !excludePatterns.isEmpty()) {
             List<URLPattern> patterns = new ArrayList<>();
             for (String excludePattern : excludePatterns) patterns.add(processExcludePattern(excludePattern));

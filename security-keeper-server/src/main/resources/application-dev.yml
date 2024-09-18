@@ -23,6 +23,7 @@ app:
       appId: security-keeper
       appSecret: 123456
       serverURL: http://localhost:8080/
+      allow-origin: http://localhost:9000
     filter:
       excludePatterns:
         - api/security/*

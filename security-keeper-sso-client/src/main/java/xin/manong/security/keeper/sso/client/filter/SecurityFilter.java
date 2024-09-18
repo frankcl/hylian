@@ -32,6 +32,7 @@ public class SecurityFilter implements Filter {
     protected String appId;
     protected String appSecret;
     protected String serverURL;
+    protected String allowOrigin;
     protected List<URLPattern> excludePatterns;
     protected SecurityChecker securityChecker;
 
@@ -55,6 +56,7 @@ public class SecurityFilter implements Filter {
             throw new RuntimeException(String.format("过滤器参数[%s]未找到", Constants.PARAM_SERVER_URL));
         }
         if (!serverURL.endsWith("/")) serverURL += "/";
+        allowOrigin = filterConfig.getInitParameter(Constants.PARAM_ALLOW_ORIGIN);
         buildExcludePatterns(filterConfig);
         securityChecker = new SecurityChecker(appId, appSecret, serverURL);
         logger.info("filter[{}] init success", filterConfig.getFilterName());
@@ -71,6 +73,7 @@ public class SecurityFilter implements Filter {
             throws IOException, ServletException {
         HttpServletRequest httpRequest = (HttpServletRequest) request;
         HttpServletResponse httpResponse = (HttpServletResponse) response;
+        addAllowOriginResponseHeaders(httpResponse);
         String requestPath = HTTPUtils.getRequestPath(httpRequest);
         if (matchExcludePath(requestPath) || securityChecker.check(httpRequest, httpResponse)) {
             try {
@@ -80,6 +83,19 @@ public class SecurityFilter implements Filter {
                 ContextManager.sweepContext();
             }
         }
+    }
+
+    /**
+     * 设置跨域HTTP响应头
+     *
+     * @param httpResponse HTTP响应头
+     */
+    private void addAllowOriginResponseHeaders(HttpServletResponse httpResponse) {
+        if (StringUtils.isEmpty(allowOrigin)) return;
+        httpResponse.addHeader("Access-Control-Allow-Origin", allowOrigin);
+        httpResponse.addHeader("Access-Control-Allow-Credentials", "true");
+        httpResponse.addHeader("Access-Control-Allow-Methods", "GET, POST, DELETE, PUT, OPTIONS");
+        httpResponse.addHeader("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
     }
 
     /**

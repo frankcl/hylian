@@ -23,6 +23,7 @@ public class AppClientConfig {
     public String appId;
     public String appSecret;
     public String serverURL;
+    public String allowOrigin;
 
     /**
      * 检测应用客户端配置有效性

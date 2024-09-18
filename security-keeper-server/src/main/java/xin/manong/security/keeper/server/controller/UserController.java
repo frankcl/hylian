@@ -16,6 +16,7 @@ import xin.manong.security.keeper.server.request.UserRoleRequest;
 import xin.manong.security.keeper.server.request.UserUpdateRequest;
 import xin.manong.security.keeper.server.service.*;
 import xin.manong.security.keeper.model.view.request.UserSearchRequest;
+import xin.manong.security.keeper.sso.client.core.ContextManager;
 import xin.manong.weapon.base.util.RandomID;
 import xin.manong.weapon.spring.web.ws.aspect.EnableWebLogAspect;
 
@@ -216,6 +217,24 @@ public class UserController {
             viewPager.records.add(viewUser);
         }
         return viewPager;
+    }
+
+    /**
+     * 获取当前用户信息
+     *
+     * @return 当前用户信息
+     */
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("getCurrentUser")
+    @GetMapping("getCurrentUser")
+    @EnableWebLogAspect
+    public ViewUser getCurrentUser() {
+        User user = ContextManager.getUser();
+        Tenant tenant = ContextManager.getTenant();
+        Vendor vendor = ContextManager.getVendor();
+        ViewTenant viewTenant = Converter.convert(tenant, vendor);
+        return Converter.convert(user, viewTenant);
     }
 
     /**

@@ -12,6 +12,7 @@ import xin.manong.security.keeper.model.view.request.UserSearchRequest;
 import xin.manong.security.keeper.server.common.Constants;
 import xin.manong.security.keeper.server.request.AcquireTokenRequest;
 import xin.manong.security.keeper.server.request.AppRolePermissionsRequest;
+import xin.manong.security.keeper.server.request.LoginRequest;
 import xin.manong.security.keeper.server.request.RemoveAppLoginRequest;
 import xin.manong.security.keeper.server.service.*;
 import xin.manong.security.keeper.server.service.request.RolePermissionSearchRequest;
@@ -345,7 +346,7 @@ public class SecurityController {
     @Path("getAppRolePermissions")
     @PostMapping("getAppRolePermissions")
     @EnableWebLogAspect
-    public List<Permission> getAppRolePermissions(AppRolePermissionsRequest request) {
+    public List<Permission> getAppRolePermissions(@RequestBody AppRolePermissionsRequest request) {
         if (request == null) {
             logger.error("role permission request is null");
             throw new BadRequestException("角色权限请求为空");
@@ -372,6 +373,7 @@ public class SecurityController {
      * @param httpResponse HTTP响应
      */
     @GET
+    @Produces(MediaType.APPLICATION_JSON)
     @Path("logout")
     @GetMapping("logout")
     @EnableWebLogAspect
@@ -389,49 +391,42 @@ public class SecurityController {
         CookieUtils.removeCookie(Constants.COOKIE_TICKET, "/", httpResponse);
         Profile profile = jwtService.decodeProfile(ticket);
         if (profile != null) appLoginService.remove(profile.id);
+        logger.info("logout success for user[{}]", profile != null ? profile.userId : "null");
         return true;
     }
 
     /**
      * 应用登录
      *
-     * @param userName 用户名
-     * @param password 密码
+     * @param request 登录请求
      * @param httpRequest HTTP请求
      * @param httpResponse HTTP响应
      */
     @POST
-    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
     @Path("login")
     @PostMapping("login")
     @EnableWebLogAspect
-    public boolean login(@FormParam("user_name") @RequestParam("user_name") String userName,
-                         @FormParam("password") @RequestParam("password") String password,
+    public boolean login(@RequestBody LoginRequest request,
                          @Context HttpServletRequest httpRequest,
                          @Context HttpServletResponse httpResponse) {
         if (isLogin(httpRequest)) {
             logger.info("previously logged in");
             return true;
         }
-        if (StringUtils.isEmpty(userName)) {
-            logger.error("username is empty");
-            throw new BadRequestException("用户名为空");
-        }
-        if (StringUtils.isEmpty(password)) {
-            logger.error("password is empty");
-            throw new BadRequestException("密码为空");
-        }
+        request.check();
         UserSearchRequest searchRequest = new UserSearchRequest();
-        searchRequest.userName = userName;
+        searchRequest.userName = request.username.trim();
         searchRequest.current = 1;
         searchRequest.size = 1;
         Pager<User> pager = userService.search(searchRequest);
         if (pager == null || pager.total < 1 || pager.records.isEmpty()) {
-            logger.error("user is not found for username[{}]", userName);
-            throw new NotFoundException(String.format("用户[%s]不存在", userName));
+            logger.error("user is not found for username[{}]", request.username);
+            throw new NotFoundException(String.format("用户[%s]不存在", request.username));
         }
         User user = pager.records.get(0);
-        if (!user.password.equals(DigestUtils.md5Hex(password))) {
+        if (!user.password.equals(DigestUtils.md5Hex(request.password.trim()))) {
             logger.error("username and password are not matched");
             throw new RuntimeException("用户名和密码不匹配");
         }
@@ -440,6 +435,7 @@ public class SecurityController {
         String ticket = ticketService.buildTicket(profile, Constants.COOKIE_TICKET_EXPIRED_TIME_MS);
         ticketService.putTicket(profile.id, ticket);
         CookieUtils.setCookie(Constants.COOKIE_TICKET, ticket, "/", httpRequest, httpResponse);
+        logger.info("login success for user[{}]", profile.userId);
         return true;
     }
 
