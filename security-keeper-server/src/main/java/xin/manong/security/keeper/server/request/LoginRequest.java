@@ -36,6 +36,11 @@ public class LoginRequest implements Serializable {
      */
     @JsonProperty("password")
     public String password;
+    /**
+     * 验证码
+     */
+    @JsonProperty("verify_code")
+    public String verifyCode;
 
     /**
      * 检测有效性，无效请求抛出异常
@@ -48,6 +53,10 @@ public class LoginRequest implements Serializable {
         if (StringUtils.isEmpty(password)) {
             logger.error("password is empty");
             throw new BadRequestException("密码为空");
+        }
+        if (StringUtils.isEmpty(verifyCode)) {
+            logger.error("verify code is empty");
+            throw new BadRequestException("验证码为空");
         }
     }
 }

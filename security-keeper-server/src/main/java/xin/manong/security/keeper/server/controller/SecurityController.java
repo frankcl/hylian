@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import xin.manong.security.keeper.common.util.CookieUtils;
+import xin.manong.security.keeper.common.util.SessionUtils;
 import xin.manong.security.keeper.model.*;
 import xin.manong.security.keeper.model.view.request.UserSearchRequest;
 import xin.manong.security.keeper.server.common.Constants;
@@ -74,6 +75,8 @@ public class SecurityController {
     protected RolePermissionService rolePermissionService;
     @Resource
     protected PermissionService permissionService;
+    @Resource
+    protected VerifiedCodeService verifiedCodeService;
 
     /**
      * 申请安全code
@@ -416,6 +419,12 @@ public class SecurityController {
             return true;
         }
         request.check();
+        String sessionId = SessionUtils.getSessionID(httpRequest);
+        String verifyCode = verifiedCodeService.get(sessionId);
+        if (verifyCode == null || !verifyCode.equalsIgnoreCase(request.verifyCode)) {
+            logger.error("verify code is incorrect");
+            throw new BadRequestException("验证码不正确");
+        }
         UserSearchRequest searchRequest = new UserSearchRequest();
         searchRequest.userName = request.username.trim();
         searchRequest.current = 1;
