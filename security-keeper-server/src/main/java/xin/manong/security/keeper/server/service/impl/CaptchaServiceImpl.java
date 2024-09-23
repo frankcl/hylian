@@ -4,13 +4,12 @@ import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.RemovalNotification;
 import org.apache.commons.lang3.StringUtils;
-import org.redisson.api.RBucket;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import xin.manong.security.keeper.common.util.AppSecretUtils;
 import xin.manong.security.keeper.server.common.Constants;
-import xin.manong.security.keeper.server.service.VerifiedCodeService;
+import xin.manong.security.keeper.server.service.CaptchaService;
 
 import java.util.concurrent.TimeUnit;
 
@@ -21,15 +20,15 @@ import java.util.concurrent.TimeUnit;
  * @date 2024-09-21 17:14:30
  */
 @Service
-public class VerifiedCodeServiceImpl implements VerifiedCodeService {
+public class CaptchaServiceImpl implements CaptchaService {
 
-    private static final Logger logger = LoggerFactory.getLogger(VerifiedCodeServiceImpl.class);
+    private static final Logger logger = LoggerFactory.getLogger(CaptchaServiceImpl.class);
 
     private static final int CODE_LENGTH = 6;
 
     protected Cache<String, String> codeCache;
 
-    public VerifiedCodeServiceImpl() {
+    public CaptchaServiceImpl() {
         CacheBuilder<String, String> builder = CacheBuilder.newBuilder()
                 .concurrencyLevel(1)
                 .maximumSize(Constants.LOCAL_CACHE_CAPACITY_CODE)
@@ -63,6 +62,6 @@ public class VerifiedCodeServiceImpl implements VerifiedCodeService {
      * @param notification 移除通知
      */
     private void onRemoval(RemovalNotification<String, String> notification) {
-        logger.info("verify code[{}] is removed for reason[{}]", notification.getKey(), notification.getValue());
+        logger.info("captcha[{}] is removed for reason[{}]", notification.getKey(), notification.getValue());
     }
 }

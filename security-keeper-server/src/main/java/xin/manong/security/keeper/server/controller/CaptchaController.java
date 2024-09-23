@@ -3,7 +3,7 @@ package xin.manong.security.keeper.server.controller;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import xin.manong.security.keeper.common.util.SessionUtils;
-import xin.manong.security.keeper.server.service.VerifiedCodeService;
+import xin.manong.security.keeper.server.service.CaptchaService;
 import xin.manong.weapon.spring.web.ws.aspect.EnableWebLogAspect;
 
 import javax.annotation.Resource;
@@ -20,26 +20,26 @@ import javax.ws.rs.core.MediaType;
  */
 @RestController
 @Controller
-@Path("api/verifyCode")
-@RequestMapping("api/verifyCode")
-public class VerifiedCodeController {
+@Path("api/captcha")
+@RequestMapping("api/captcha")
+public class CaptchaController {
 
     @Resource
-    protected VerifiedCodeService verifiedCodeService;
+    protected CaptchaService captchaService;
 
     /**
-     * 生成验证码
+     * 申请验证码
      *
      * @return 验证码
      */
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    @Path("create")
-    @GetMapping("create")
+    @Path("apply")
+    @GetMapping("apply")
     @EnableWebLogAspect
     public String create(@Context HttpServletRequest httpRequest) {
         String sessionId = SessionUtils.getSessionID(httpRequest);
-        return verifiedCodeService.create(sessionId);
+        return captchaService.create(sessionId);
     }
 
 }

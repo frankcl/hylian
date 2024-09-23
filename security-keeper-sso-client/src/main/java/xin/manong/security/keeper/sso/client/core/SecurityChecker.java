@@ -86,7 +86,9 @@ public class SecurityChecker {
             throw new NotAuthorizedException("获取令牌失败");
         }
         SessionUtils.setToken(httpRequest, token);
-        httpResponse.sendRedirect(HTTPUtils.getRequestURL(httpRequest));
+        String requestURL = HTTPUtils.getRequestURL(httpRequest);
+        requestURL = HTTPUtils.removeQueries(requestURL, new HashSet<String>() {{ add(Constants.PARAM_CODE); }});
+        httpResponse.sendRedirect(requestURL);
         return false;
     }
 

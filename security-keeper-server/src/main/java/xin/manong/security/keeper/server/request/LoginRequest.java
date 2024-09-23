@@ -39,8 +39,8 @@ public class LoginRequest implements Serializable {
     /**
      * 验证码
      */
-    @JsonProperty("verify_code")
-    public String verifyCode;
+    @JsonProperty("captcha")
+    public String captcha;
 
     /**
      * 检测有效性，无效请求抛出异常
@@ -54,8 +54,8 @@ public class LoginRequest implements Serializable {
             logger.error("password is empty");
             throw new BadRequestException("密码为空");
         }
-        if (StringUtils.isEmpty(verifyCode)) {
-            logger.error("verify code is empty");
+        if (StringUtils.isEmpty(captcha)) {
+            logger.error("captcha is empty");
             throw new BadRequestException("验证码为空");
         }
     }

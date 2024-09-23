@@ -1,19 +1,19 @@
 <script setup>
-import { useUserStore } from '@/store'
-import { logout } from '@/utils/common.js'
-
-const userStore = useUserStore()
+import LoginFrame from '@/components/LoginBox.vue'
 </script>
 
 <template>
-  <div>
-    <span>登录成功</span>&nbsp;<span>{{ userStore.username }}</span>
-    <div>
-      <a @click.prevent="logout">注销</a>
-    </div>
+  <div class="canvas">
+    <LoginFrame></LoginFrame>
   </div>
 </template>
 
 <style scoped>
-
+.canvas {
+  min-height: 100vh;
+  padding: 2rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
 </style>

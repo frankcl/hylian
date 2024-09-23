@@ -1,37 +1,26 @@
 <script setup>
-import {ref, watchEffect} from 'vue'
+import { onMounted, ref, watchEffect } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/store'
-import { httpRequest } from '@/utils/http'
 import { ElInput, ElMessage } from 'element-plus'
-import { createVerifyCodeImage } from '@/utils/common'
+import { paintCaptcha } from '@/utils/captcha'
+import { applyCaptcha, getCurrentUser, passwordLogin } from '@/utils/backend'
 
 const router = useRouter()
+const userStore = useUserStore()
 const username = ref('')
 const password = ref('')
-const verifyCode = ref('')
-const userStore = useUserStore()
+const captcha = ref('')
+const backendCaptcha = ref('')
 
-watchEffect(() => refreshVerifyCode())
+onMounted(async () => backendCaptcha.value = await applyCaptcha())
 
-async function getCurrentUser() {
-  const { code, data } = await httpRequest({
-    method: 'get',
-    url: '/api/user/getCurrentUser'
-  })
-  if (code === 200) userStore.setUser(data)
-}
-
-async function refreshVerifyCode() {
-  const { code, data } = await httpRequest({
-    method: 'get',
-    url: '/api/verifyCode/create'
-  })
-  if (code !== 200) return ''
-  const href = createVerifyCodeImage(data)
-  const image = document.getElementById('verify_code');
-  image.src = href
-}
+watchEffect(() => {
+  if (!backendCaptcha.value) return
+  const image = paintCaptcha(backendCaptcha.value)
+  const imageElement = document.getElementById('image')
+  imageElement.src = image
+})
 
 function checkLogin() {
   if (!username.value || username.value === '') {
@@ -42,27 +31,24 @@ function checkLogin() {
     ElMessage.error('请输入密码')
     return false
   }
-  if (!verifyCode.value || verifyCode.value === '') {
+  if (!captcha.value || captcha.value === '') {
     ElMessage.error('请输入验证码')
     return false
   }
   return true
 }
 
+async function refreshCaptcha() {
+  backendCaptcha.value = await applyCaptcha()
+}
+
 async function login() {
   if (!checkLogin()) return false
-  const { code } = await httpRequest({
-    method: 'post',
-    url: '/api/security/login',
-    data: {
-      username: username.value,
-      password: password.value,
-      verify_code: verifyCode.value
-    }
-  })
-  if (code !== 200) return
-  await getCurrentUser()
-  await router.push('/home')
+  const success = await passwordLogin(username.value, password.value, captcha.value)
+  if (!success) return
+  const user = await getCurrentUser()
+  if (user) userStore.setUser(user)
+  await router.push('/workbench')
 }
 </script>
 
@@ -86,11 +72,11 @@ async function login() {
     </div>
     <div class="form-row">
       <div class="form-row-label">
-        <label for="verifyCode">验证码</label>
+        <label for="verification_code">验证码</label>
       </div>
       <div class="form-row-input">
-        <el-input id="verifyCode" type="text" v-model.trim="verifyCode" style="width: 150px;" :clearable="true" placeholder="请输入验证码"></el-input>
-        <img id="verify_code" style="padding-left: 10px;" src="" title="点击刷新验证码" alt="图片验证码" @click="refreshVerifyCode" />
+        <el-input id="captcha" type="text" v-model.trim="captcha" style="width: 150px;" :clearable="true" placeholder="请输入验证码"></el-input>
+        <img id="image" style="padding-left: 10px;" src="" title="点击刷新验证码" alt="图片验证码" @click="refreshCaptcha" />
       </div>
     </div>
     <div class="form-row">

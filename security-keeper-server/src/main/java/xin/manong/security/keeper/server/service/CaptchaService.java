@@ -6,7 +6,7 @@ package xin.manong.security.keeper.server.service;
  * @author frankcl
  * @date 2024-09-21 17:12:33
  */
-public interface VerifiedCodeService {
+public interface CaptchaService {
 
     /**
      * 创建验证码

@@ -28,7 +28,7 @@ app:
       excludePatterns:
         - api/security/*
         - api/health/*
-        - api/verifyCode/*
+        - api/captcha/*
         - favicon.ico
   server:
     name: security_keeper_server

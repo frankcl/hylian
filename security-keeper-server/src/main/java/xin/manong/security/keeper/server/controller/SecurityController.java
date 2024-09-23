@@ -76,7 +76,7 @@ public class SecurityController {
     @Resource
     protected PermissionService permissionService;
     @Resource
-    protected VerifiedCodeService verifiedCodeService;
+    protected CaptchaService captchaService;
 
     /**
      * 申请安全code
@@ -408,21 +408,21 @@ public class SecurityController {
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    @Path("login")
-    @PostMapping("login")
+    @Path("passwordLogin")
+    @PostMapping("passwordLogin")
     @EnableWebLogAspect
-    public boolean login(@RequestBody LoginRequest request,
-                         @Context HttpServletRequest httpRequest,
-                         @Context HttpServletResponse httpResponse) {
+    public boolean passwordLogin(@RequestBody LoginRequest request,
+                                 @Context HttpServletRequest httpRequest,
+                                 @Context HttpServletResponse httpResponse) {
         if (isLogin(httpRequest)) {
             logger.info("previously logged in");
             return true;
         }
         request.check();
         String sessionId = SessionUtils.getSessionID(httpRequest);
-        String verifyCode = verifiedCodeService.get(sessionId);
-        if (verifyCode == null || !verifyCode.equalsIgnoreCase(request.verifyCode)) {
-            logger.error("verify code is incorrect");
+        String captcha = captchaService.get(sessionId);
+        if (captcha == null || !captcha.equalsIgnoreCase(request.captcha)) {
+            logger.error("captcha is incorrect");
             throw new BadRequestException("验证码不正确");
         }
         UserSearchRequest searchRequest = new UserSearchRequest();

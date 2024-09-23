@@ -1,38 +1,41 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import { hasAccessPermission } from '@/utils/common'
 import PasswordLogin from '@/components/PasswordLogin.vue'
 import WechatLogin from '@/components/WechatLogin'
-import Login from '@/views/Login'
 import Home from '@/views/Home'
+import Workbench from '@/views/Workbench'
 
 const routes = [
-  { path: '/', redirect: '/login/password' },
   {
-    path: '/login',
-    name: 'Login',
-    component: Login,
+    path: '/',
+    redirect: '/home/passwordLogin' },
+  {
+    path: '/home',
+    name: 'Home',
+    redirect: '/home/passwordLogin',
+    component: Home,
     children: [
       {
-        path: 'password',
+        path: 'passwordLogin',
         name: 'PasswordLogin',
         component: PasswordLogin
       },
       {
-        path: 'wechat',
+        path: 'wechatLogin',
         name: 'WechatLogin',
         component: WechatLogin
       }
     ]
   },
-  { path: '/home', name: 'Home', component: Home }
+  {
+    path: '/workbench',
+    name: 'Workbench',
+    component: Workbench,
+    meta: { requireAuth: true }
+  }
 ]
 const router = createRouter({
   history: createWebHistory(),
   routes
-})
-
-router.beforeEach(to => {
-  if (!to.path.startsWith('/login') && !hasAccessPermission()) return '/login/password'
 })
 
 export default router
