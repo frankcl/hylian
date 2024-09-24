@@ -3,7 +3,7 @@ import { onMounted, ref, watchEffect } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/store'
 import { ElInput, ElMessage } from 'element-plus'
-import { paintCaptcha } from '@/utils/captcha'
+import { paintCaptcha } from '@/utils/routine'
 import { applyCaptcha, getCurrentUser, passwordLogin } from '@/utils/backend'
 
 const router = useRouter()
@@ -47,7 +47,7 @@ async function login() {
   const success = await passwordLogin(username.value, password.value, captcha.value)
   if (!success) return
   const user = await getCurrentUser()
-  if (user) userStore.setUser(user)
+  if (user) userStore.inject(user)
   await router.push('/workbench')
 }
 </script>

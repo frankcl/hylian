@@ -385,10 +385,11 @@ public class SecurityController {
                           @Context HttpServletRequest httpRequest,
                           @Context HttpServletResponse httpResponse) throws IOException {
         appService.verifyApp(appId, appSecret);
+        CookieUtils.removeCookie(Constants.COOKIE_TOKEN, "/", httpResponse);
         String ticket = CookieUtils.getCookie(httpRequest, Constants.COOKIE_TICKET);
         if (StringUtils.isEmpty(ticket)) {
             logger.error("ticket is not found from cookies");
-            throw new RuntimeException("未登录");
+            throw new RuntimeException("尚未登录");
         }
         removeTicketResources(ticket);
         CookieUtils.removeCookie(Constants.COOKIE_TICKET, "/", httpResponse);
@@ -443,7 +444,8 @@ public class SecurityController {
         profile.setId(RandomID.build()).setUserId(user.id).setTenantId(user.tenantId).setVendorId(user.vendorId);
         String ticket = ticketService.buildTicket(profile, Constants.COOKIE_TICKET_EXPIRED_TIME_MS);
         ticketService.putTicket(profile.id, ticket);
-        CookieUtils.setCookie(Constants.COOKIE_TICKET, ticket, "/", httpRequest, httpResponse);
+        CookieUtils.setCookie(Constants.COOKIE_TICKET, ticket, "/", true, httpRequest, httpResponse);
+        CookieUtils.setCookie(Constants.COOKIE_TOKEN, RandomID.build(), "/", false, httpRequest, httpResponse);
         logger.info("login success for user[{}]", profile.userId);
         return true;
     }

@@ -7,7 +7,7 @@ const userStore = useUserStore()
 
 async function executeLogout() {
   await logout()
-  userStore.reset()
+  userStore.clear()
   await router.push('/')
 }
 </script>

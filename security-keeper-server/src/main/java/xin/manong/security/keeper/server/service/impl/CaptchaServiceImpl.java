@@ -2,6 +2,7 @@ package xin.manong.security.keeper.server.service.impl;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.RemovalCause;
 import com.google.common.cache.RemovalNotification;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -62,6 +63,7 @@ public class CaptchaServiceImpl implements CaptchaService {
      * @param notification 移除通知
      */
     private void onRemoval(RemovalNotification<String, String> notification) {
-        logger.info("captcha[{}] is removed for reason[{}]", notification.getKey(), notification.getValue());
+        RemovalCause cause = notification.getCause();
+        logger.info("captcha[{}] is removed for reason[{}]", notification.getValue(), cause.name());
     }
 }

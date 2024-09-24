@@ -44,13 +44,14 @@ public class CookieUtils {
      * @param name cookie名称
      * @param value cookie值
      * @param path cookie生效路径
+     * @param httpOnly 只用于HTTP
      * @param httpRequest HTTP请求
      * @param httpResponse HTTP响应
      */
-    public static void setCookie(String name, String value, String path,
+    public static void setCookie(String name, String value, String path, boolean httpOnly,
                                  HttpServletRequest httpRequest, HttpServletResponse httpResponse) {
         Cookie cookie = new Cookie(name, value);
-        cookie.setHttpOnly(true);
+        cookie.setHttpOnly(httpOnly);
         String schema = httpRequest.getScheme();
         if (!StringUtils.isEmpty(schema) && schema.equals("https")) cookie.setSecure(true);
         if (!StringUtils.isEmpty(path)) cookie.setPath(path);

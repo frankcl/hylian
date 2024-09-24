@@ -24,6 +24,7 @@ public class Constants {
     public static final String TICKET_TOKEN_PREFIX = "__SK_TICKET_TOKEN_";
 
     public static final String COOKIE_TICKET = "TICKET";
+    public static final String COOKIE_TOKEN = "TOKEN";
 
     public static final String PARAM_CODE = "code";
 

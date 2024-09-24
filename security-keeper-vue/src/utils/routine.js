@@ -1,4 +1,37 @@
-export function paintCaptcha(captcha, userConfig = {}) {
+import Cookies from 'js-cookie'
+import { useUserStore } from '@/store'
+import { getCurrentUser } from './backend'
+
+const COOKIE_TOKEN = 'TOKEN'
+
+export const isJsonStr = str => {
+  if (typeof str === 'string') {
+    try {
+      const obj = JSON.parse(str)
+      return typeof obj === 'object' && obj
+    } catch (e) {
+      console.log('error: not json string[' + str + ']!!!' + e)
+      return false
+    }
+  }
+}
+
+export const sweepToken = () => Cookies.remove(COOKIE_TOKEN)
+
+export const isLogin = () => {
+  const token = Cookies.get(COOKIE_TOKEN)
+  return token !== undefined
+}
+
+export const refreshUser = async () => {
+  if (!isLogin()) return
+  const userStore = useUserStore()
+  if (userStore.injected) return
+  const user = await getCurrentUser()
+  userStore.inject(user)
+}
+
+export const paintCaptcha = (captcha, userConfig = {}) => {
   const defaultConfig = {
     width: 70,
     height: 30,

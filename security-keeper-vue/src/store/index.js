@@ -12,9 +12,9 @@ export const useUserStore = defineStore(
     const vendor = ref()
     const roles = ref()
 
-    const isLogin = computed(() => username.value)
+    const injected = computed(() => username.value)
 
-    function setUser(user) {
+    function inject(user) {
       id.value = user.id
       username.value = user['user_name']
       name.value = user.name
@@ -24,7 +24,7 @@ export const useUserStore = defineStore(
       roles.value = user.roles
     }
 
-    function reset() {
+    function clear() {
       id.value = undefined
       username.value = undefined
       name.value = undefined
@@ -34,12 +34,12 @@ export const useUserStore = defineStore(
       roles.value = undefined
     }
 
-    return { id, username, name, avatar, tenant, vendor, roles, isLogin, setUser, reset }
+    return { id, username, name, avatar, tenant, vendor, roles, injected, inject, clear }
   },
   {
     persist: {
-      storage: localStorage,
-      omit: ['reset', 'setUser', 'isLogin']
+      storage: sessionStorage,
+      omit: ['inject', 'clear', 'injected']
     }
   }
 )
