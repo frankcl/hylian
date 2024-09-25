@@ -25,7 +25,7 @@ public class CaptchaServiceImpl implements CaptchaService {
 
     private static final Logger logger = LoggerFactory.getLogger(CaptchaServiceImpl.class);
 
-    private static final int CODE_LENGTH = 6;
+    private static final int CODE_LENGTH = 4;
 
     protected Cache<String, String> codeCache;
 

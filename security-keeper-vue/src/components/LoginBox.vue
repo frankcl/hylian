@@ -1,6 +1,7 @@
 <script setup>
 import { onMounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
+import { ElCol, ElContainer, ElRow } from 'element-plus'
 
 const navItems = [
   {
@@ -30,47 +31,38 @@ onMounted(stroke)
 </script>
 
 <template>
-  <div class="login-box">
-    <nav class="nav-box">
-      <div class="nav-item" v-for="navItem in navItems" :key="navItem.name">
-        <RouterLink :to="navItem.url">
-          <strong>{{ navItem.name }}</strong>
-        </RouterLink>
-      </div>
-    </nav>
-    <RouterView v-slot="{ Component }">
-      <keep-alive>
-        <component :is="Component"></component>
-      </keep-alive>
-    </RouterView>
-  </div>
+  <el-container class="login-box" direction="vertical">
+    <el-row class="login-nav" :gutter="1" justify="space-evenly" align="middle">
+      <el-col :span="12" v-for="navItem in navItems" :key="navItem.name">
+        <el-row justify="center">
+          <RouterLink :to="navItem.url">
+            <strong>{{ navItem.name }}</strong>
+          </RouterLink>
+        </el-row>
+      </el-col>
+    </el-row>
+    <el-row class="login-main">
+      <RouterView v-slot="{ Component }">
+        <keep-alive>
+          <component :is="Component"></component>
+        </keep-alive>
+      </RouterView>
+    </el-row>
+  </el-container>
 </template>
 
 <style scoped>
 .login-box {
-  width: 350px;
-  display: flex;
-  flex-direction: column;
+  border: #888888 solid 1px;
+  flex: 0 1 350px;
 }
-.nav-box {
+.login-nav {
+  border-bottom: #888888 solid 1px;
   height: 55px;
-  display: flex;
-  flex-flow: row nowrap;
 }
-.nav-item {
-  font-weight: bold;
-  flex: 1 1 auto;
-  align-content: center;
-  background-color: #888888;
-  border-top-left-radius: 5px;
-  border-top-right-radius: 5px;
-  text-align: center;
-  padding: 5px;
-}
-.nav-item:not(:last-child) {
-  margin-right: 1px;
-}
-.nav-item-selected {
-  background-color: #676868;
+.login-main {
+  height: 260px;
+  justify-content: center;
+  flex-direction: column;
 }
 </style>

@@ -1,19 +1,16 @@
 <script setup>
-import LoginFrame from '@/components/LoginBox.vue'
+import LoginBox from '@/components/LoginBox'
+import { ElRow } from 'element-plus'
 </script>
 
 <template>
-  <div class="canvas">
-    <LoginFrame></LoginFrame>
-  </div>
+  <el-row class="layout-home" align="middle" justify="center">
+    <LoginBox></LoginBox>
+  </el-row>
 </template>
 
 <style scoped>
-.canvas {
+.layout-home {
   min-height: 100vh;
-  padding: 2rem;
-  display: flex;
-  justify-content: center;
-  align-items: center;
 }
 </style>

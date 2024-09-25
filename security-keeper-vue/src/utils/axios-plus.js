@@ -3,7 +3,7 @@ import Axios from 'axios'
 import router from '@/router'
 import { useUserStore } from '@/store'
 import { ElMessage } from 'element-plus'
-import { isJsonStr, sweepToken } from './routine'
+import { isJsonStr } from './routine'
 
 const pendingRequests = new Map()
 
@@ -65,7 +65,6 @@ const handleResponse = async response => {
     case 401:
       ElMessage.error('登录状态已过期，请重新登录')
       userStore.clear()
-      sweepToken()
       await router.push('/')
       return Promise.reject(response)
     default:

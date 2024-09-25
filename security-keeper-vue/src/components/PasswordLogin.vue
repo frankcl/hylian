@@ -2,7 +2,7 @@
 import { onMounted, ref, watchEffect } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/store'
-import { ElInput, ElMessage } from 'element-plus'
+import { ElButton, ElCol, ElInput, ElMessage, ElRow } from 'element-plus'
 import { paintCaptcha } from '@/utils/routine'
 import { applyCaptcha, getCurrentUser, passwordLogin } from '@/utils/backend'
 
@@ -18,7 +18,7 @@ onMounted(async () => backendCaptcha.value = await applyCaptcha())
 watchEffect(() => {
   if (!backendCaptcha.value) return
   const image = paintCaptcha(backendCaptcha.value)
-  const imageElement = document.getElementById('image')
+  const imageElement = document.getElementById('image-captcha')
   imageElement.src = image
 })
 
@@ -53,63 +53,51 @@ async function login() {
 </script>
 
 <template>
-  <div class="form-login">
-    <div class="form-row">
-      <div class="form-row-label">
+  <el-row class="row" align="middle">
+    <el-col :span="6">
+      <el-row justify="end">
         <label for="username">用户名</label>
-      </div>
-      <div class="form-row-input">
-        <el-input id="username" type="text" v-model.trim="username" style="width: 200px;" :clearable="true" placeholder="请输入用户名"></el-input>
-      </div>
-    </div>
-    <div class="form-row">
-      <div class="form-row-label">
+      </el-row>
+    </el-col>
+    <el-col :span="17" :offset="1">
+      <el-input id="username" type="text" v-model.trim="username" style="width: 200px;" :clearable="true" placeholder="请输入用户名"></el-input>
+    </el-col>
+  </el-row>
+  <el-row class="row" align="middle">
+    <el-col :span="6">
+      <el-row justify="end">
         <label for="password">密码</label>
-      </div>
-      <div class="form-row-input">
-        <el-input id="password" type="password" v-model.trim="password" style="width: 200px" :clearable="true" :show-password="true" placeholder="请输入密码"></el-input>
-      </div>
-    </div>
-    <div class="form-row">
-      <div class="form-row-label">
-        <label for="verification_code">验证码</label>
-      </div>
-      <div class="form-row-input">
-        <el-input id="captcha" type="text" v-model.trim="captcha" style="width: 150px;" :clearable="true" placeholder="请输入验证码"></el-input>
-        <img id="image" style="padding-left: 10px;" src="" title="点击刷新验证码" alt="图片验证码" @click="refreshCaptcha" />
-      </div>
-    </div>
-    <div class="form-row">
-      <button @click="login">登录</button>
-    </div>
-  </div>
+      </el-row>
+    </el-col>
+    <el-col :span="17" :offset="1">
+      <el-input id="password" type="password" v-model.trim="password" style="width: 200px" :clearable="true" :show-password="true" placeholder="请输入密码"></el-input>
+    </el-col>
+  </el-row>
+  <el-row class="row" align="middle">
+    <el-col :span="6">
+      <el-row justify="end">
+        <label for="input-captcha">验证码</label>
+      </el-row>
+    </el-col>
+    <el-col :span="17" :offset="1">
+      <el-row align="middle">
+        <el-input id="input-captcha" class="input-captcha" type="text" v-model.trim="captcha" :clearable="true" placeholder="请输入验证码"></el-input>
+        <img id="image-captcha" src="" title="点击刷新验证码" alt="图片验证码" @click="refreshCaptcha" />
+      </el-row>
+    </el-col>
+  </el-row>
+  <el-row class="row" align="middle" justify="center">
+    <el-button type="primary" @click="login">登录</el-button>
+  </el-row>
 </template>
 
 <style scoped>
-.form-login {
-  border: 1px solid #888888;
-  border-top: none;
-  display: flex;
-  flex-flow: row wrap;
-  height: 250px;
+.row {
+  margin-top: 15px;
+  height: 45px;
 }
-.form-row {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex: 1 1 calc(100% - 10px);
-  padding: 5px;
-  height: 50px;
-}
-.form-row-label {
-  justify-self: end;
-  flex-basis: 55px;
-  padding: 5px 5px 5px 25px;
-}
-.form-row-input {
-  justify-self: start;
-  flex: 1 1 auto;
-  display: flex;
-  padding: 5px 5px 5px 10px;
+.input-captcha {
+  width: 150px;
+  margin-right: 10px;
 }
 </style>

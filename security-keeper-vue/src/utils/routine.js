@@ -16,8 +16,6 @@ export const isJsonStr = str => {
   }
 }
 
-export const sweepToken = () => Cookies.remove(COOKIE_TOKEN)
-
 export const isLogin = () => {
   const token = Cookies.get(COOKIE_TOKEN)
   return token !== undefined
@@ -52,7 +50,9 @@ export const paintCaptcha = (captcha, userConfig = {}) => {
   context.font = config.font
   context.textAlign = 'center'
   context.textBaseline = 'middle'
-  context.fillText(captcha, canvas.width / 2, canvas.height / 2)
+  captcha.split('').forEach((letter, i) => {
+    context.fillText(letter, canvas.width / captcha.length * (i + 0.5), canvas.height / (Math.random() * 3 + 1))
+  })
   for(let i = 0; i < config.lineNum; i++) {
     context.beginPath()
     context.moveTo(Math.random() * canvas.width, Math.random() * canvas.height)

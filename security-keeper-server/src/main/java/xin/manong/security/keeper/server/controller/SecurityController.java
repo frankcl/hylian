@@ -392,6 +392,7 @@ public class SecurityController {
             throw new RuntimeException("尚未登录");
         }
         removeTicketResources(ticket);
+        CookieUtils.removeCookie(Constants.COOKIE_TOKEN, "/", httpResponse);
         CookieUtils.removeCookie(Constants.COOKIE_TICKET, "/", httpResponse);
         Profile profile = jwtService.decodeProfile(ticket);
         if (profile != null) appLoginService.remove(profile.id);
