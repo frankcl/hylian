@@ -16,19 +16,18 @@ const buildRequestKey = config => {
 const addPendingRequest = config => {
   if (!config || !config.cancelRequest) return
   const key = buildRequestKey(config)
-  config.cancelToken = pendingRequests.has(key) ?
-    new Axios.CancelToken(cancel => cancel(`重复请求取消：${config.url}`)) :
-    config.cancelToken || new Axios.CancelToken(cancel => pendingRequests.set(key, cancel))
+  if (pendingRequests.has(key)) {
+    config.cancelToken = new Axios.CancelToken(
+      cancel => cancel(`重复请求取消：${config.url}`))
+    return
+  }
+  pendingRequests.set(key, key)
 }
 
 const removePendingRequest = response => {
   if (!response || !response.config || !response.config.cancelRequest) return
   const key = buildRequestKey(response.config)
-  if (!pendingRequests.has(key)) return
-  const cancelToken = pendingRequests.get(key)
-  cancelToken(key)
-  pendingRequests.delete(key)
-  response.config.cancelToken = undefined
+  if (pendingRequests.has(key)) pendingRequests.delete(key)
 }
 
 const repeatRequest = error => {
@@ -53,23 +52,25 @@ const axios = Axios.create({
   method: 'get',
   cancelRequest: true,
   withCredentials: true,
+  baseURL: import.meta.env.VITE_BASE_URL,
   headers: {
     'Content-Type': 'application/json',
   }
 })
 
-const responseHandle = {
-  200: response => response.data.data,
-  401: async () => {
-    ElMessage.error('登录状态已过期，请重新登录')
-    const userStore = useUserStore()
-    userStore.clear()
-    sweepToken()
-    await router.push('/')
-  },
-  default: response => {
-    ElMessage.error(response.data.message)
-    return Promise.reject(response)
+const handleResponse = async response => {
+  const userStore = useUserStore()
+  switch (response.data.code) {
+    case 200: return response.data.data
+    case 401:
+      ElMessage.error('登录状态已过期，请重新登录')
+      userStore.clear()
+      sweepToken()
+      await router.push('/')
+      return Promise.reject(response)
+    default:
+      ElMessage.error(response.data.message)
+      return Promise.reject(response)
   }
 }
 
@@ -88,9 +89,7 @@ axios.interceptors.request.use(
 axios.interceptors.response.use(
   response => {
     removePendingRequest(response)
-    let responseCode = response.data.code
-    if (responseCode && responseCode !== 200 && responseCode !== 401) responseCode = 'default'
-    return responseHandle[responseCode || 'default'](response)
+    return handleResponse(response)
   },
   async error => {
     removePendingRequest(error.response || {})
