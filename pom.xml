@@ -5,13 +5,13 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>xin.manong</groupId>
-    <artifactId>security-keeper</artifactId>
+    <artifactId>hylian</artifactId>
     <packaging>pom</packaging>
     <modules>
-        <module>security-keeper-model</module>
-        <module>security-keeper-common</module>
-        <module>security-keeper-sso-client</module>
-        <module>security-keeper-server</module>
+        <module>hylian-model</module>
+        <module>hylian-common</module>
+        <module>hylian-client</module>
+        <module>hylian-server</module>
     </modules>
     <version>0.0.1</version>
 
@@ -36,7 +36,7 @@
         <druid.version>1.2.16</druid.version>
         <java-jwt.version>4.4.0</java-jwt.version>
         <weapon.version>0.2.0</weapon.version>
-        <security-keeper.version>0.0.1</security-keeper.version>
+        <hylian.version>0.0.1</hylian.version>
     </properties>
 
     <profiles>

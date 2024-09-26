@@ -1,4 +1,4 @@
-# security-keeper
+# Hylian
 
 ## 特点
 
@@ -23,17 +23,17 @@
 ```xml
 <dependency>
     <groupId>xin.manong</groupId>
-    <artifactId>security-keeper-sso-client</artifactId>
-    <version>${security-keeper.version}</version>
+    <artifactId>hylian-client</artifactId>
+    <version>${hylian.version}</version>
 </dependency>
 ```
 
 #### 启动单点登录拦截
 
 * 方式1：启动单点登录servlet filter
-  * 应用入口增加注解：xin.manong.security.keeper.sso.client.annotation.EnableSecurityFilter
+  * 应用入口增加注解：xin.manong.hylian.client.annotation.EnableHylianGuard
   ```java
-  @EnableSecurityFilter
+  @EnableHylianGuard
   public class Application {
 
     /**
@@ -48,12 +48,11 @@
   ```
   * application.yml增加配置信息
   ```yaml
-  app:
-  security:
+  hylian:
     client:
       appId: xxx                            #应用ID
       appSecret: xxxxxx                     #应用秘钥
-      serverURL: http://security-keeper/    #单点登录服务地址
+      serverURL: http://hylian-server/      #单点登录服务地址
     filter:
       filterOrder: 1                        #过滤器顺序，默认-1000
       includePatterns:                      #拦截URL列表，默认拦截/*
@@ -64,9 +63,9 @@
   ```
   
 * 方式2：启动单点登录spring拦截器
-  * 应用入口增加注解：xin.manong.security.keeper.sso.client.annotation.EnableSecurityInterceptor
+  * 应用入口增加注解：xin.manong.hylian.client.annotation.EnableHylianInterceptor
   ```java
-  @EnableSecurityInterceptor
+  @EnableHylianInterceptor
   public class Application {
 
     /**
@@ -84,22 +83,21 @@
   @Configuration
   public class InterceptorConfig implements WebMvcConfigurer {
     @Resource
-    private SecurityInterceptor securityInterceptor;
+    private HylianInterceptor interceptor;
   
     @Override
     protected void addInterceptors(InterceptorRegistry registry) {
-        registry.addInterceptor(securityInterceptor).addPathPatterns("/**").
+        registry.addInterceptor(interceptor).addPathPatterns("/**").
             excludePathPatterns("/login", "/favicon.ico");
     }
   }
   ```
   * application.yml增加配置信息
   ```yaml
-  app:
-  security:
+  hylian:
     client:
       appId: xxx                            #应用ID
       appSecret: xxxxxx                     #应用秘钥
-      serverURL: http://security-keeper/    #单点登录服务地址
+      serverURL: http://hylian-server/      #单点登录服务地址
   ```
 
