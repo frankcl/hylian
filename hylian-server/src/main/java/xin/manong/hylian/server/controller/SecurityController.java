@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import xin.manong.hylian.model.*;
 import xin.manong.hylian.common.util.CookieUtils;
 import xin.manong.hylian.common.util.SessionUtils;
-import xin.manong.hylian.model.view.request.UserSearchRequest;
+import xin.manong.hylian.server.service.request.UserSearchRequest;
 import xin.manong.hylian.server.common.Constants;
 import xin.manong.hylian.server.request.AcquireTokenRequest;
 import xin.manong.hylian.server.request.AppRolePermissionsRequest;

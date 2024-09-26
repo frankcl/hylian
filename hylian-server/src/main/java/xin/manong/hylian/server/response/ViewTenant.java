@@ -1,4 +1,4 @@
-package xin.manong.hylian.model.view.response;
+package xin.manong.hylian.server.response;
 
 import com.alibaba.fastjson.annotation.JSONField;
 import com.fasterxml.jackson.annotation.JsonInclude;

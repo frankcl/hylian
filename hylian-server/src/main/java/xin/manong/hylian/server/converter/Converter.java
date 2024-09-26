@@ -5,8 +5,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import xin.manong.hylian.model.*;
 import xin.manong.hylian.server.request.*;
-import xin.manong.hylian.model.view.response.ViewTenant;
-import xin.manong.hylian.model.view.response.ViewUser;
+import xin.manong.hylian.server.response.ViewTenant;
+import xin.manong.hylian.server.response.ViewUser;
 
 /**
  * 数据转换器

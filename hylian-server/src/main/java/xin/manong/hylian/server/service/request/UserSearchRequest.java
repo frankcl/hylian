@@ -1,4 +1,4 @@
-package xin.manong.hylian.model.view.request;
+package xin.manong.hylian.server.service.request;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;

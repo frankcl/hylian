@@ -1,6 +1,5 @@
 package xin.manong.hylian.server.controller;
 
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
@@ -8,7 +7,7 @@ import org.springframework.web.bind.annotation.*;
 import xin.manong.hylian.model.Pager;
 import xin.manong.hylian.model.Tenant;
 import xin.manong.hylian.model.Vendor;
-import xin.manong.hylian.model.view.response.ViewTenant;
+import xin.manong.hylian.server.response.ViewTenant;
 import xin.manong.hylian.server.converter.Converter;
 import xin.manong.hylian.server.request.TenantRequest;
 import xin.manong.hylian.server.request.TenantUpdateRequest;

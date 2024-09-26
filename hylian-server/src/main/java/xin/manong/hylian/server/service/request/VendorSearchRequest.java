@@ -2,7 +2,6 @@ package xin.manong.hylian.server.service.request;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import xin.manong.hylian.model.view.request.SearchRequest;
 
 /**
  * 供应商搜索请求

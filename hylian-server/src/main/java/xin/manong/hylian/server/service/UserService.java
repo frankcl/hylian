@@ -2,7 +2,7 @@ package xin.manong.hylian.server.service;
 
 import xin.manong.hylian.model.Pager;
 import xin.manong.hylian.model.User;
-import xin.manong.hylian.model.view.request.UserSearchRequest;
+import xin.manong.hylian.server.service.request.UserSearchRequest;
 
 /**
  * 用户信息服务接口定义

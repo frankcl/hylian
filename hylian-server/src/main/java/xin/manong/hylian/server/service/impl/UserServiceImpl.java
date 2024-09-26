@@ -9,7 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
-import xin.manong.hylian.model.view.request.UserSearchRequest;
+import xin.manong.hylian.server.service.request.UserSearchRequest;
 import xin.manong.hylian.server.common.Constants;
 import xin.manong.hylian.server.converter.Converter;
 import xin.manong.hylian.server.dao.mapper.UserMapper;

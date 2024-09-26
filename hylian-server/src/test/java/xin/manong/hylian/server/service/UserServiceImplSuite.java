@@ -14,7 +14,7 @@ import xin.manong.hylian.model.Pager;
 import xin.manong.hylian.model.Tenant;
 import xin.manong.hylian.model.User;
 import xin.manong.hylian.model.Vendor;
-import xin.manong.hylian.model.view.request.UserSearchRequest;
+import xin.manong.hylian.server.service.request.UserSearchRequest;
 
 import javax.annotation.Resource;
 
