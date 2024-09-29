@@ -6,6 +6,7 @@ import Home from '@/views/Home'
 import Workbench from '@/views/Workbench'
 import { useUserStore } from '@/store'
 import { isLogin, refreshUser } from '@/utils/hylian'
+import UserList from '@/components/user/UserList'
 
 const routes = [
   {
@@ -33,7 +34,14 @@ const routes = [
     path: '/workbench',
     name: 'Workbench',
     component: Workbench,
-    meta: { requireAuth: true }
+    meta: { requireAuth: true },
+    children: [
+      {
+        path: 'userList',
+        name: 'UserList',
+        component: UserList
+      },
+    ]
   }
 ]
 const router = createRouter({

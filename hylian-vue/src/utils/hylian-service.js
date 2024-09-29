@@ -1,5 +1,8 @@
 import axios from './axios-plus'
 
+const API_ADD_USER = '/api/user/add'
+const API_DELETE_USER = '/api/user/delete'
+const API_SEARCH_USER = '/api/user/search'
 const API_APPLY_CAPTCHA = '/api/captcha/apply'
 const API_GET_CURRENT_USER = '/api/user/getCurrentUser'
 const API_LOGOUT = '/api/logout'
@@ -9,6 +12,33 @@ const API_UPLOAD_AVATAR = '/api/user/uploadAvatar'
 
 const HTTP_GET = 'get'
 const HTTP_POST = 'post'
+const HTTP_DELETE = 'delete'
+
+export const addUser = async (user) => {
+  return await axios({
+    method: HTTP_POST,
+    url: API_ADD_USER,
+    data: user
+  })
+}
+
+export const deleteUser = async (id) => {
+  return await axios({
+    method: HTTP_DELETE,
+    url: API_DELETE_USER,
+    params: {
+      id: id
+    }
+  })
+}
+
+export const searchUsers = async (searchRequest) => {
+  return await axios({
+    method: HTTP_POST,
+    url: API_SEARCH_USER,
+    data: searchRequest
+  })
+}
 
 export const logout = async () => {
   await axios({
@@ -28,11 +58,7 @@ export const passwordLogin = async (request) => {
   return await axios({
     method: HTTP_POST,
     url: API_PASSWORD_LOGIN,
-    data: {
-      username: request.username,
-      password: request.password,
-      captcha: request.captcha
-    }
+    data: request
   })
 }
 
@@ -74,10 +100,6 @@ export const searchTenant = async (searchRequest) => {
   return await axios({
     method: HTTP_POST,
     url: API_TENANT_SEARCH,
-    data: {
-      current: searchRequest.current ? searchRequest.current : undefined,
-      size: searchRequest.size ? searchRequest.size : undefined,
-      name: searchRequest.name,
-    }
+    data: searchRequest
   })
 }

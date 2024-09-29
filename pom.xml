@@ -19,6 +19,7 @@
         <jdk.version>1.8</jdk.version>
         <java-servlet.version>3.1.0</java-servlet.version>
         <jaxb-runtime.version>2.3.6</jaxb-runtime.version>
+        <jaxb-api.version>2.3.1</jaxb-api.version>
         <jakarta.ws.rs-api.version>2.1.6</jakarta.ws.rs-api.version>
         <junit.version>4.13.2</junit.version>
         <lombok.version>1.18.24</lombok.version>
@@ -117,6 +118,11 @@
                 <groupId>jakarta.ws.rs</groupId>
                 <artifactId>jakarta.ws.rs-api</artifactId>
                 <version>${jakarta.ws.rs-api.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>javax.xml.bind</groupId>
+                <artifactId>jaxb-api</artifactId>
+                <version>${jaxb-api.version}</version>
             </dependency>
             <dependency>
                 <groupId>javax.servlet</groupId>

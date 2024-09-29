@@ -18,11 +18,9 @@ import javax.servlet.http.HttpServletResponse;
  */
 public class HylianInterceptor implements HandlerInterceptor {
 
-    private final HylianClientConfig clientConfig;
     private final HylianShield shield;
 
     public HylianInterceptor(HylianClientConfig clientConfig) {
-        this.clientConfig = clientConfig;
         shield = new HylianShield(clientConfig.appId, clientConfig.appSecret, clientConfig.serverURL);
     }
 
@@ -38,7 +36,7 @@ public class HylianInterceptor implements HandlerInterceptor {
     public boolean preHandle(@NotNull HttpServletRequest httpRequest,
                              @NotNull HttpServletResponse httpResponse,
                              @NotNull Object handler) throws Exception {
-        HTTPUtils.addAllowOriginResponseHeaders(clientConfig.allowOrigin, httpResponse);
+        HTTPUtils.addAllowOriginResponseHeaders(httpRequest, httpResponse);
         if (shield.shelter(httpRequest, httpResponse)) {
             ContextManager.fillContext(httpRequest);
             return true;

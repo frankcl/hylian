@@ -32,9 +32,9 @@ export default defineConfig({
       '^/api': {
         target: 'http://localhost:8080',
         changeOrigin: true,
-        headers: {
-          'Access-Control-Allow-Origin': '*'
-        }
+        ws: true,
+        https: true,
+        secure: true
       },
     }
   }

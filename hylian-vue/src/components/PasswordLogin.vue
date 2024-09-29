@@ -2,7 +2,7 @@
 import { onMounted, ref, useTemplateRef, watchEffect } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/store'
-import { ElCol, ElDialog, ElForm, ElFormItem, ElInput, ElRow } from 'element-plus'
+import {ElButton, ElCol, ElForm, ElFormItem, ElInput, ElRow} from 'element-plus'
 import { paintCaptcha } from '@/utils/hylian'
 import { applyCaptcha, getCurrentUser, passwordLogin } from '@/utils/hylian-service'
 
@@ -59,9 +59,9 @@ async function refreshCaptcha() {
   captcha.value = await applyCaptcha()
 }
 
-async function submitForm() {
-  if (!userFormRef.value) return
-  if (!await userFormRef.value.validate((valid) => valid)) return
+async function submitForm(formEl) {
+  if (!formEl) return
+  if (!await formEl.validate((valid) => valid)) return
   if (!await passwordLogin(userForm.value)) return
   const user = await getCurrentUser()
   if (user) userStore.inject(user)
@@ -72,17 +72,17 @@ async function submitForm() {
 <template>
   <el-form ref="userFormRef" :model="userForm" :rules="rules">
     <el-form-item prop="username">
-      <el-input v-model.trim="userForm.username" :clearable="true" placeholder="请输入用户名"></el-input>
+      <el-input v-model.trim="userForm.username" clearable placeholder="请输入用户名"></el-input>
     </el-form-item>
     <el-form-item prop="password">
-      <el-input type="password" v-model.trim="userForm.password" :show-password="true"
-                :clearable="true" placeholder="请输入密码"></el-input>
+      <el-input type="password" v-model.trim="userForm.password" show-password
+                clearable placeholder="请输入密码"></el-input>
     </el-form-item>
     <el-form-item>
       <el-col :span="13">
         <el-form-item prop="captcha">
-          <el-input id="input-captcha" v-model.trim="userForm.captcha"
-                    :clearable="true" placeholder="请输入验证码"></el-input>
+          <el-input id="input-captcha" v-model.trim="userForm.captcha" clearable
+                    placeholder="请输入验证码"></el-input>
         </el-form-item>
       </el-col>
       <el-col :span="8" :offset="3" class="captcha">
@@ -90,7 +90,7 @@ async function submitForm() {
       </el-col>
     </el-form-item>
     <el-form-item>
-      <button style="width: 100%" @click.prevent="submitForm">登录</button>
+      <el-button style="width: 100%" color="#6077ff" @click="submitForm(userFormRef)">登录</el-button>
     </el-form-item>
     <el-row class="register-prompt" align="middle" justify="center">
       <span>没有账号？</span><a>注册</a><span>一个</span>

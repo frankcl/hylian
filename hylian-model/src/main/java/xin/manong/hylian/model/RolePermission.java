@@ -14,6 +14,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.BadRequestException;
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
 
 /**
  * 角色权限关系
@@ -24,6 +26,7 @@ import javax.ws.rs.BadRequestException;
 @Getter
 @Setter
 @Accessors(chain = true)
+@XmlAccessorType(XmlAccessType.FIELD)
 @TableName(value = "role_permission", autoResultMap = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class RolePermission extends BaseModel {

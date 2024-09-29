@@ -1,6 +1,7 @@
 <script setup>
-import { onMounted, ref } from 'vue'
+import {onMounted, ref, useTemplateRef} from 'vue'
 import {
+  ElButton,
   ElCol,
   ElForm,
   ElFormItem,
@@ -13,58 +14,42 @@ import {
   ElUpload
 } from 'element-plus'
 import { Plus } from '@element-plus/icons-vue'
-import { searchTenant, uploadAvatar } from '@/utils/hylian-service'
+import { addUser, searchTenant, uploadAvatar } from '@/utils/hylian-service'
+import router from '@/router'
+
+const userFormRef = useTemplateRef('userFormRef')
 
 const userForm = ref({
-  username: '',
+  user_name: '',
   name: '',
-  avtar: '',
-  tenantId: '',
+  avatar: '',
+  tenant_id: '',
   password: '',
-  confirmPassword: ''
+  confirmed_password: ''
 })
+
+const validateConfirmedPassword = (rule, value, callback) => {
+  if (!value || value === '') callback(new Error('请输入确认密码'))
+  else if (value !== userForm.value.password) callback(new Error('确认密码与密码不一致'))
+  else callback()
+}
+
 const userRules = ref({
-  username: [
-    {
-      required: true,
-      message: '请输入用户名',
-      trigger: 'change'
-    }
+  user_name: [
+    { required: true, message: '请输入用户名', trigger: 'change' }
   ],
   name: [
-    {
-      required: true,
-      message: '请输入真实姓名',
-      trigger: 'change'
-    }
+    { required: true, message: '请输入真实姓名', trigger: 'change' }
   ],
-  tenantId: [
-    {
-      required: true,
-      message: '请选择租户',
-      trigger: 'change'
-    }
+  tenant_id: [
+    { required: true, message: '请选择租户', trigger: 'change' }
   ],
   password: [
-    {
-      required: true,
-      message: '请输入密码',
-      trigger: 'change'
-    }
+    { required: true, message: '请输入密码', trigger: 'change' },
+    { min: 8, message: '密码至少8位', trigger: 'change' }
   ],
-  confirmPassword: [
-    {
-      required: true,
-      message: '请输入确认密码',
-      trigger: 'change'
-    }
-  ],
-  captcha: [
-    {
-      required: true,
-      message: '请输入验证码',
-      trigger: 'change'
-    }
+  confirmed_password: [
+    { trigger: 'change', validator: validateConfirmedPassword }
   ]
 })
 
@@ -75,7 +60,7 @@ async function upload(file) {
   const response = await uploadAvatar(file)
   if (response) {
     avatarURL.value = response['signed_url']
-    userForm.value.avtar = response['oss_url']
+    userForm.value.avatar = response['oss_url']
   }
 }
 
@@ -90,6 +75,22 @@ const beforeUpload = (rawFile) => {
   return true
 }
 
+const submitForm = async (formEl) => {
+  if (!formEl) return
+  if (!await formEl.validate((valid) => valid)) return
+  if (!await addUser(userForm.value)) {
+    ElNotification.error('新增用户失败')
+    return
+  }
+  ElNotification.success('新增用户成功')
+  await router.push('/workbench/userList')
+}
+
+const resetForm = (formEl) => {
+  if (!formEl) return
+  formEl.resetFields()
+}
+
 onMounted(async () => {
   const pager = await searchTenant({ size: 100 })
   if (pager) tenants.value = pager.records
@@ -98,19 +99,25 @@ onMounted(async () => {
 </script>
 
 <template>
-  <el-form ref="userFormRef" :model="userForm" :rules="userRules">
+  <el-form ref="userFormRef" :model="userForm" :rules="userRules" label-width="auto" label-position="right">
     <el-row>
       <el-col :span="16">
-        <el-form-item label="用户名" label-position="right" prop="username">
-          <el-input v-model.trim="userForm.username" :clearable="true" ></el-input>
+        <el-form-item label="用户名" prop="user_name">
+          <el-input v-model.trim="userForm['user_name']" clearable></el-input>
         </el-form-item>
-        <el-form-item label="真实姓名" label-position="right" prop="name">
-          <el-input v-model.trim="userForm.name" :clearable="true" ></el-input>
+        <el-form-item label="真实姓名" prop="name">
+          <el-input v-model.trim="userForm.name" clearable></el-input>
         </el-form-item>
-        <el-form-item label="租户" label-position="right" prop="tenantId">
-          <el-select v-model="userForm.tenantId" filterable placeholder="请选择租户">
+        <el-form-item label="租户" prop="tenant_id">
+          <el-select v-model="userForm['tenant_id']" filterable placeholder="请选择租户">
             <el-option v-for="tenant in tenants" :key="tenant.id" :label="tenant.name" :value="tenant.id"></el-option>
           </el-select>
+        </el-form-item>
+        <el-form-item label="密码" prop="password">
+          <el-input type="password" v-model.trim="userForm.password" show-password clearable></el-input>
+        </el-form-item>
+        <el-form-item label="确认密码" prop="confirmed_password">
+          <el-input type="password" v-model.trim="userForm['confirmed_password']" show-password clearable></el-input>
         </el-form-item>
       </el-col>
       <el-col :span="6" :offset="2">
@@ -122,6 +129,10 @@ onMounted(async () => {
         </el-form-item>
       </el-col>
     </el-row>
+    <el-form-item>
+      <el-button @click.prevent="submitForm(userFormRef)">新增</el-button>
+      <el-button @click.prevent="resetForm(userFormRef)">重置</el-button>
+    </el-form-item>
   </el-form>
 </template>
 

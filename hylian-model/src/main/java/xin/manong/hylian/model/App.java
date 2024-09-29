@@ -12,6 +12,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.BadRequestException;
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
 
 /**
  * 应用信息
@@ -22,6 +24,7 @@ import javax.ws.rs.BadRequestException;
 @Getter
 @Setter
 @Accessors(chain = true)
+@XmlAccessorType(XmlAccessType.FIELD)
 @TableName("app")
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class App extends BaseModel {

@@ -31,7 +31,6 @@ public class HylianGuard implements Filter {
     protected String appId;
     protected String appSecret;
     protected String serverURL;
-    protected String allowOrigin;
     protected List<URLPattern> excludePatterns;
     protected HylianShield shield;
 
@@ -54,7 +53,6 @@ public class HylianGuard implements Filter {
             throw new IllegalArgumentException(String.format("参数缺失[%s]", Constants.PARAM_SERVER_URL));
         }
         if (!serverURL.endsWith("/")) serverURL += "/";
-        allowOrigin = filterConfig.getInitParameter(Constants.PARAM_ALLOW_ORIGIN);
         buildExcludePatterns(filterConfig);
         shield = new HylianShield(appId, appSecret, serverURL);
         logger.info("Hylian guard init success");
@@ -71,7 +69,7 @@ public class HylianGuard implements Filter {
             throws IOException, ServletException {
         HttpServletRequest httpRequest = (HttpServletRequest) request;
         HttpServletResponse httpResponse = (HttpServletResponse) response;
-        HTTPUtils.addAllowOriginResponseHeaders(allowOrigin, httpResponse);
+        HTTPUtils.addAllowOriginResponseHeaders(httpRequest, httpResponse);
         String requestPath = HTTPUtils.getRequestPath(httpRequest);
         if (matchExcludePath(requestPath) || shield.shelter(httpRequest, httpResponse)) {
             try {

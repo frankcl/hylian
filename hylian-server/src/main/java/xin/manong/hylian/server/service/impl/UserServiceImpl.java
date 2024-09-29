@@ -17,6 +17,8 @@ import xin.manong.hylian.model.Pager;
 import xin.manong.hylian.model.User;
 import xin.manong.hylian.server.service.TenantService;
 import xin.manong.hylian.server.service.UserService;
+import xin.manong.weapon.aliyun.oss.OSSClient;
+import xin.manong.weapon.aliyun.oss.OSSMeta;
 
 import javax.annotation.Resource;
 import javax.ws.rs.BadRequestException;
@@ -33,6 +35,8 @@ public class UserServiceImpl implements UserService {
 
     private static final Logger logger = LoggerFactory.getLogger(UserServiceImpl.class);
 
+    @Resource
+    protected OSSClient ossClient;
     @Resource
     protected UserMapper userMapper;
     @Lazy
@@ -95,6 +99,16 @@ public class UserServiceImpl implements UserService {
         if (StringUtils.isEmpty(id)) {
             logger.error("user id is empty for deleting");
             throw new BadRequestException("用户ID为空");
+        }
+        User user = get(id);
+        if (user == null) {
+            logger.error("user[{}] is not found for deleting", id);
+            throw new IllegalStateException("用户不存在");
+        }
+        if (StringUtils.isNotEmpty(user.avatar)) {
+            OSSMeta meta = OSSClient.parseURL(user.avatar);
+            if (meta != null) ossClient.deleteObject(meta.bucket, meta.key);
+            else logger.warn("avatar[{}] is invalid", user.avatar);
         }
         return userMapper.deleteById(id) > 0;
     }

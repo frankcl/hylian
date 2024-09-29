@@ -104,7 +104,16 @@ public class UserController {
             throw new NotFoundException("租户不存在");
         }
         user.check();
-        return userService.add(user);
+        String avatar = user.avatar;
+        if (!userService.add(user)) return false;
+        if (StringUtils.isNotEmpty(avatar)) {
+            User updateUser = new User();
+            updateUser.id = user.id;
+            updateUser.avatar = avatar;
+            handleAvatar(updateUser);
+            return userService.update(updateUser);
+        }
+        return true;
     }
 
     /**
@@ -223,6 +232,7 @@ public class UserController {
         User user = ContextManager.getUser();
         Tenant tenant = ContextManager.getTenant();
         ViewTenant viewTenant = Converter.convert(tenant);
+        signAvatar(user);
         return Converter.convert(user, viewTenant);
     }
 
@@ -298,6 +308,49 @@ public class UserController {
             throw new NotFoundException("租户不存在");
         }
         ViewTenant viewTenant = Converter.convert(tenant);
+        signAvatar(user);
         return Converter.convert(user, viewTenant);
+    }
+
+    /**
+     * 加签头像地址
+     *
+     * @param user 用户信息
+     */
+    private void signAvatar(User user) {
+        if (user == null || StringUtils.isEmpty(user.avatar)) return;
+        OSSMeta ossMeta = OSSClient.parseURL(user.avatar);
+        if (ossMeta == null) {
+            logger.warn("avatar[{}] is invalid", user.avatar);
+            return;
+        }
+        user.avatar = ossClient.sign(ossMeta.bucket, ossMeta.key);
+    }
+
+    /**
+     * 针对新增用户，转存头像
+     *
+     * @param user 用户信息
+     */
+    private void handleAvatar(User user) {
+        if (StringUtils.isEmpty(user.avatar)) return;
+        OSSMeta ossMeta = OSSClient.parseURL(user.avatar);
+        if (ossMeta == null) {
+            logger.error("avatar URL[{}] is invalid", user.avatar);
+            throw new BadRequestException("头像URL非法");
+        }
+        InputStream inputStream = ossClient.getObjectStream(ossMeta.bucket, ossMeta.key);
+        if (inputStream == null) {
+            logger.error("reading avatar failed for {}", user.avatar);
+            throw new BadRequestException("获取头像数据失败");
+        }
+        String suffix = FileUtil.getFileSuffix(ossMeta.key);
+        String ossKey = String.format("%s%s%s", serverConfig.ossBaseDirectory, Constants.AVATAR_DIR, RandomID.build());
+        if (StringUtils.isNotEmpty(suffix)) ossKey = String.format("%s.%s", ossKey, suffix);
+        if (!ossClient.putObject(serverConfig.ossBucket, ossKey, inputStream)) {
+            logger.error("transfer avatar failed");
+            throw new InternalServerErrorException("转存头像失败");
+        }
+        user.avatar = OSSClient.buildURL(new OSSMeta(serverConfig.ossRegion, serverConfig.ossBucket, ossKey));
     }
 }

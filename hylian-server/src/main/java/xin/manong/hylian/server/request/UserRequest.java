@@ -11,6 +11,8 @@ import org.slf4j.LoggerFactory;
 import xin.manong.hylian.common.util.PasswordUtils;
 
 import javax.ws.rs.BadRequestException;
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
 import java.io.Serializable;
 
 /**
@@ -22,6 +24,7 @@ import java.io.Serializable;
 @Getter
 @Setter
 @Accessors(chain = true)
+@XmlAccessorType(XmlAccessType.FIELD)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class UserRequest implements Serializable {
 

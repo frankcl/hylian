@@ -1,54 +1,33 @@
 <script setup>
-import { computed } from 'vue'
-import { ElCard, ElCol, ElRow } from 'element-plus'
+import { ElAvatar, ElCol, ElPopover, ElRow } from 'element-plus'
 import { useUserStore } from '@/store'
-
-const props = defineProps({
-  positionX: {
-    type: Number,
-    default: () => 0
-  },
-  positionY: {
-    type: Number,
-    default: () => 0
-  },
-  show: {
-    type: Boolean,
-    default: () => false
-  }
-})
+import { UserFilled } from '@element-plus/icons-vue'
 
 const userStore = useUserStore()
-const showStyle = computed(() => { return {
-  left: props.positionX + 'px',
-  top: props.positionY + 'px',
-  display: props.show ? 'block' : 'none'
-}})
 </script>
 
 <template>
-  <el-card id="user-profile" :style="showStyle" class="user-profile">
-    <template #header>
-      <strong>用户信息</strong>
+  <el-popover :width="300">
+    <template #reference>
+      <el-avatar :icon="UserFilled" shape="circle" size="small" fit="cover" :src="userStore.avatar"></el-avatar>
     </template>
-    <el-row>
-      <el-col :span="10">用户名:</el-col>
-      <el-col :span="14">{{ userStore.username }}</el-col>
-    </el-row>
-    <el-row>
-      <el-col :span="10">用户姓名:</el-col>
-      <el-col :span="14">{{ userStore.name }}</el-col>
-    </el-row>
-    <el-row>
-      <el-col :span="10">所属租户:</el-col>
-      <el-col :span="14" v-if="userStore.tenant">{{ userStore.tenant.name }}</el-col>
-    </el-row>
-  </el-card>
+    <template #default>
+      <el-avatar :icon="UserFilled" shape="circle" size="small" fit="cover" :src="userStore.avatar"></el-avatar>
+      <el-row>
+        <el-col :span="10">用户名:</el-col>
+        <el-col :span="14">{{ userStore.username }}</el-col>
+      </el-row>
+      <el-row>
+        <el-col :span="10">用户姓名:</el-col>
+        <el-col :span="14">{{ userStore.name }}</el-col>
+      </el-row>
+      <el-row>
+        <el-col :span="10">所属租户:</el-col>
+        <el-col :span="14" v-if="userStore.tenant">{{ userStore.tenant.name }}</el-col>
+      </el-row>
+    </template>
+  </el-popover>
 </template>
 
 <style scoped>
-.user-profile {
-  position: fixed;
-  width: 250px;
-}
 </style>

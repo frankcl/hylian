@@ -11,6 +11,8 @@ import org.slf4j.LoggerFactory;
 import xin.manong.hylian.common.util.PermissionUtils;
 
 import javax.ws.rs.BadRequestException;
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
 
 /**
  * 权限更新请求
@@ -21,6 +23,7 @@ import javax.ws.rs.BadRequestException;
 @Getter
 @Setter
 @Accessors(chain = true)
+@XmlAccessorType(XmlAccessType.FIELD)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class PermissionUpdateRequest extends PermissionRequest {
 

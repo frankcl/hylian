@@ -3,6 +3,8 @@ package xin.manong.hylian.model;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
 import java.io.Serializable;
 import java.util.List;
 
@@ -12,6 +14,7 @@ import java.util.List;
  * @author frankcl
  * @date 2022-09-21 11:26:50
  */
+@XmlAccessorType(XmlAccessType.FIELD)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class Pager<T> implements Serializable {
 

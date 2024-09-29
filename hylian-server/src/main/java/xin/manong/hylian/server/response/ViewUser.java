@@ -8,6 +8,8 @@ import lombok.Setter;
 import lombok.experimental.Accessors;
 import xin.manong.hylian.model.Role;
 
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
 import java.io.Serializable;
 import java.util.List;
 
@@ -20,6 +22,7 @@ import java.util.List;
 @Getter
 @Setter
 @Accessors(chain = true)
+@XmlAccessorType(XmlAccessType.FIELD)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class ViewUser implements Serializable {
 

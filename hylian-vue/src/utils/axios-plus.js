@@ -47,14 +47,14 @@ const repeatRequest = async error => {
 
 const axios = Axios.create({
   timeout: 6000,
-  retry: 3,
+  retry: 0,
   retryDelay: 1000,
   method: 'get',
   cancelRequest: true,
   withCredentials: true,
   baseURL: import.meta.env.VITE_BASE_URL,
   headers: {
-    'Content-Type': 'application/json',
+    'Content-Type': 'application/json;charset=utf-8'
   }
 })
 

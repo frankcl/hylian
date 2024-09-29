@@ -25,6 +25,12 @@ public class HTTPUtils {
     private static final int DEFAULT_HTTPS_PORT = 443;
     private static final String PROTOCOL_HTTP = "http";
     private static final String PROTOCOL_HTTPS = "https";
+    private static final String HTTP_REQUEST_HEAD_ORIGIN = "Origin";
+    private static final String HTTP_REQUEST_HEAD_ACCESS_CONTROL_REQUEST_HEADERS = "Access-Control-Request-Headers";
+    private static final String HTTP_RESPONSE_HEAD_ACCESS_CONTROL_ALLOW_ORIGIN = "Access-Control-Allow-Origin";
+    private static final String HTTP_RESPONSE_HEAD_ACCESS_CONTROL_ALLOW_HEADERS = "Access-Control-Allow-Headers";
+    private static final String HTTP_RESPONSE_HEAD_ACCESS_CONTROL_ALLOW_CREDENTIALS = "Access-Control-Allow-Credentials";
+    private static final String HTTP_RESPONSE_HEAD_ACCESS_CONTROL_ALLOW_METHODS = "Access-Control-Allow-Methods";
 
     /**
      * 获取请求URL
@@ -131,15 +137,17 @@ public class HTTPUtils {
     /**
      * 设置跨域HTTP响应头
      *
-     * @param allowOrigin 允许跨域源
-     * @param httpResponse HTTP响应头
+     * @param httpRequest HTTP请求
+     * @param httpResponse HTTP响应
      */
-    public static void addAllowOriginResponseHeaders(String allowOrigin, HttpServletResponse httpResponse) {
-        if (StringUtils.isEmpty(allowOrigin)) return;
-        httpResponse.addHeader("Access-Control-Allow-Origin", allowOrigin);
-        httpResponse.addHeader("Access-Control-Allow-Credentials", "true");
-        httpResponse.addHeader("Access-Control-Allow-Methods", "GET, POST, DELETE, PUT, OPTIONS");
-        httpResponse.addHeader("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+    public static void addAllowOriginResponseHeaders(HttpServletRequest httpRequest,
+                                                     HttpServletResponse httpResponse) {
+        String origin = httpRequest.getHeader(HTTP_REQUEST_HEAD_ORIGIN);
+        String acRequestHeaders = httpRequest.getHeader(HTTP_REQUEST_HEAD_ACCESS_CONTROL_REQUEST_HEADERS);
+        if (origin != null) httpResponse.addHeader(HTTP_RESPONSE_HEAD_ACCESS_CONTROL_ALLOW_ORIGIN, origin);
+        httpResponse.addHeader(HTTP_RESPONSE_HEAD_ACCESS_CONTROL_ALLOW_HEADERS, acRequestHeaders == null ? "*" : acRequestHeaders);
+        httpResponse.addHeader(HTTP_RESPONSE_HEAD_ACCESS_CONTROL_ALLOW_CREDENTIALS, "true");
+        httpResponse.addHeader(HTTP_RESPONSE_HEAD_ACCESS_CONTROL_ALLOW_METHODS, "*");
     }
 
     /**

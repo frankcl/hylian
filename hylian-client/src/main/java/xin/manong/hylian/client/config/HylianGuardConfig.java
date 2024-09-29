@@ -2,7 +2,6 @@ package xin.manong.hylian.client.config;
 
 import com.alibaba.fastjson.JSON;
 import lombok.Data;
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -68,9 +67,6 @@ public class HylianGuardConfig {
         bean.addInitParameter(Constants.PARAM_APP_ID, clientConfig.appId);
         bean.addInitParameter(Constants.PARAM_APP_SECRET, clientConfig.appSecret);
         bean.addInitParameter(Constants.PARAM_SERVER_URL, clientConfig.serverURL);
-        if (StringUtils.isNotEmpty(clientConfig.allowOrigin)) {
-            bean.addInitParameter(Constants.PARAM_ALLOW_ORIGIN, clientConfig.allowOrigin);
-        }
         if (excludePatterns != null && !excludePatterns.isEmpty()) {
             List<URLPattern> patterns = new ArrayList<>();
             for (String excludePattern : excludePatterns) patterns.add(processExcludePattern(excludePattern));
