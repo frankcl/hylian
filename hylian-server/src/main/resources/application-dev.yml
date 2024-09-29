@@ -17,6 +17,9 @@ weapon:
           address: 127.0.0.1:6379
           db: 0
   aliyun:
+    secret:
+      secret-key:
+      access-key:
     oss:
       client-map:
         default:
