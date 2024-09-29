@@ -18,6 +18,7 @@ weapon:
           db: 0
   aliyun:
     oss:
+      xxx: adsf
       client-map:
         default:
           dynamic: false
