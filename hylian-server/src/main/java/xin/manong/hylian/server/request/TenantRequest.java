@@ -31,11 +31,6 @@ public class TenantRequest implements Serializable {
      */
     @JsonProperty("name")
     public String name;
-    /**
-     * 供应商ID
-     */
-    @JsonProperty("vendor_id")
-    public String vendorId;
 
     /**
      * 检测有效性，无效请求抛出异常
@@ -44,10 +39,6 @@ public class TenantRequest implements Serializable {
         if (StringUtils.isEmpty(name)) {
             logger.error("tenant name is empty");
             throw new BadRequestException("租户名为空");
-        }
-        if (StringUtils.isEmpty(vendorId)) {
-            logger.error("vendor id is empty");
-            throw new BadRequestException("供应商ID为空");
         }
     }
 }

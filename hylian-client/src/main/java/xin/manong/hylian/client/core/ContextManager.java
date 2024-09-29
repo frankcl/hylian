@@ -44,7 +44,6 @@ public class ContextManager {
      * 填充线程上下文
      * 1. 填充用户信息
      * 2. 填充租户信息
-     * 3. 填充供应商信息
      *
      * @param httpRequest HTTP请求
      */
