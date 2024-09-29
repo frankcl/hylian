@@ -7,7 +7,6 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 import xin.manong.hylian.model.Role;
-import xin.manong.hylian.model.Vendor;
 
 import java.io.Serializable;
 import java.util.List;
@@ -51,13 +50,6 @@ public class ViewUser implements Serializable {
     @JSONField(name = "tenant")
     @JsonProperty("tenant")
     public ViewTenant tenant;
-
-    /**
-     * 供应商信息
-     */
-    @JSONField(name = "vendor")
-    @JsonProperty("vendor")
-    public Vendor vendor;
 
     /**
      * 角色列表

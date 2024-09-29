@@ -78,7 +78,6 @@ public class Converter {
         if (tenantRequest == null) return null;
         Tenant tenant = new Tenant();
         tenant.name = tenantRequest.name;
-        tenant.vendorId = tenantRequest.vendorId;
         return tenant;
     }
 
@@ -93,35 +92,7 @@ public class Converter {
         Tenant tenant = new Tenant();
         tenant.id = tenantRequest.id;
         tenant.name = tenantRequest.name;
-        tenant.vendorId = tenantRequest.vendorId;
         return tenant;
-    }
-
-    /**
-     * 转换供应商请求为供应商对象
-     *
-     * @param vendorRequest 供应商请求
-     * @return 供应商对象
-     */
-    public static Vendor convert(VendorRequest vendorRequest) {
-        if (vendorRequest == null) return null;
-        Vendor vendor = new Vendor();
-        vendor.name = vendorRequest.name;
-        return vendor;
-    }
-
-    /**
-     * 转换供应商更新请求为供应商对象
-     *
-     * @param vendorRequest 供应商更新请求
-     * @return 供应商对象
-     */
-    public static Vendor convert(VendorUpdateRequest vendorRequest) {
-        if (vendorRequest == null) return null;
-        Vendor vendor = new Vendor();
-        vendor.id = vendorRequest.id;
-        vendor.name = vendorRequest.name;
-        return vendor;
     }
 
     /**
@@ -246,21 +217,15 @@ public class Converter {
      * 转换租户信息为视图层租户信息
      *
      * @param tenant 租户信息
-     * @param vendor 供应商信息
      * @return 视图层租户信息
      */
-    public static ViewTenant convert(Tenant tenant, Vendor vendor) {
+    public static ViewTenant convert(Tenant tenant) {
         if (tenant == null) return null;
         ViewTenant viewTenant = new ViewTenant();
         viewTenant.id = tenant.id;
         viewTenant.name = tenant.name;
         viewTenant.createTime = tenant.createTime;
         viewTenant.updateTime = tenant.updateTime;
-        viewTenant.vendor = vendor;
-        if (vendor != null && !vendor.id.equals(tenant.vendorId)) {
-            logger.error("vendors are not consistent for tenant[{}] and vendor[{}]", tenant.vendorId, vendor.id);
-            throw new IllegalStateException("供应商ID不一致");
-        }
         return viewTenant;
     }
 
@@ -282,14 +247,9 @@ public class Converter {
         viewUser.updateTime = user.updateTime;
         viewUser.tenant = tenant;
         if (tenant != null) {
-            viewUser.vendor = tenant.vendor;
             if (!user.tenantId.equals(tenant.id)) {
                 logger.error("tenants are not consistent for user[{}] and tenant[{}]", user.tenantId, tenant.id);
                 throw new IllegalStateException("租户ID不一致");
-            }
-            if (tenant.vendor != null && !user.vendorId.equals(tenant.vendor.id)) {
-                logger.error("vendors are not consistent for user[{}] and vendor[{}]", user.vendorId, tenant.vendor.id);
-                throw new IllegalStateException("供应商ID不一致");
             }
         }
         return viewUser;

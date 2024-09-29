@@ -18,7 +18,6 @@ import xin.manong.hylian.model.User;
 import xin.manong.hylian.server.service.TenantService;
 import xin.manong.hylian.server.service.request.TenantSearchRequest;
 import xin.manong.hylian.server.service.UserService;
-import xin.manong.hylian.server.service.VendorService;
 
 import javax.annotation.Resource;
 import javax.ws.rs.BadRequestException;
@@ -39,9 +38,6 @@ public class TenantServiceImpl implements TenantService {
     protected TenantMapper tenantMapper;
     @Lazy
     @Resource
-    protected VendorService vendorService;
-    @Lazy
-    @Resource
     protected UserService userService;
 
     @Override
@@ -55,16 +51,11 @@ public class TenantServiceImpl implements TenantService {
 
     @Override
     public boolean add(Tenant tenant) {
-        if (vendorService.get(tenant.vendorId) == null) {
-            logger.error("vendor[{}] is not found", tenant.vendorId);
-            throw new NotFoundException("供应商不存在");
-        }
         LambdaQueryWrapper<Tenant> query = new LambdaQueryWrapper<>();
         query.eq(Tenant::getId, tenant.id);
-        query.or(wrapper -> wrapper.eq(Tenant::getVendorId, tenant.vendorId).eq(Tenant::getName, tenant.name));
+        query.or(wrapper -> wrapper.eq(Tenant::getName, tenant.name));
         if (tenantMapper.selectCount(query) > 0) {
-            logger.error("tenant has existed for the same id[{}] or name[{}] of vendor[{}]",
-                    tenant.id, tenant.name, tenant.vendorId);
+            logger.error("the same name tenant has existed for adding");
             throw new IllegalStateException("租户已存在");
         }
         return tenantMapper.insert(tenant) > 0;
@@ -78,17 +69,13 @@ public class TenantServiceImpl implements TenantService {
             throw new NotFoundException("租户不存在");
         }
         if (StringUtils.isEmpty(tenant.name)) tenant.name = null;
-        if (StringUtils.isEmpty(tenant.vendorId)) tenant.vendorId = null;
         String name = tenant.name != null && !tenant.name.equals(prevTenant.name) ?
                 tenant.name : prevTenant.name;
-        String vendorId = tenant.vendorId != null && !tenant.vendorId.equals(prevTenant.vendorId) ?
-                tenant.vendorId : prevTenant.vendorId;
-        if (!name.equals(prevTenant.name) || !vendorId.equals(prevTenant.vendorId)) {
+        if (!name.equals(prevTenant.name)) {
             LambdaQueryWrapper<Tenant> query = new LambdaQueryWrapper<>();
-            query.eq(Tenant::getVendorId, vendorId).eq(Tenant::getName, name);
+            query.eq(Tenant::getName, name);
             if (tenantMapper.selectCount(query) > 0) {
-                logger.error("tenant has existed for the same name[{}] of vendor[{}]",
-                        name, vendorId);
+                logger.error("the same name tenant has existed for updating");
                 throw new IllegalStateException("租户已存在");
             }
         }
@@ -119,7 +106,6 @@ public class TenantServiceImpl implements TenantService {
         LambdaQueryWrapper<Tenant> query = new LambdaQueryWrapper<>();
         query.orderByDesc(Tenant::getCreateTime);
         if (!StringUtils.isEmpty(searchRequest.name)) query.like(Tenant::getName, searchRequest.name);
-        if (!StringUtils.isEmpty(searchRequest.vendorId)) query.eq(Tenant::getVendorId, searchRequest.vendorId);
         IPage<Tenant> page = tenantMapper.selectPage(new Page<>(searchRequest.current, searchRequest.size), query);
         return Converter.convert(page);
     }

@@ -26,7 +26,7 @@ public class TokenServiceImplSuite {
     @Test
     public void testBuildAndVerify() {
         Profile profile = new Profile();
-        profile.setId(RandomID.build()).setUserId("user").setTenantId("tenant").setVendorId("vendor");
+        profile.setId(RandomID.build()).setUserId("user").setTenantId("tenant");
         String token = tokenService.buildToken(profile, 600000L);
         Assert.assertFalse(StringUtils.isEmpty(token));
         Assert.assertTrue(tokenService.verifyToken(token));
@@ -35,7 +35,7 @@ public class TokenServiceImplSuite {
     @Test
     public void testTokenCache() {
         Profile profile = new Profile();
-        profile.setId(RandomID.build()).setUserId("user").setTenantId("tenant").setVendorId("vendor");
+        profile.setId(RandomID.build()).setUserId("user").setTenantId("tenant");
         String token = tokenService.buildToken(profile, 600000L);
         Assert.assertFalse(StringUtils.isEmpty(token));
         String ticket = "ticket";

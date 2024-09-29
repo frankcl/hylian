@@ -28,7 +28,7 @@ public class TicketServiceImplSuite {
     @Test
     public void testBuildAndVerify() {
         Profile profile = new Profile();
-        profile.setId(RandomID.build()).setUserId("user").setTenantId("tenant").setVendorId("vendor");
+        profile.setId(RandomID.build()).setUserId("user").setTenantId("tenant");
         String ticket = ticketService.buildTicket(profile, 600000L);
         Assert.assertFalse(StringUtils.isEmpty(ticket));
         Assert.assertTrue(ticketService.verifyTicket(ticket));
@@ -37,7 +37,7 @@ public class TicketServiceImplSuite {
     @Test
     public void testTicketCache() {
         Profile profile = new Profile();
-        profile.setId(RandomID.build()).setUserId("user").setTenantId("tenant").setVendorId("vendor");
+        profile.setId(RandomID.build()).setUserId("user").setTenantId("tenant");
         String ticket = ticketService.buildTicket(profile, 600000L);
         Assert.assertFalse(StringUtils.isEmpty(ticket));
         ticketService.putTicket(profile.id, ticket);

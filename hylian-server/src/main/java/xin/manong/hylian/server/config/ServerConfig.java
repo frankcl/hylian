@@ -1,6 +1,7 @@
 package xin.manong.hylian.server.config;
 
 import lombok.Data;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -18,10 +19,13 @@ import xin.manong.weapon.base.log.JSONLogger;
 @Data
 @Configuration
 @ConfigurationProperties(prefix = "app.server")
-public class ServerConfig {
+public class ServerConfig implements InitializingBean {
 
     public String name;
     public String aspectLogFile;
+    public String ossRegion = "cn-hangzhou";
+    public String ossBucket = "hylian";
+    public String ossBaseDirectory = "test/";
     public JWTConfig jwtConfig;
 
     @Bean(name = "webAspectLogger")
@@ -38,5 +42,10 @@ public class ServerConfig {
     public HttpClient buildHttpClient() {
         HttpClientConfig httpClientConfig = new HttpClientConfig();
         return new HttpClient(httpClientConfig);
+    }
+
+    @Override
+    public void afterPropertiesSet() throws Exception {
+        if (!ossBaseDirectory.endsWith("/")) ossBaseDirectory += "/";
     }
 }

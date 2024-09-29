@@ -2,11 +2,16 @@ package xin.manong.hylian.server.controller;
 
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
+import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import xin.manong.hylian.model.*;
+import xin.manong.hylian.server.common.Constants;
+import xin.manong.hylian.server.config.ServerConfig;
+import xin.manong.hylian.server.response.UploadResponse;
 import xin.manong.hylian.server.response.ViewTenant;
 import xin.manong.hylian.server.response.ViewUser;
 import xin.manong.hylian.server.converter.Converter;
@@ -17,15 +22,18 @@ import xin.manong.hylian.server.request.UserUpdateRequest;
 import xin.manong.hylian.server.service.TenantService;
 import xin.manong.hylian.server.service.UserRoleService;
 import xin.manong.hylian.server.service.UserService;
-import xin.manong.hylian.server.service.VendorService;
 import xin.manong.hylian.server.service.request.UserSearchRequest;
 import xin.manong.hylian.client.core.ContextManager;
+import xin.manong.weapon.aliyun.oss.OSSClient;
+import xin.manong.weapon.aliyun.oss.OSSMeta;
+import xin.manong.weapon.base.util.FileUtil;
 import xin.manong.weapon.base.util.RandomID;
 import xin.manong.weapon.spring.web.ws.aspect.EnableWebLogAspect;
 
 import javax.annotation.Resource;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
+import java.io.InputStream;
 import java.util.ArrayList;
 
 /**
@@ -43,13 +51,15 @@ public class UserController {
     private static final Logger logger = LoggerFactory.getLogger(UserController.class);
 
     @Resource
+    protected ServerConfig serverConfig;
+    @Resource
     protected UserService userService;
     @Resource
     protected TenantService tenantService;
     @Resource
-    protected VendorService vendorService;
-    @Resource
     protected UserRoleService userRoleService;
+    @Resource
+    protected OSSClient ossClient;
 
     /**
      * 获取用户信息
@@ -93,7 +103,6 @@ public class UserController {
             logger.error("tenant[{}] is not found for adding", user.tenantId);
             throw new NotFoundException("租户不存在");
         }
-        user.vendorId = tenant.vendorId;
         user.check();
         return userService.add(user);
     }
@@ -120,7 +129,6 @@ public class UserController {
                 logger.error("tenant[{}] is not found for updating", user.tenantId);
                 throw new NotFoundException("租户不存在");
             }
-            user.vendorId = tenant.vendorId;
         }
         return userService.update(user);
     }
@@ -214,8 +222,7 @@ public class UserController {
     public ViewUser getCurrentUser() {
         User user = ContextManager.getUser();
         Tenant tenant = ContextManager.getTenant();
-        Vendor vendor = ContextManager.getVendor();
-        ViewTenant viewTenant = Converter.convert(tenant, vendor);
+        ViewTenant viewTenant = Converter.convert(tenant);
         return Converter.convert(user, viewTenant);
     }
 
@@ -250,23 +257,47 @@ public class UserController {
     }
 
     /**
+     * 上传头像
+     *
+     * @param fileDetail 文件信息
+     * @param fileInputStream 文件流
+     * @return 成功返回上传文件oss信息，否则抛出异常
+     */
+    @POST
+    @Path("uploadAvatar")
+    @PostMapping("uploadAvatar")
+    @Consumes(MediaType.MULTIPART_FORM_DATA)
+    @Produces(MediaType.APPLICATION_JSON)
+    public UploadResponse uploadAvatar(@FormDataParam("file") FormDataContentDisposition fileDetail,
+                                       @FormDataParam("file") final InputStream fileInputStream) {
+        String suffix = FileUtil.getFileSuffix(fileDetail.getFileName());
+        String ossKey = String.format("%s%s%s", serverConfig.ossBaseDirectory,
+                Constants.TEMP_AVATAR_DIR, RandomID.build());
+        if (StringUtils.isNotEmpty(suffix)) ossKey = String.format("%s.%s", ossKey, suffix);
+        if (!ossClient.putObject(serverConfig.ossBucket, ossKey, fileInputStream)) {
+            logger.error("upload avatar failed");
+            throw new IllegalStateException("上传头像失败");
+        }
+        UploadResponse response = new UploadResponse();
+        OSSMeta ossMeta = new OSSMeta(serverConfig.ossRegion, serverConfig.ossBucket, ossKey);
+        response.ossURL = OSSClient.buildURL(ossMeta);
+        response.signedURL = ossClient.sign(serverConfig.ossBucket, ossKey);
+        return response;
+    }
+
+    /**
      * 填充并转换视图层用户信息
      *
      * @param user 用户信息
      * @return 视图层用户信息
      */
     private ViewUser fillAndConvertUser(User user) {
-        Vendor vendor = vendorService.get(user.vendorId);
-        if (vendor == null) {
-            logger.error("vendor[{}] is not found", user.vendorId);
-            throw new NotFoundException("供应商不存在");
-        }
         Tenant tenant = tenantService.get(user.tenantId);
         if (tenant == null) {
             logger.error("tenant[{}] is not found", user.tenantId);
             throw new NotFoundException("租户不存在");
         }
-        ViewTenant viewTenant = Converter.convert(tenant, vendor);
+        ViewTenant viewTenant = Converter.convert(tenant);
         return Converter.convert(user, viewTenant);
     }
 }

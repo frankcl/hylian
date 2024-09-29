@@ -1,7 +1,6 @@
 package xin.manong.hylian.server.aspect;
 
 import org.aspectj.lang.JoinPoint;
-import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.*;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
@@ -11,7 +10,7 @@ import xin.manong.hylian.common.util.CookieUtils;
 import xin.manong.hylian.server.common.Constants;
 
 import javax.servlet.http.HttpServletResponse;
-import javax.ws.rs.*;
+import javax.ws.rs.NotAuthorizedException;
 
 /**
  * cookie清理切面
@@ -36,7 +35,7 @@ public class CookieSweepAspect {
      */
     @AfterThrowing(pointcut = "intercept()", throwing = "throwable")
     public void afterThrowing(JoinPoint joinPoint, Throwable throwable) {
-        if (throwable instanceof NotAcceptableException) {
+        if (throwable instanceof NotAuthorizedException) {
             HttpServletResponse httpResponse = ((ServletRequestAttributes) RequestContextHolder.
                     currentRequestAttributes()).getResponse();
             CookieUtils.removeCookie(Constants.COOKIE_TOKEN, "/", httpResponse);

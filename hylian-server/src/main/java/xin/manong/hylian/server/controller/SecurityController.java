@@ -64,8 +64,6 @@ public class SecurityController {
     @Resource
     protected TenantService tenantService;
     @Resource
-    protected VendorService vendorService;
-    @Resource
     protected ActiveRecordService activeRecordService;
     @Resource
     protected RoleService roleService;
@@ -161,7 +159,7 @@ public class SecurityController {
                         @QueryParam("app_id") @RequestParam("app_id") String appId,
                         @QueryParam("app_secret") @RequestParam("app_secret") String appSecret) {
         appService.verifyApp(appId, appSecret);
-        verifyToken(token);
+        if (!verifyToken(token)) return null;
         Profile profile = jwtService.decodeProfile(token);
         User user = userService.get(profile.userId);
         if (user == null) {
@@ -189,7 +187,7 @@ public class SecurityController {
                             @QueryParam("app_id") @RequestParam("app_id") String appId,
                             @QueryParam("app_secret") @RequestParam("app_secret") String appSecret) {
         appService.verifyApp(appId, appSecret);
-        verifyToken(token);
+        if (!verifyToken(token)) return null;
         Profile profile = jwtService.decodeProfile(token);
         Tenant tenant = tenantService.get(profile.tenantId);
         if (tenant == null) {
@@ -200,39 +198,11 @@ public class SecurityController {
     }
 
     /**
-     * 获取供应商信息
-     * 认证失败抛出异常NotAuthorizedException
-     *
-     * @param token 令牌
-     * @param appId 应用ID
-     * @param appSecret 应用秘钥
-     * @return 成功返回供应商信息，否则返回null
-     */
-    @GET
-    @Produces(MediaType.APPLICATION_JSON)
-    @Path("getVendor")
-    @GetMapping("getVendor")
-    @EnableWebLogAspect
-    public Vendor getVendor(@QueryParam("token") @RequestParam("token") String token,
-                            @QueryParam("app_id") @RequestParam("app_id") String appId,
-                            @QueryParam("app_secret") @RequestParam("app_secret") String appSecret) {
-        appService.verifyApp(appId, appSecret);
-        verifyToken(token);
-        Profile profile = jwtService.decodeProfile(token);
-        Vendor vendor = vendorService.get(profile.vendorId);
-        if (vendor == null) {
-            logger.error("vendor[{}] is not found", profile.vendorId);
-            throw new NotAuthorizedException("供应商不存在");
-        }
-        return vendor;
-    }
-
-    /**
      * 刷新token
      * 认证失败抛出异常NotAuthorizedException
      *
      * @param request 刷新请求
-     * @return 成功返回新token，否则抛出异常
+     * @return 成功返回新token，否则返回null
      */
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
@@ -244,7 +214,7 @@ public class SecurityController {
         if (request == null) throw new BadRequestException("刷新token请求为空");
         request.check();
         appService.verifyApp(request.appId, request.appSecret);
-        verifyToken(request.token);
+        if (!verifyToken(request.token)) return null;
         String ticket = tokenService.getTicket(request.token);
         if (StringUtils.isEmpty(ticket)) {
             logger.error("cached ticket is expired");
@@ -410,7 +380,7 @@ public class SecurityController {
             throw new RuntimeException("用户名和密码不匹配");
         }
         Profile profile = new Profile();
-        profile.setId(RandomID.build()).setUserId(user.id).setTenantId(user.tenantId).setVendorId(user.vendorId);
+        profile.setId(RandomID.build()).setUserId(user.id).setTenantId(user.tenantId);
         ticket = ticketService.buildTicket(profile, Constants.COOKIE_TICKET_EXPIRED_TIME_MS);
         ticketService.putTicket(profile.id, ticket);
         CookieUtils.setCookie(Constants.COOKIE_TICKET, ticket, "/", true, httpRequest, httpResponse);
@@ -422,17 +392,19 @@ public class SecurityController {
      * 验证token
      *
      * @param token 令牌
+     * @return 成功返回true，否则返回false
      */
-    private void verifyToken(String token) {
+    private boolean verifyToken(String token) {
         if (StringUtils.isEmpty(token)) {
             logger.error("token is empty");
-            throw new NotAuthorizedException("token为空");
+            return false;
         }
         if (!tokenService.verifyToken(token)) {
             logger.error("verify token failed");
             removeTokenResources(token);
-            throw new NotAuthorizedException("验证token失败");
+            return false;
         }
+        return true;
     }
 
     /**

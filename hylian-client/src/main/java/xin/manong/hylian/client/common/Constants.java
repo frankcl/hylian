@@ -30,13 +30,11 @@ public class Constants {
     public static final String SERVER_PATH_REMOVE_ACTIVE_RECORD = "api/security/removeActiveRecord";
     public static final String SERVER_PATH_GET_USER = "api/security/getUser";
     public static final String SERVER_PATH_GET_TENANT = "api/security/getTenant";
-    public static final String SERVER_PATH_GET_VENDOR = "api/security/getVendor";
     public static final String SERVER_PATH_GET_APP_USER_ROLES = "api/security/getAppUserRoles";
     public static final String SERVER_PATH_GET_APP_ROLE_PERMISSIONS = "api/security/getAppRolePermissions";
 
     public static final String CURRENT_USER = "__user__";
     public static final String CURRENT_TENANT = "__tenant__";
-    public static final String CURRENT_VENDOR = "__vendor__";
 
     public static final String CHARSET_UTF8 = "UTF-8";
 }

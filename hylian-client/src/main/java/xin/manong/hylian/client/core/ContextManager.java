@@ -3,7 +3,6 @@ package xin.manong.hylian.client.core;
 import xin.manong.hylian.common.util.SessionUtils;
 import xin.manong.hylian.model.Tenant;
 import xin.manong.hylian.model.User;
-import xin.manong.hylian.model.Vendor;
 import xin.manong.hylian.client.common.Constants;
 import xin.manong.weapon.base.common.Context;
 
@@ -42,17 +41,6 @@ public class ContextManager {
     }
 
     /**
-     * 获取供应商信息
-     *
-     * @return 成功返回供应商信息，否则返回null
-     */
-    public static Vendor getVendor() {
-        Context context = THREAD_LOCAL_CONTEXT.get();
-        if (context == null) return null;
-        return (Vendor) context.get(Constants.CURRENT_VENDOR);
-    }
-
-    /**
      * 填充线程上下文
      * 1. 填充用户信息
      * 2. 填充租户信息
@@ -68,7 +56,6 @@ public class ContextManager {
         }
         context.put(Constants.CURRENT_USER, SessionUtils.getUser(httpRequest));
         context.put(Constants.CURRENT_TENANT, SessionUtils.getTenant(httpRequest));
-        context.put(Constants.CURRENT_VENDOR, SessionUtils.getVendor(httpRequest));
     }
 
     /**

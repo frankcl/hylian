@@ -7,7 +7,7 @@ import lombok.Setter;
 import lombok.experimental.Accessors;
 
 /**
- * 用户信息，包含用户、租户和供应商基本信息
+ * 用户信息，包含用户、租户基本信息
  *
  * @author frankcl
  * @date 2023-08-31 17:26:31
@@ -33,9 +33,4 @@ public class Profile {
      */
     @JsonProperty("tenant_id")
     public String tenantId;
-    /**
-     * 供应商ID
-     */
-    @JsonProperty("vendor_id")
-    public String vendorId;
 }

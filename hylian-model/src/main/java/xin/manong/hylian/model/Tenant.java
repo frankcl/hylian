@@ -38,20 +38,11 @@ public class Tenant extends BaseModel {
     @JsonProperty("name")
     public String name;
 
-    @TableField("vendor_id")
-    @JSONField(name = "vendor_id")
-    @JsonProperty("vendor_id")
-    public String vendorId;
-
     /**
      * 检测有效性
      * 无效抛出异常
      */
     public void check() {
-        if (StringUtils.isEmpty(vendorId)) {
-            logger.error("vendor id is empty");
-            throw new BadRequestException("供应商ID为空");
-        }
         if (StringUtils.isEmpty(id)) {
             logger.error("tenant id is empty");
             throw new BadRequestException("租户ID为空");

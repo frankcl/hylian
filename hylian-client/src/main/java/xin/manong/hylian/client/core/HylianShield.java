@@ -8,7 +8,6 @@ import xin.manong.hylian.common.util.HTTPUtils;
 import xin.manong.hylian.common.util.SessionUtils;
 import xin.manong.hylian.model.Tenant;
 import xin.manong.hylian.model.User;
-import xin.manong.hylian.model.Vendor;
 import xin.manong.hylian.client.common.Constants;
 import xin.manong.weapon.base.http.HttpRequest;
 import xin.manong.weapon.base.http.RequestFormat;
@@ -16,7 +15,6 @@ import xin.manong.weapon.spring.web.WebResponse;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.ws.rs.NotAuthorizedException;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.util.*;
@@ -67,12 +65,13 @@ public class HylianShield {
             String token = SessionUtils.getToken(httpRequest);
             if (refreshUser(token, httpRequest) &&
                     refreshTenant(token, httpRequest) &&
-                    refreshVendor(token, httpRequest) &&
                     refreshToken(token, httpRequest)) return true;
+            logger.warn("token is expired");
         }
         SessionUtils.removeResources(httpRequest);
         String code = httpRequest.getParameter(Constants.PARAM_CODE);
         if (StringUtils.isEmpty(code)) {
+            logger.info("apply code for acquiring token");
             String redirectURL = HTTPUtils.getRequestURL(httpRequest);
             httpResponse.sendRedirect(String.format("%s%s?%s=%s&%s=%s&%s=%s", serverURL,
                     Constants.SERVER_PATH_APPLY_CODE, Constants.PARAM_APP_ID, appId,
@@ -81,13 +80,17 @@ public class HylianShield {
             return false;
         }
         String token = acquireToken(code, httpRequest);
+        String requestURL = HTTPUtils.getRequestURL(httpRequest);
+        requestURL = HTTPUtils.removeQueries(requestURL, new HashSet<String>() {{
+            add(Constants.PARAM_CODE);
+        }});
         if (StringUtils.isEmpty(token)) {
             logger.error("acquire token failed");
-            throw new NotAuthorizedException("获取令牌失败");
+            httpResponse.sendRedirect(requestURL);
+            return false;
         }
+        logger.info("acquire token success");
         SessionUtils.setToken(httpRequest, token);
-        String requestURL = HTTPUtils.getRequestURL(httpRequest);
-        requestURL = HTTPUtils.removeQueries(requestURL, new HashSet<String>() {{ add(Constants.PARAM_CODE); }});
         httpResponse.sendRedirect(requestURL);
         return false;
     }
@@ -144,9 +147,7 @@ public class HylianShield {
         Map<String, Object> paramMap = buildTokenRequest(token);
         HttpRequest httpRequest = HttpRequest.buildGetRequest(requestURL, paramMap);
         WebResponse<User> response = HTTPExecutor.execute(httpRequest, User.class);
-        if (response == null || (!response.status && response.code == 404)) {
-            throw new NotAuthorizedException("用户不存在");
-        }
+        if (response == null || !response.status) return null;
         return response.data;
     }
 
@@ -161,26 +162,7 @@ public class HylianShield {
         Map<String, Object> paramMap = buildTokenRequest(token);
         HttpRequest httpRequest = HttpRequest.buildGetRequest(requestURL, paramMap);
         WebResponse<Tenant> response = HTTPExecutor.execute(httpRequest, Tenant.class);
-        if (response == null || (!response.status && response.code == 404)) {
-            throw new NotAuthorizedException("租户不存在");
-        }
-        return response.data;
-    }
-
-    /**
-     * 根据token向服务端获取供应商信息
-     *
-     * @param token 令牌
-     * @return 成功返回供应商信息，否则返回null
-     */
-    private Vendor getVendor(String token) {
-        String requestURL = String.format("%s%s", serverURL, Constants.SERVER_PATH_GET_VENDOR);
-        Map<String, Object> paramMap = buildTokenRequest(token);
-        HttpRequest httpRequest = HttpRequest.buildGetRequest(requestURL, paramMap);
-        WebResponse<Vendor> response = HTTPExecutor.execute(httpRequest, Vendor.class);
-        if (response == null || (!response.status && response.code == 404)) {
-            throw new NotAuthorizedException("供应商不存在");
-        }
+        if (response == null || !response.status) return null;
         return response.data;
     }
 
@@ -238,24 +220,6 @@ public class HylianShield {
             return false;
         }
         SessionUtils.setTenant(httpRequest, tenant);
-        return true;
-    }
-
-    /**
-     * 刷新session供应商信息
-     *
-     * @param token 令牌
-     * @param httpRequest HTTP请求
-     * @return 成功返回true，否则返回false
-     */
-    private boolean refreshVendor(String token, HttpServletRequest httpRequest) {
-        if (SessionUtils.getVendor(httpRequest) != null) return true;
-        Vendor vendor = getVendor(token);
-        if (vendor == null) {
-            logger.error("get vendor failed for token[{}]", token);
-            return false;
-        }
-        SessionUtils.setVendor(httpRequest, vendor);
         return true;
     }
 

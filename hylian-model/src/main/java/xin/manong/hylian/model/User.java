@@ -69,14 +69,6 @@ public class User extends BaseModel {
     public String tenantId;
 
     /**
-     * 供应商ID
-     */
-    @TableField(value = "vendor_id")
-    @JSONField(name = "vendor_id")
-    @JsonProperty("vendor_id")
-    public String vendorId;
-
-    /**
      * 头像地址
      */
     @TableField(value = "avatar")
@@ -104,10 +96,6 @@ public class User extends BaseModel {
         if (StringUtils.isEmpty(tenantId)) {
             logger.error("tenant id is empty");
             throw new BadRequestException("租户ID为空");
-        }
-        if (StringUtils.isEmpty(vendorId)) {
-            logger.error("vendor id is empty");
-            throw new BadRequestException("供应商ID为空");
         }
         if (StringUtils.isEmpty(password)) {
             logger.error("password is empty");

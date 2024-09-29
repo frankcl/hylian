@@ -35,7 +35,6 @@ public class JWTServiceImplSuite {
         profile.id = RandomID.build();
         profile.userId = "aaa";
         profile.tenantId = "bbb";
-        profile.vendorId = "ccc";
         Date expiresAt = new Date(System.currentTimeMillis() + 86400000L);
         Map<String, Object> headerMap = new HashMap<>();
         headerMap.put(Constants.JWT_HEADER_CATEGORY, Constants.JWT_CATEGORY_TOKEN);
@@ -52,6 +51,5 @@ public class JWTServiceImplSuite {
         Assert.assertEquals(profile.id, decodedProfile.id);
         Assert.assertEquals(profile.userId, decodedProfile.userId);
         Assert.assertEquals(profile.tenantId, decodedProfile.tenantId);
-        Assert.assertEquals(profile.vendorId, decodedProfile.vendorId);
     }
 }

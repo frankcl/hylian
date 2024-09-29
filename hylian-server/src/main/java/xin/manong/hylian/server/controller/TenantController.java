@@ -6,13 +6,11 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import xin.manong.hylian.model.Pager;
 import xin.manong.hylian.model.Tenant;
-import xin.manong.hylian.model.Vendor;
 import xin.manong.hylian.server.response.ViewTenant;
 import xin.manong.hylian.server.converter.Converter;
 import xin.manong.hylian.server.request.TenantRequest;
 import xin.manong.hylian.server.request.TenantUpdateRequest;
 import xin.manong.hylian.server.service.TenantService;
-import xin.manong.hylian.server.service.VendorService;
 import xin.manong.hylian.server.service.request.TenantSearchRequest;
 import xin.manong.weapon.base.util.RandomID;
 import xin.manong.weapon.spring.web.ws.aspect.EnableWebLogAspect;
@@ -38,8 +36,6 @@ public class TenantController {
 
     @Resource
     protected TenantService tenantService;
-    @Resource
-    protected VendorService vendorService;
 
     /**
      * 获取租户信息
@@ -58,7 +54,7 @@ public class TenantController {
             logger.error("tenant[{}] is not found", id);
             throw new NotFoundException("租户不存在");
         }
-        return fillAndConvertTenant(tenant);
+        return Converter.convert(tenant);
     }
 
     /**
@@ -136,24 +132,9 @@ public class TenantController {
         viewPager.total = pager.total;
         viewPager.records = new ArrayList<>();
         for (Tenant tenant : pager.records) {
-            ViewTenant viewTenant = fillAndConvertTenant(tenant);
+            ViewTenant viewTenant = Converter.convert(tenant);
             viewPager.records.add(viewTenant);
         }
         return viewPager;
-    }
-
-    /**
-     * 填充并转换视图层租户信息
-     *
-     * @param tenant 租户信息
-     * @return 视图层租户信息
-     */
-    private ViewTenant fillAndConvertTenant(Tenant tenant) {
-        Vendor vendor = vendorService.get(tenant.vendorId);
-        if (vendor == null) {
-            logger.error("vendor[{}] is not found", tenant.vendorId);
-            throw new NotFoundException("供应商不存在");
-        }
-        return Converter.convert(tenant, vendor);
     }
 }

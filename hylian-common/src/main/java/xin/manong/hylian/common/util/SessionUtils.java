@@ -62,17 +62,6 @@ public class SessionUtils {
     }
 
     /**
-     * 从session中获取供应商信息
-     *
-     * @param httpRequest HTTP请求
-     * @return 成功返回供应商信息，否则返回null
-     */
-    public static Vendor getVendor(HttpServletRequest httpRequest) {
-        if (httpRequest == null) return null;
-        return (Vendor) httpRequest.getSession().getAttribute(SessionConstants.VENDOR);
-    }
-
-    /**
      * 从session中获取角色列表
      *
      * @param httpRequest HTTP请求
@@ -128,17 +117,6 @@ public class SessionUtils {
     }
 
     /**
-     * 将供应商信息设置到session
-     *
-     * @param httpRequest HTTP请求
-     * @param vendor 供应商信息
-     */
-    public static void setVendor(HttpServletRequest httpRequest, Vendor vendor) {
-        if (httpRequest == null || vendor == null) return;
-        httpRequest.getSession().setAttribute(SessionConstants.VENDOR, vendor);
-    }
-
-    /**
      * 将角色列表设置到session
      *
      * @param httpRequest HTTP请求
@@ -171,7 +149,6 @@ public class SessionUtils {
         httpSession.removeAttribute(SessionConstants.TOKEN);
         httpSession.removeAttribute(SessionConstants.USER);
         httpSession.removeAttribute(SessionConstants.TENANT);
-        httpSession.removeAttribute(SessionConstants.VENDOR);
         httpSession.removeAttribute(SessionConstants.ROLES);
         httpSession.removeAttribute(SessionConstants.PERMISSIONS);
     }

@@ -13,7 +13,6 @@ import xin.manong.hylian.server.ApplicationTest;
 import xin.manong.hylian.model.Pager;
 import xin.manong.hylian.model.Tenant;
 import xin.manong.hylian.model.User;
-import xin.manong.hylian.model.Vendor;
 import xin.manong.hylian.server.service.request.UserSearchRequest;
 
 import javax.annotation.Resource;
@@ -30,26 +29,18 @@ public class UserServiceImplSuite {
     protected UserService userService;
     @Resource
     protected TenantService tenantService;
-    @Resource
-    protected VendorService vendorService;
 
     @Before
     public void setUp() {
-        Vendor vendor = new Vendor();
-        vendor.id = "v_abc";
-        vendor.name = "test_vendor";
-        Assert.assertTrue(vendorService.add(vendor));
         Tenant tenant = new Tenant();
         tenant.id = "t_abc";
         tenant.name = "test_tenant";
-        tenant.vendorId = vendor.id;
         Assert.assertTrue(tenantService.add(tenant));
     }
 
     @After
     public void tearDown() {
         Assert.assertTrue(tenantService.delete("t_abc"));
-        Assert.assertTrue(vendorService.delete("v_abc"));
     }
 
     @Test
@@ -62,7 +53,6 @@ public class UserServiceImplSuite {
             user.userName = "abc";
             user.name = "frankcl";
             user.tenantId = "t_abc";
-            user.vendorId = "v_abc";
             user.password = "xxxxxx";
             user.avatar = "http://www.manong.xin/frankcl/avatar.jpg";
             Assert.assertTrue(userService.add(user));
@@ -73,7 +63,6 @@ public class UserServiceImplSuite {
             user.userName = "abc";
             user.name = "frankcl";
             user.tenantId = "t_abcd";
-            user.vendorId = "v_abc";
             user.password = "xxxxxx";
             user.avatar = "http://www.manong.xin/frankcl/avatar.jpg";
             try {
@@ -88,7 +77,6 @@ public class UserServiceImplSuite {
             user.userName = "abc";
             user.name = "frankcl";
             user.tenantId = "t_abc";
-            user.vendorId = "v_abcd";
             user.password = "xxxxxx";
             user.avatar = "http://www.manong.xin/frankcl/avatar.jpg";
             try {
@@ -103,7 +91,6 @@ public class UserServiceImplSuite {
             user.userName = "abcd";
             user.name = "frankcl";
             user.tenantId = "t_abc";
-            user.vendorId = "v_abc";
             user.password = "xxxxxx";
             user.avatar = "http://www.manong.xin/frankcl/avatar.jpg";
             try {
@@ -118,7 +105,6 @@ public class UserServiceImplSuite {
             user.userName = "abc";
             user.name = "frankcl";
             user.tenantId = "t_abc";
-            user.vendorId = "v_abc";
             user.password = "xxxxxx";
             user.avatar = "http://www.manong.xin/frankcl/avatar.jpg";
             try {
@@ -134,7 +120,6 @@ public class UserServiceImplSuite {
             Assert.assertEquals("abc", user.userName);
             Assert.assertEquals("frankcl", user.name);
             Assert.assertEquals("t_abc", user.tenantId);
-            Assert.assertEquals("v_abc", user.vendorId);
             Assert.assertEquals("dad3a37aa9d50688b5157698acfd7aee", user.password);
             Assert.assertEquals("http://www.manong.xin/frankcl/avatar.jpg", user.avatar);
             Assert.assertTrue(user.createTime > 0);
@@ -154,7 +139,6 @@ public class UserServiceImplSuite {
             Assert.assertEquals("abc", user.userName);
             Assert.assertEquals("frankcl", user.name);
             Assert.assertEquals("t_abc", user.tenantId);
-            Assert.assertEquals("v_abc", user.vendorId);
             Assert.assertEquals("04adb4e2f055c978c9bb101ee1bc5cd4", user.password);
             Assert.assertEquals("http://www.manong.xin/frankcl/avatar1.jpg", user.avatar);
             Assert.assertTrue(user.createTime > 0);
@@ -163,7 +147,6 @@ public class UserServiceImplSuite {
         {
             UserSearchRequest searchRequest = new UserSearchRequest();
             searchRequest.tenantId = "t_abc";
-            searchRequest.vendorId = "v_abc";
             searchRequest.userName = "abc";
             searchRequest.name = "frank";
             Pager<User> pager = userService.search(searchRequest);

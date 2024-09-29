@@ -16,6 +16,15 @@ weapon:
           password: xmjjyhy28p
           address: 127.0.0.1:6379
           db: 0
+  aliyun:
+    oss:
+      client-map:
+        default:
+          dynamic: false
+          endpoint: http://oss-cn-hangzhou.aliyuncs.com
+          socket-timeout-ms: 3000
+          connection-timeout-ms: 3000
+          retry-cnt: 3
 hylian:
   client:
     appId: hylian
@@ -35,3 +44,5 @@ app:
     aspectLogFile: ./log/aspect/web.log
     jwtConfig:
       secretHS256: JWT_%x6xo7l7_u9bf_u!9#g#m*)*=ej@bek8)(@u3kh*84+unjv=
+    oss-region: cn-hangzhou
+    oss-base-directory: test

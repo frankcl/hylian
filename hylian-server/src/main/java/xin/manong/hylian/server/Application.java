@@ -4,6 +4,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import xin.manong.hylian.client.annotation.EnableHylianGuard;
 import xin.manong.hylian.client.aspect.EnableACLAspect;
+import xin.manong.weapon.spring.boot.annotation.EnableOSSClient;
 import xin.manong.weapon.spring.boot.annotation.EnableRedisClient;
 import xin.manong.weapon.spring.web.ws.aspect.EnableWebLogAspect;
 
@@ -15,6 +16,7 @@ import xin.manong.weapon.spring.web.ws.aspect.EnableWebLogAspect;
  * @date 2022-08-24 12:58:39
  */
 @EnableRedisClient
+@EnableOSSClient
 @EnableHylianGuard
 @EnableACLAspect
 @EnableWebLogAspect

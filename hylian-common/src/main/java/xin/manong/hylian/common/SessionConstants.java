@@ -11,7 +11,6 @@ public class SessionConstants {
     public static final String TOKEN = "__TOKEN__";
     public static final String USER = "__USER__";
     public static final String TENANT = "__TENANT__";
-    public static final String VENDOR = "__VENDOR__";
     public static final String ROLES = "__ROLES__";
     public static final String PERMISSIONS = "__PERMISSIONS__";
 }

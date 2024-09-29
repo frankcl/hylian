@@ -35,4 +35,7 @@ public class Constants {
     public static final String JWT_CLAIM_PROFILE = "profile";
 
     public static final String ALGORITHM_HS256 = "HS256";
+
+    public static final String AVATAR_DIR = "avatar/";
+    public static final String TEMP_AVATAR_DIR = "temp/avatar/";
 }

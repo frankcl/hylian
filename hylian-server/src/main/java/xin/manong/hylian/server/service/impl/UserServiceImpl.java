@@ -17,7 +17,6 @@ import xin.manong.hylian.model.Pager;
 import xin.manong.hylian.model.User;
 import xin.manong.hylian.server.service.TenantService;
 import xin.manong.hylian.server.service.UserService;
-import xin.manong.hylian.server.service.VendorService;
 
 import javax.annotation.Resource;
 import javax.ws.rs.BadRequestException;
@@ -39,9 +38,6 @@ public class UserServiceImpl implements UserService {
     @Lazy
     @Resource
     protected TenantService tenantService;
-    @Lazy
-    @Resource
-    protected VendorService vendorService;
 
     @Override
     public User get(String id) {
@@ -72,10 +68,6 @@ public class UserServiceImpl implements UserService {
         if (tenantService.get(user.tenantId) == null) {
             logger.error("tenant[{}] is not found", user.tenantId);
             throw new NotFoundException("租户不存在");
-        }
-        if (vendorService.get(user.vendorId) == null) {
-            logger.error("vendor[{}] is not found", user.vendorId);
-            throw new NotFoundException("供应商不存在");
         }
         LambdaQueryWrapper<User> query = new LambdaQueryWrapper<>();
         query.eq(User::getId, user.id).or().eq(User::getUserName, user.userName);
@@ -116,7 +108,6 @@ public class UserServiceImpl implements UserService {
         query.orderByDesc(User::getCreateTime);
         if (!StringUtils.isEmpty(searchRequest.userName)) query.eq(User::getUserName, searchRequest.userName);
         if (!StringUtils.isEmpty(searchRequest.tenantId)) query.eq(User::getTenantId, searchRequest.tenantId);
-        if (!StringUtils.isEmpty(searchRequest.vendorId)) query.eq(User::getVendorId, searchRequest.vendorId);
         if (!StringUtils.isEmpty(searchRequest.name)) query.like(User::getName, searchRequest.name);
         IPage<User> page = userMapper.selectPage(new Page<>(searchRequest.current, searchRequest.size), query);
         return Converter.convert(page);

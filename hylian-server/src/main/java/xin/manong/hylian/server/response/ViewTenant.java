@@ -6,7 +6,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
-import xin.manong.hylian.model.Vendor;
 
 import java.io.Serializable;
 
@@ -29,10 +28,6 @@ public class ViewTenant implements Serializable {
     @JSONField(name = "name")
     @JsonProperty("name")
     public String name;
-
-    @JSONField(name = "vendor")
-    @JsonProperty("vendor")
-    public Vendor vendor;
 
     @JSONField(name = "create_time")
     @JsonProperty("create_time")

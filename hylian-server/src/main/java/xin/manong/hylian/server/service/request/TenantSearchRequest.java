@@ -17,9 +17,4 @@ public class TenantSearchRequest extends SearchRequest {
      */
     @JsonProperty("name")
     public String name;
-    /**
-     * 供应商ID
-     */
-    @JsonProperty("vendor_id")
-    public String vendorId;
 }
