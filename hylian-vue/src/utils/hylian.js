@@ -29,15 +29,36 @@ export const refreshUser = async () => {
   userStore.inject(user)
 }
 
+export const randomInt = (from = 0, to = 1) => {
+  return from <= to ? Math.random() * (to - from) + from : Math.random() * (from - to) + to
+}
+
 export const paintCaptcha = (captcha, userConfig = {}) => {
+  const randomColor = () => {
+    const [r, g, b] = [randomInt(0, 255), randomInt(0, 255), randomInt(0, 255)]
+    return `rgb(${r},${g},${b})`
+  }
+  const drawPoint = (context, width, height) => {
+    const x = randomInt(0, width)
+    const y = randomInt(0, height)
+    context.fillStyle = randomColor()
+    context.fillRect(x, y, 1, 1)
+  }
+  const drawLine = (context, width, height) => {
+    context.beginPath()
+    context.moveTo(Math.random() * width, Math.random() * height)
+    context.lineTo(Math.random() * width, Math.random() * height)
+    context.strokeStyle = randomColor()
+    context.stroke()
+  }
   const defaultConfig = {
-    width: 70,
-    height: 30,
-    backgroundColor: '#f9f9f9',
-    fontColor: '#000000',
-    font: 'italic 14px Arial',
-    lineColor: '#a5a5a5',
-    lineNum: 20
+    width: 84,
+    height: 32,
+    backgroundColor: '#f7f7f7',
+    fontColor: '#8b8c8c',
+    font: 'italic 18px Arial',
+    noisePoints: 20,
+    noiseLines: 10
   }
   const config = { ...defaultConfig, ...userConfig }
   const canvas = document.createElement('canvas')
@@ -51,14 +72,13 @@ export const paintCaptcha = (captcha, userConfig = {}) => {
   context.textAlign = 'center'
   context.textBaseline = 'middle'
   captcha.split('').forEach((letter, i) => {
-    context.fillText(letter, canvas.width / captcha.length * (i + 0.5), canvas.height / (Math.random() * 3 + 1))
+    context.fillText(letter, canvas.width / captcha.length * (i + 0.5), canvas.height / randomInt(1, 4))
   })
-  for(let i = 0; i < config.lineNum; i++) {
-    context.beginPath()
-    context.moveTo(Math.random() * canvas.width, Math.random() * canvas.height)
-    context.lineTo(Math.random() * canvas.width, Math.random() * canvas.height)
-    context.strokeStyle = config.lineColor
-    context.stroke()
+  for(let i = 0; i < config.noiseLines; i++) {
+    drawLine(context, canvas.width, canvas.height)
+  }
+  for(let i = 0; i < config.noisePoints; i++) {
+    drawPoint(context, canvas.width, canvas.height)
   }
   return canvas.toDataURL('image/png')
 }

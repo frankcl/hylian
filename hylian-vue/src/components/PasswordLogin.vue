@@ -1,51 +1,68 @@
 <script setup>
-import { onMounted, ref, watchEffect } from 'vue'
+import { onMounted, ref, useTemplateRef, watchEffect } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/store'
-import { ElButton, ElCol, ElInput, ElMessage, ElRow } from 'element-plus'
+import { ElCol, ElDialog, ElForm, ElFormItem, ElInput, ElRow } from 'element-plus'
 import { paintCaptcha } from '@/utils/hylian'
 import { applyCaptcha, getCurrentUser, passwordLogin } from '@/utils/hylian-service'
 
 const router = useRouter()
 const userStore = useUserStore()
-const username = ref('')
-const password = ref('')
 const captcha = ref('')
-const backendCaptcha = ref('')
+const userFormRef = useTemplateRef('userFormRef')
+const userForm = ref({
+  username: '',
+  password: '',
+  captcha: ''
+})
+const rules = ref({
+  username: [
+    {
+      required: true,
+      message: '请输入用户名',
+      trigger: 'change'
+    }
+  ],
+  password: [
+    {
+      required: true,
+      message: '请输入密码',
+      trigger: 'change'
+    }
+  ],
+  captcha: [
+    {
+      required: true,
+      message: '请输入验证码',
+      trigger: 'change'
+    }
+  ]
+})
 
-onMounted(async () => backendCaptcha.value = await applyCaptcha())
+onMounted(async () => captcha.value = await applyCaptcha())
 
 watchEffect(() => {
-  if (!backendCaptcha.value) return
-  const image = paintCaptcha(backendCaptcha.value)
+  if (!captcha.value) return
+  const config = {
+    width: 84,
+    height: 32,
+    backgroundColor: '#f7f7f7',
+    fontColor: '#8b8c8c',
+    font: 'italic 18px Arial'
+  }
+  const image = paintCaptcha(captcha.value, config)
   const imageElement = document.getElementById('image-captcha')
   imageElement.src = image
 })
 
-function checkLogin() {
-  if (!username.value || username.value === '') {
-    ElMessage.error('请输入用户名')
-    return false
-  }
-  if (!password.value || password.value === '') {
-    ElMessage.error('请输入密码')
-    return false
-  }
-  if (!captcha.value || captcha.value === '') {
-    ElMessage.error('请输入验证码')
-    return false
-  }
-  return true
-}
-
 async function refreshCaptcha() {
-  backendCaptcha.value = await applyCaptcha()
+  captcha.value = await applyCaptcha()
 }
 
-async function login() {
-  if (!checkLogin()) return false
-  const success = await passwordLogin(username.value, password.value, captcha.value)
-  if (!success) return
+async function submitForm() {
+  if (!userFormRef.value) return
+  if (!await userFormRef.value.validate((valid) => valid)) return
+  if (!await passwordLogin(userForm.value)) return
   const user = await getCurrentUser()
   if (user) userStore.inject(user)
   await router.push('/workbench')
@@ -53,51 +70,53 @@ async function login() {
 </script>
 
 <template>
-  <el-row class="row" align="middle">
-    <el-col :span="6">
-      <el-row justify="end">
-        <label for="username">用户名</label>
-      </el-row>
-    </el-col>
-    <el-col :span="17" :offset="1">
-      <el-input id="username" type="text" v-model.trim="username" style="width: 200px;" :clearable="true" placeholder="请输入用户名"></el-input>
-    </el-col>
-  </el-row>
-  <el-row class="row" align="middle">
-    <el-col :span="6">
-      <el-row justify="end">
-        <label for="password">密码</label>
-      </el-row>
-    </el-col>
-    <el-col :span="17" :offset="1">
-      <el-input id="password" type="password" v-model.trim="password" style="width: 200px" :clearable="true" :show-password="true" placeholder="请输入密码"></el-input>
-    </el-col>
-  </el-row>
-  <el-row class="row" align="middle">
-    <el-col :span="6">
-      <el-row justify="end">
-        <label for="input-captcha">验证码</label>
-      </el-row>
-    </el-col>
-    <el-col :span="17" :offset="1">
-      <el-row align="middle">
-        <el-input id="input-captcha" class="input-captcha" type="text" v-model.trim="captcha" :clearable="true" placeholder="请输入验证码"></el-input>
+  <el-form ref="userFormRef" :model="userForm" :rules="rules">
+    <el-form-item prop="username">
+      <el-input v-model.trim="userForm.username" :clearable="true" placeholder="请输入用户名"></el-input>
+    </el-form-item>
+    <el-form-item prop="password">
+      <el-input type="password" v-model.trim="userForm.password" :show-password="true"
+                :clearable="true" placeholder="请输入密码"></el-input>
+    </el-form-item>
+    <el-form-item>
+      <el-col :span="13">
+        <el-form-item prop="captcha">
+          <el-input id="input-captcha" v-model.trim="userForm.captcha"
+                    :clearable="true" placeholder="请输入验证码"></el-input>
+        </el-form-item>
+      </el-col>
+      <el-col :span="8" :offset="3" class="captcha">
         <img id="image-captcha" src="" title="点击刷新验证码" alt="图片验证码" @click="refreshCaptcha" />
-      </el-row>
-    </el-col>
-  </el-row>
-  <el-row class="row" align="middle" justify="center">
-    <el-button type="primary" @click="login">登录</el-button>
-  </el-row>
+      </el-col>
+    </el-form-item>
+    <el-form-item>
+      <button style="width: 100%" @click.prevent="submitForm">登录</button>
+    </el-form-item>
+    <el-row class="register-prompt" align="middle" justify="center">
+      <span>没有账号？</span><a>注册</a><span>一个</span>
+    </el-row>
+  </el-form>
 </template>
 
 <style scoped>
-.row {
-  margin-top: 15px;
-  height: 45px;
+:deep(.el-input__wrapper) {
+  background-color: #f7f7f7;
+  box-shadow: none;
 }
-.input-captcha {
-  width: 150px;
-  margin-right: 10px;
+:deep(.el-input__inner::placeholder){
+  color: #bfbfbf;
+  font-size: 11px;
+  font-weight: bolder;
+}
+.register-prompt {
+  margin-top: 23px;
+  line-height: 1.0;
+  font-size: 8px;
+  height: 8px;
+}
+.captcha {
+  display: flex;
+  align-items: center;
+  margin-left: 20px;
 }
 </style>

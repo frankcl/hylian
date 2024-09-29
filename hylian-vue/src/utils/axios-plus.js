@@ -2,7 +2,7 @@ import Qs from 'qs'
 import Axios from 'axios'
 import router from '@/router'
 import { useUserStore } from '@/store'
-import { ElMessage } from 'element-plus'
+import { ElNotification } from 'element-plus'
 import { isJsonStr } from './hylian'
 
 const pendingRequests = new Map()
@@ -30,7 +30,7 @@ const removePendingRequest = response => {
   if (pendingRequests.has(key)) pendingRequests.delete(key)
 }
 
-const repeatRequest = error => {
+const repeatRequest = async error => {
   const config = error.config
   if (!config || !config.retry) return Promise.reject(error)
   config.__retryCount = config.__retryCount || 0
@@ -39,7 +39,7 @@ const repeatRequest = error => {
   const backOff = new Promise(resolve => {
     setTimeout(() => resolve(), config.retryDelay || 1000)
   })
-  backOff.then(() => {
+  return await backOff.then(() => {
     if (config.data && isJsonStr(config.data)) config.data = JSON.parse(config.data)
     return axios(config)
   })
@@ -58,18 +58,22 @@ const axios = Axios.create({
   }
 })
 
-const handleResponse = async response => {
+const sweep = async () => {
   const userStore = useUserStore()
+  userStore.clear()
+  await router.push('/')
+}
+
+const handleResponse = async response => {
   switch (response.data.code) {
     case 200: return response.data.data
     case 401:
-      ElMessage.error('登录状态已过期，请重新登录')
-      userStore.clear()
-      await router.push('/')
-      return Promise.reject(response)
+      ElNotification.error('登录状态已过期，请重新登录')
+      await sweep()
+      return Promise.reject(response.data.message)
     default:
-      ElMessage.error(response.data.message)
-      return Promise.reject(response)
+      ElNotification.error(response.data.message)
+      return Promise.reject(response.data.message)
   }
 }
 
@@ -87,7 +91,12 @@ axios.interceptors.response.use(
     return handleResponse(response)
   },
   async error => {
-    removePendingRequest(error.response || {})
+    removePendingRequest(error || {})
+    if (error.status === 401) {
+      ElNotification.error('登录状态已过期，请重新登录')
+      await sweep()
+      return Promise.reject(error)
+    }
     if (!Axios.isCancel(error)) return repeatRequest(error)
     return Promise.reject(error)
   }

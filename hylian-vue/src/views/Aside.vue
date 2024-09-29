@@ -19,7 +19,6 @@ const handleClose = (key, keyPath) => {
       </template>
       <el-menu-item index="1-1" >用户</el-menu-item>
       <el-menu-item>租户</el-menu-item>
-      <el-menu-item>供应商</el-menu-item>
     </el-sub-menu>
     <el-sub-menu index="2" popper-class="dark-mode">
       <template #title>
