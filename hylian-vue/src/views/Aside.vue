@@ -17,10 +17,12 @@ const handleClose = (key, keyPath) => {
         <el-icon><User /></el-icon>
         <span>账号管理</span>
       </template>
-      <el-menu-item index="1-1" >
+      <el-menu-item index="1-1">
         <RouterLink :to="{ name: 'UserList' }">用户</RouterLink>
       </el-menu-item>
-      <el-menu-item>租户</el-menu-item>
+      <el-menu-item index="1-2">
+        <RouterLink :to="{ name: 'TenantList' }">租户</RouterLink>
+      </el-menu-item>
     </el-sub-menu>
     <el-sub-menu index="2" popper-class="dark-mode">
       <template #title>

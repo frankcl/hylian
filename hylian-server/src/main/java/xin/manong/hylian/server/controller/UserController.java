@@ -87,11 +87,11 @@ public class UserController {
      * @param userRequest 用户信息
      * @return 成功返回true，否则返回false
      */
-    @POST
+    @PUT
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @Path("add")
-    @PostMapping("add")
+    @PutMapping("add")
     @EnableWebLogAspect
     public boolean add(@RequestBody UserRequest userRequest) {
         if (userRequest == null) throw new BadRequestException("用户信息为空");
@@ -104,16 +104,7 @@ public class UserController {
             throw new NotFoundException("租户不存在");
         }
         user.check();
-        String avatar = user.avatar;
-        if (!userService.add(user)) return false;
-        if (StringUtils.isNotEmpty(avatar)) {
-            User updateUser = new User();
-            updateUser.id = user.id;
-            updateUser.avatar = avatar;
-            handleAvatar(updateUser);
-            return userService.update(updateUser);
-        }
-        return true;
+        return userService.add(user);
     }
 
     /**
@@ -163,11 +154,11 @@ public class UserController {
      * @param request 用户角色关系
      * @return 成功返回true，否则返回false
      */
-    @POST
+    @PUT
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @Path("addUserRole")
-    @PostMapping("addUserRole")
+    @PutMapping("addUserRole")
     @EnableWebLogAspect
     public boolean addUserRole(@RequestBody UserRoleRequest request) {
         if (request == null) throw new BadRequestException("用户角色关系为空");
@@ -251,9 +242,9 @@ public class UserController {
     public boolean changePassword(@RequestBody PasswordChangeRequest request) {
         if (request == null) throw new BadRequestException("修改密码请求为空");
         request.check();
-        User user = userService.getByUserName(request.userName);
+        User user = userService.get(request.id);
         if (user == null) {
-            logger.error("user is not found for username[{}]", request.userName);
+            logger.error("user is not found for id[{}]", request.id);
             throw new NotFoundException("用户不存在");
         }
         if (!user.password.equals(DigestUtils.md5Hex(request.password))) {
@@ -325,32 +316,5 @@ public class UserController {
             return;
         }
         user.avatar = ossClient.sign(ossMeta.bucket, ossMeta.key);
-    }
-
-    /**
-     * 针对新增用户，转存头像
-     *
-     * @param user 用户信息
-     */
-    private void handleAvatar(User user) {
-        if (StringUtils.isEmpty(user.avatar)) return;
-        OSSMeta ossMeta = OSSClient.parseURL(user.avatar);
-        if (ossMeta == null) {
-            logger.error("avatar URL[{}] is invalid", user.avatar);
-            throw new BadRequestException("头像URL非法");
-        }
-        InputStream inputStream = ossClient.getObjectStream(ossMeta.bucket, ossMeta.key);
-        if (inputStream == null) {
-            logger.error("reading avatar failed for {}", user.avatar);
-            throw new BadRequestException("获取头像数据失败");
-        }
-        String suffix = FileUtil.getFileSuffix(ossMeta.key);
-        String ossKey = String.format("%s%s%s", serverConfig.ossBaseDirectory, Constants.AVATAR_DIR, RandomID.build());
-        if (StringUtils.isNotEmpty(suffix)) ossKey = String.format("%s.%s", ossKey, suffix);
-        if (!ossClient.putObject(serverConfig.ossBucket, ossKey, inputStream)) {
-            logger.error("transfer avatar failed");
-            throw new InternalServerErrorException("转存头像失败");
-        }
-        user.avatar = OSSClient.buildURL(new OSSMeta(serverConfig.ossRegion, serverConfig.ossBucket, ossKey));
     }
 }

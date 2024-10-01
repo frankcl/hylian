@@ -2,6 +2,7 @@ package xin.manong.hylian.server;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import xin.manong.hylian.client.annotation.EnableCORSFilter;
 import xin.manong.hylian.client.annotation.EnableHylianGuard;
 import xin.manong.hylian.client.aspect.EnableACLAspect;
 import xin.manong.weapon.spring.boot.annotation.EnableOSSClient;
@@ -17,6 +18,7 @@ import xin.manong.weapon.spring.web.ws.aspect.EnableWebLogAspect;
  */
 @EnableRedisClient
 @EnableOSSClient
+@EnableCORSFilter
 @EnableHylianGuard
 @EnableACLAspect
 @EnableWebLogAspect

@@ -18,8 +18,8 @@ import java.util.List;
 import java.util.regex.Pattern;
 
 /**
- * Hylian警卫：servlet过滤
- * 安全登录检测
+ * Hylian警卫：安全登录检测
+ * 通过配置注解EnableHylianGuard启动HylianGuard
  *
  * @author frankcl
  * @date 2023-09-04 14:34:57
@@ -69,7 +69,6 @@ public class HylianGuard implements Filter {
             throws IOException, ServletException {
         HttpServletRequest httpRequest = (HttpServletRequest) request;
         HttpServletResponse httpResponse = (HttpServletResponse) response;
-        HTTPUtils.addAllowOriginResponseHeaders(httpRequest, httpResponse);
         String requestPath = HTTPUtils.getRequestPath(httpRequest);
         if (matchExcludePath(requestPath) || shield.shelter(httpRequest, httpResponse)) {
             try {

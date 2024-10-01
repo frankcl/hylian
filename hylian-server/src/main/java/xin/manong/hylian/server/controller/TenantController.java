@@ -63,11 +63,11 @@ public class TenantController {
      * @param tenantRequest 租户信息
      * @return 成功返回true，否则返回false
      */
-    @POST
+    @PUT
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @Path("add")
-    @PostMapping("add")
+    @PutMapping("add")
     @EnableWebLogAspect
     public boolean add(@RequestBody TenantRequest tenantRequest) {
         if (tenantRequest == null) throw new BadRequestException("租户信息为空");

@@ -1,6 +1,6 @@
 import Cookies from 'js-cookie'
 import { useUserStore } from '@/store'
-import { getCurrentUser } from './hylian-service'
+import { remoteGetCurrentUser } from './hylian-service'
 
 const COOKIE_TOKEN = 'TOKEN'
 
@@ -25,8 +25,13 @@ export const refreshUser = async () => {
   if (!isLogin()) return
   const userStore = useUserStore()
   if (userStore.injected) return
-  const user = await getCurrentUser()
-  userStore.inject(user)
+  const user = await remoteGetCurrentUser()
+  if (user) userStore.inject(user)
+}
+
+export const resetForm = (formEl) => {
+  if (!formEl) return
+  formEl.resetFields()
 }
 
 export const randomInt = (from = 0, to = 1) => {

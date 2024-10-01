@@ -5,7 +5,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
@@ -132,22 +131,6 @@ public class HTTPUtils {
             logger.error(e.getMessage(), e);
             return url;
         }
-    }
-
-    /**
-     * 设置跨域HTTP响应头
-     *
-     * @param httpRequest HTTP请求
-     * @param httpResponse HTTP响应
-     */
-    public static void addAllowOriginResponseHeaders(HttpServletRequest httpRequest,
-                                                     HttpServletResponse httpResponse) {
-        String origin = httpRequest.getHeader(HTTP_REQUEST_HEAD_ORIGIN);
-        String acRequestHeaders = httpRequest.getHeader(HTTP_REQUEST_HEAD_ACCESS_CONTROL_REQUEST_HEADERS);
-        if (origin != null) httpResponse.addHeader(HTTP_RESPONSE_HEAD_ACCESS_CONTROL_ALLOW_ORIGIN, origin);
-        httpResponse.addHeader(HTTP_RESPONSE_HEAD_ACCESS_CONTROL_ALLOW_HEADERS, acRequestHeaders == null ? "*" : acRequestHeaders);
-        httpResponse.addHeader(HTTP_RESPONSE_HEAD_ACCESS_CONTROL_ALLOW_CREDENTIALS, "true");
-        httpResponse.addHeader(HTTP_RESPONSE_HEAD_ACCESS_CONTROL_ALLOW_METHODS, "*");
     }
 
     /**

@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
+import xin.manong.hylian.server.config.ServerConfig;
 import xin.manong.hylian.server.service.request.UserSearchRequest;
 import xin.manong.hylian.server.common.Constants;
 import xin.manong.hylian.server.converter.Converter;
@@ -19,10 +20,14 @@ import xin.manong.hylian.server.service.TenantService;
 import xin.manong.hylian.server.service.UserService;
 import xin.manong.weapon.aliyun.oss.OSSClient;
 import xin.manong.weapon.aliyun.oss.OSSMeta;
+import xin.manong.weapon.base.util.FileUtil;
+import xin.manong.weapon.base.util.RandomID;
 
 import javax.annotation.Resource;
 import javax.ws.rs.BadRequestException;
+import javax.ws.rs.InternalServerErrorException;
 import javax.ws.rs.NotFoundException;
+import java.io.InputStream;
 
 /**
  * 用户服务实现
@@ -35,6 +40,8 @@ public class UserServiceImpl implements UserService {
 
     private static final Logger logger = LoggerFactory.getLogger(UserServiceImpl.class);
 
+    @Resource
+    protected ServerConfig serverConfig;
     @Resource
     protected OSSClient ossClient;
     @Resource
@@ -80,18 +87,23 @@ public class UserServiceImpl implements UserService {
             throw new IllegalStateException("用户已存在");
         }
         user.password = DigestUtils.md5Hex(user.password.trim());
+        saveAvatar(user);
         return userMapper.insert(user) > 0;
     }
 
     @Override
     public boolean update(User user) {
-        if (userMapper.selectById(user.id) == null) {
+        User prevUser = userMapper.selectById(user.id);
+        if (prevUser == null) {
             logger.error("user is not found for id[{}]", user.id);
             throw new NotFoundException("用户不存在");
         }
+        saveAvatar(user);
         user.userName = null;
         if (user.password != null) user.password = DigestUtils.md5Hex(user.password);
-        return userMapper.updateById(user) > 0;
+        boolean result = userMapper.updateById(user) > 0;
+        if (StringUtils.isNotEmpty(user.avatar) && result) deleteAvatar(prevUser);
+        return result;
     }
 
     @Override
@@ -105,12 +117,9 @@ public class UserServiceImpl implements UserService {
             logger.error("user[{}] is not found for deleting", id);
             throw new IllegalStateException("用户不存在");
         }
-        if (StringUtils.isNotEmpty(user.avatar)) {
-            OSSMeta meta = OSSClient.parseURL(user.avatar);
-            if (meta != null) ossClient.deleteObject(meta.bucket, meta.key);
-            else logger.warn("avatar[{}] is invalid", user.avatar);
-        }
-        return userMapper.deleteById(id) > 0;
+        boolean result = userMapper.deleteById(id) > 0;
+        if (result) deleteAvatar(user);
+        return result;
     }
 
     @Override
@@ -125,5 +134,44 @@ public class UserServiceImpl implements UserService {
         if (!StringUtils.isEmpty(searchRequest.name)) query.like(User::getName, searchRequest.name);
         IPage<User> page = userMapper.selectPage(new Page<>(searchRequest.current, searchRequest.size), query);
         return Converter.convert(page);
+    }
+
+    /**
+     * 删除头像
+     *
+     * @param user 用户信息
+     */
+    private void deleteAvatar(User user) {
+        if (StringUtils.isEmpty(user.avatar)) return;
+        OSSMeta meta = OSSClient.parseURL(user.avatar);
+        if (meta != null) ossClient.deleteObject(meta.bucket, meta.key);
+        else logger.warn("avatar[{}] is invalid", user.avatar);
+    }
+
+    /**
+     * 转存头像
+     *
+     * @param user 用户信息
+     */
+    private void saveAvatar(User user) {
+        if (StringUtils.isEmpty(user.avatar)) return;
+        OSSMeta ossMeta = OSSClient.parseURL(user.avatar);
+        if (ossMeta == null) {
+            logger.error("avatar URL[{}] is invalid", user.avatar);
+            throw new BadRequestException("头像URL非法");
+        }
+        InputStream inputStream = ossClient.getObjectStream(ossMeta.bucket, ossMeta.key);
+        if (inputStream == null) {
+            logger.error("reading avatar failed for {}", user.avatar);
+            throw new BadRequestException("获取头像数据失败");
+        }
+        String suffix = FileUtil.getFileSuffix(ossMeta.key);
+        String ossKey = String.format("%s%s%s", serverConfig.ossBaseDirectory, Constants.AVATAR_DIR, RandomID.build());
+        if (StringUtils.isNotEmpty(suffix)) ossKey = String.format("%s.%s", ossKey, suffix);
+        if (!ossClient.putObject(serverConfig.ossBucket, ossKey, inputStream)) {
+            logger.error("transfer avatar failed");
+            throw new InternalServerErrorException("转存头像失败");
+        }
+        user.avatar = OSSClient.buildURL(new OSSMeta(serverConfig.ossRegion, serverConfig.ossBucket, ossKey));
     }
 }

@@ -25,16 +25,15 @@ import java.util.List;
  */
 @Data
 @Configuration
-@ConfigurationProperties(prefix = "hylian.filter")
+@ConfigurationProperties(prefix = "hylian.filter.guard")
 public class HylianGuardConfig {
 
     private static final Logger logger = LoggerFactory.getLogger(HylianGuardConfig.class);
 
-    private static final int DEFAULT_FILTER_ORDER = -1000;
-
     @Resource
     public HylianClientConfig clientConfig;
-    public int filterOrder = DEFAULT_FILTER_ORDER;
+
+    public int order = -1000;
     public List<String> includePatterns;
     public List<String> excludePatterns;
 
@@ -45,7 +44,6 @@ public class HylianGuardConfig {
      */
     @Bean
     public FilterRegistrationBean<HylianGuard> buildHylianGuard() {
-        if (clientConfig == null) throw new IllegalArgumentException("客户端配置为空");
         clientConfig.check();
         FilterRegistrationBean<HylianGuard> bean = new FilterRegistrationBean<>();
         initHylianGuard(bean);
@@ -54,7 +52,7 @@ public class HylianGuardConfig {
         bean.setUrlPatterns(includePatterns);
         bean.setFilter(new HylianGuard());
         bean.setName(HylianGuard.class.getSimpleName());
-        bean.setOrder(filterOrder);
+        bean.setOrder(order);
         return bean;
     }
 

@@ -80,11 +80,11 @@ public class PermissionController {
      * @param permissionRequest 权限请求
      * @return 成功返回true，否则返回false
      */
-    @POST
+    @PUT
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @Path("add")
-    @PostMapping("add")
+    @PutMapping("add")
     @EnableWebLogAspect
     public boolean add(@RequestBody PermissionRequest permissionRequest) {
         if (permissionRequest == null) throw new BadRequestException("权限信息为空");

@@ -31,10 +31,10 @@ public class PasswordChangeRequest implements Serializable {
     private static final Logger logger = LoggerFactory.getLogger(PasswordChangeRequest.class);
 
     /**
-     * 用户名
+     * 用户ID
      */
-    @JsonProperty("user_name")
-    public String userName;
+    @JsonProperty("id")
+    public String id;
     /**
      * 密码
      */
@@ -55,9 +55,9 @@ public class PasswordChangeRequest implements Serializable {
      * 检测有效性，无效抛出异常
      */
     public void check() {
-        if (StringUtils.isEmpty(userName)) {
-            logger.error("user name is empty");
-            throw new BadRequestException("用户名为空");
+        if (StringUtils.isEmpty(id)) {
+            logger.error("user id is empty");
+            throw new BadRequestException("用户ID为空");
         }
         if (StringUtils.isEmpty(password)) {
             logger.error("password is empty");

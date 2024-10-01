@@ -66,11 +66,11 @@ public class RoleController {
      * @param roleRequest 角色信息
      * @return 成功返回true，否则返回false
      */
-    @POST
+    @PUT
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @Path("add")
-    @PostMapping("add")
+    @PutMapping("add")
     @EnableWebLogAspect
     public boolean add(@RequestBody RoleRequest roleRequest) {
         if (roleRequest == null) throw new BadRequestException("角色信息为空");
@@ -106,11 +106,11 @@ public class RoleController {
      * @param request 角色权限关系
      * @return 成功返回true，否则返回false
      */
-    @POST
+    @PUT
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @Path("addRolePermission")
-    @PostMapping("addRolePermission")
+    @PutMapping("addRolePermission")
     @EnableWebLogAspect
     public boolean addRolePermission(@RequestBody RolePermissionRequest request) {
         if (request == null) throw new BadRequestException("角色权限关系为空");

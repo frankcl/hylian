@@ -1,7 +1,7 @@
 <script setup>
+import { UserFilled } from '@element-plus/icons-vue'
 import { ElAvatar, ElCol, ElPopover, ElRow } from 'element-plus'
 import { useUserStore } from '@/store'
-import { UserFilled } from '@element-plus/icons-vue'
 
 const userStore = useUserStore()
 </script>

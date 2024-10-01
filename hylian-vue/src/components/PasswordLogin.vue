@@ -1,45 +1,33 @@
 <script setup>
-import { onMounted, ref, useTemplateRef, watchEffect } from 'vue'
+import { onMounted, reactive, ref, useTemplateRef, watchEffect } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/store'
-import {ElButton, ElCol, ElForm, ElFormItem, ElInput, ElRow} from 'element-plus'
+import { ElButton, ElCol, ElForm, ElFormItem, ElInput, ElRow } from 'element-plus'
 import { paintCaptcha } from '@/utils/hylian'
-import { applyCaptcha, getCurrentUser, passwordLogin } from '@/utils/hylian-service'
+import { remoteApplyCaptcha, remoteGetCurrentUser, remotePasswordLogin } from '@/utils/hylian-service'
 
 const router = useRouter()
 const userStore = useUserStore()
 const captcha = ref('')
 const userFormRef = useTemplateRef('userFormRef')
-const userForm = ref({
+const userForm = reactive({
   username: '',
   password: '',
   captcha: ''
 })
 const rules = ref({
   username: [
-    {
-      required: true,
-      message: '请输入用户名',
-      trigger: 'change'
-    }
+    { required: true, message: '请输入用户名', trigger: 'change' }
   ],
   password: [
-    {
-      required: true,
-      message: '请输入密码',
-      trigger: 'change'
-    }
+    { required: true, message: '请输入密码', trigger: 'change' }
   ],
   captcha: [
-    {
-      required: true,
-      message: '请输入验证码',
-      trigger: 'change'
-    }
+    { required: true, message: '请输入验证码', trigger: 'change' }
   ]
 })
 
-onMounted(async () => captcha.value = await applyCaptcha())
+onMounted(async () => captcha.value = await remoteApplyCaptcha())
 
 watchEffect(() => {
   if (!captcha.value) return
@@ -56,14 +44,14 @@ watchEffect(() => {
 })
 
 async function refreshCaptcha() {
-  captcha.value = await applyCaptcha()
+  captcha.value = await remoteApplyCaptcha()
 }
 
 async function submitForm(formEl) {
   if (!formEl) return
   if (!await formEl.validate((valid) => valid)) return
-  if (!await passwordLogin(userForm.value)) return
-  const user = await getCurrentUser()
+  if (!await remotePasswordLogin(userForm)) return
+  const user = await remoteGetCurrentUser()
   if (user) userStore.inject(user)
   await router.push('/workbench')
 }

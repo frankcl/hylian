@@ -5,7 +5,6 @@ import org.springframework.web.servlet.HandlerInterceptor;
 import xin.manong.hylian.client.config.HylianClientConfig;
 import xin.manong.hylian.client.core.HylianShield;
 import xin.manong.hylian.client.core.ContextManager;
-import xin.manong.hylian.common.util.HTTPUtils;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -36,7 +35,6 @@ public class HylianInterceptor implements HandlerInterceptor {
     public boolean preHandle(@NotNull HttpServletRequest httpRequest,
                              @NotNull HttpServletResponse httpResponse,
                              @NotNull Object handler) throws Exception {
-        HTTPUtils.addAllowOriginResponseHeaders(httpRequest, httpResponse);
         if (shield.shelter(httpRequest, httpResponse)) {
             ContextManager.fillContext(httpRequest);
             return true;

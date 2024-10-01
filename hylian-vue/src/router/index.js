@@ -7,6 +7,7 @@ import Workbench from '@/views/Workbench'
 import { useUserStore } from '@/store'
 import { isLogin, refreshUser } from '@/utils/hylian'
 import UserList from '@/components/user/UserList'
+import TenantList from '@/components/tenant/TenantList'
 
 const routes = [
   {
@@ -40,6 +41,11 @@ const routes = [
         path: 'userList',
         name: 'UserList',
         component: UserList
+      },
+      {
+        path: 'tenantList',
+        name: 'TenantList',
+        component: TenantList
       },
     ]
   }

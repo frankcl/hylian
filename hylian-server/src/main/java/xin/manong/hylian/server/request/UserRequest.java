@@ -45,8 +45,8 @@ public class UserRequest implements Serializable {
     /**
      * 确认密码
      */
-    @JsonProperty("confirmed_password")
-    public String confirmedPassword;
+    @JsonProperty("confirm_password")
+    public String confirmPassword;
 
     /**
      * 真实名称
@@ -87,11 +87,11 @@ public class UserRequest implements Serializable {
             logger.error("password is empty");
             throw new BadRequestException("密码为空");
         }
-        if (StringUtils.isEmpty(confirmedPassword)) {
+        if (StringUtils.isEmpty(confirmPassword)) {
             logger.error("confirmed password is empty");
             throw new BadRequestException("确认密码为空");
         }
-        if (!password.equals(confirmedPassword)) {
+        if (!password.equals(confirmPassword)) {
             logger.error("password and confirmed password are not consistent");
             throw new BadRequestException("密码与确认密码不一致");
         }

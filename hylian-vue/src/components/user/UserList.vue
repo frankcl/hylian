@@ -1,66 +1,131 @@
 <script setup>
-import {onMounted, ref, watchEffect} from 'vue'
+import { format } from 'date-fns'
+import { onMounted, reactive, ref, useTemplateRef, watch } from 'vue'
+import { ArrowRight, Timer } from '@element-plus/icons-vue'
 import {
-  ElButton,
-  ElDialog,
-  ElIcon, ElMessageBox,
-  ElNotification,
+  ElBreadcrumb, ElBreadcrumbItem,
+  ElButton, ElCol,
+  ElDialog, ElForm, ElFormItem,
+  ElIcon, ElInput, ElMessageBox,
+  ElNotification, ElOption,
   ElPagination,
-  ElRow,
-  ElSpace,
+  ElRow, ElSelect,
   ElTable,
   ElTableColumn
 } from 'element-plus'
+import { remoteDeleteUser, remoteSearchTenant, remoteSearchUser } from '@/utils/hylian-service'
+import { resetForm } from '@/utils/hylian'
 import AddUser from '@/components/user/AddUser'
-import {deleteUser, searchUsers} from '@/utils/hylian-service'
-import {Timer} from "@element-plus/icons-vue";
-import {format} from "date-fns";
+import EditUser from '@/components/user/EditUser'
 
+const searchFormRef = useTemplateRef('searchFormRef')
 const addUserVisible = ref(false)
-const users = ref([])
-const total = ref(7)
+const editUserVisible = ref(false)
+const editUserId = ref()
 const currentPage = ref(1)
 const pageSize = ref(20)
+const total = ref(0)
+const users = ref([])
+const tenants = ref([])
+const searchForm = reactive({
+  user_name : '',
+  name: '',
+  tenant: ''
+})
 
-const getUserList = async () => {
-  const pager = await searchUsers({
+const searchUser = async () => {
+  const searchRequest = {
     current: currentPage.value,
     size: pageSize.value
-  })
+  }
+  if (searchForm['user_name'] !== '') searchRequest['user_name'] = searchForm['user_name']
+  if (searchForm.name !== '') searchRequest.name = searchForm.name
+  if (searchForm.tenant !== '') searchRequest['tenant_id'] = searchForm.tenant
+  const pager = await remoteSearchUser(searchRequest)
   if (!pager) return
   users.value = pager.records
   total.value = pager.total
 }
 
-const deleteOneUser = async (id) => {
+const deleteUser = async (id) => {
   ElMessageBox.confirm(
-    '是否确定删除用户信息？',
+    '确定删除用户信息？',
     '删除提示',
     {
       confirmButtonText: '确认',
       cancelButtonText: '取消'
     }
   ).then(async () => {
-    if (!await deleteUser(id)) {
+    if (!await remoteDeleteUser(id)) {
       ElNotification.error('删除用户失败')
       return
     }
     ElNotification.success('删除用户成功')
-    await getUserList()
+    await searchUser()
   })
 }
 
-watchEffect(() => {
-  getUserList(currentPage.value, pageSize.value)
+const openEditUserDialog = (id) => {
+  editUserId.value = id
+  editUserVisible.value = true
+}
+
+const closeEditUserDialog = async () => {
+  editUserVisible.value = false
+  await searchUser()
+}
+
+const closeAddUserDialog = async () => {
+  addUserVisible.value = false
+  await searchUser()
+}
+
+watch([currentPage, pageSize], () => searchUser(), { immediate: true })
+onMounted(async () => {
+  const pager = await remoteSearchTenant({ size: 1000 })
+  if (pager) tenants.value = pager.records
 })
 </script>
 
 <template>
-  <el-button @click="addUserVisible=true">添加用户</el-button>
-  <el-dialog v-model="addUserVisible" title="新用户注册" align-center show-close>
-    <AddUser></AddUser>
+  <el-row align="middle">
+    <el-col :span="20">
+      <el-breadcrumb :separator-icon="ArrowRight">
+        <el-breadcrumb-item>账号管理</el-breadcrumb-item>
+        <el-breadcrumb-item>用户</el-breadcrumb-item>
+      </el-breadcrumb>
+    </el-col>
+    <el-col :span="4">
+      <el-row justify="end">
+        <el-button @click="addUserVisible = true">添加用户</el-button>
+      </el-row>
+    </el-col>
+  </el-row>
+  <el-dialog v-model="addUserVisible" align-center show-close>
+    <AddUser @close="closeAddUserDialog"></AddUser>
   </el-dialog>
-  <el-table :data="users" style="width: 100%" max-height="500" table-layout="auto">
+  <el-dialog v-model="editUserVisible" align-center show-close>
+    <EditUser :id="editUserId" @close="closeEditUserDialog"></EditUser>
+  </el-dialog>
+  <el-form :inline="true" :model="searchForm" ref="searchFormRef" style="margin-top: 20px;">
+    <el-form-item label="用户名" prop="user_name">
+      <el-input v-model="searchForm['user_name']" clearable></el-input>
+    </el-form-item>
+    <el-form-item label="真实姓名" prop="name">
+      <el-input v-model="searchForm.name" clearable></el-input>
+    </el-form-item>
+    <el-form-item label="所属租户" prop="tenant">
+      <el-select v-model="searchForm.tenant" filterable placeholder="请选择租户" clearable style="width: 180px;">
+        <el-option v-for="tenant in tenants" :key="tenant.id" :label="tenant.name" :value="tenant.id"></el-option>
+      </el-select>
+    </el-form-item>
+    <el-form-item>
+      <el-button @click="searchUser">搜索</el-button>
+      <el-button @click="resetForm(searchFormRef); searchUser()">重置</el-button>
+    </el-form-item>
+  </el-form>
+  <el-table class="user-list" :data="users" max-height="500" table-layout="auto">
+    <template #empty>没有用户数据</template>
     <el-table-column prop="user_name" label="用户名" />
     <el-table-column prop="name" label="真实姓名" />
     <el-table-column prop="tenant.name" label="所属租户" />
@@ -72,8 +137,8 @@ watchEffect(() => {
     </el-table-column>
     <el-table-column fixed="right" label="操作">
       <template #default="scope">
-        <el-button>编辑</el-button>
-        <el-button @click="deleteOneUser(scope.row.id)">删除</el-button>
+        <el-button @click="openEditUserDialog(scope.row.id)">编辑</el-button>
+        <el-button @click="deleteUser(scope.row.id)">删除</el-button>
       </template>
     </el-table-column>
   </el-table>
@@ -84,5 +149,8 @@ watchEffect(() => {
 </template>
 
 <style scoped>
-
+.user-list {
+  width: 100%;
+  margin-top: 20px;
+}
 </style>

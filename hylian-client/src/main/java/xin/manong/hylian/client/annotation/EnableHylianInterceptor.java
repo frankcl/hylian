@@ -16,8 +16,9 @@ import java.lang.annotation.*;
  * @date 2023-09-15 10:34:37
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.TYPE})
+@Target({ ElementType.TYPE })
 @Documented
-@Import({ HylianClientConfig.class, HylianInterceptorConfig.class, SessionListenerConfig.class, UserServiceSupport.class })
+@Import({ HylianClientConfig.class, HylianInterceptorConfig.class,
+        SessionListenerConfig.class, UserServiceSupport.class })
 public @interface EnableHylianInterceptor {
 }
