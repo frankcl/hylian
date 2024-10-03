@@ -8,6 +8,7 @@ import { useUserStore } from '@/store'
 import { isLogin, refreshUser } from '@/utils/hylian'
 import UserList from '@/components/user/UserList'
 import TenantList from '@/components/tenant/TenantList'
+import AppList from '@/views/app/AppList'
 
 const routes = [
   {
@@ -46,6 +47,11 @@ const routes = [
         path: 'tenantList',
         name: 'TenantList',
         component: TenantList
+      },
+      {
+        path: 'appList',
+        name: 'AppList',
+        component: AppList
       },
     ]
   }

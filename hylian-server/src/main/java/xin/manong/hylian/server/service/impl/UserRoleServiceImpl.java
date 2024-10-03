@@ -1,6 +1,7 @@
 package xin.manong.hylian.server.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.commons.lang3.StringUtils;
@@ -14,6 +15,7 @@ import xin.manong.hylian.server.converter.Converter;
 import xin.manong.hylian.server.dao.mapper.UserRoleMapper;
 import xin.manong.hylian.server.service.UserRoleService;
 import xin.manong.hylian.server.service.request.UserRoleSearchRequest;
+import xin.manong.hylian.server.util.Validator;
 
 import javax.annotation.Resource;
 import javax.ws.rs.BadRequestException;
@@ -57,11 +59,12 @@ public class UserRoleServiceImpl implements UserRoleService {
         if (searchRequest == null) searchRequest = new UserRoleSearchRequest();
         if (searchRequest.current == null || searchRequest.current < 1) searchRequest.current = Constants.DEFAULT_CURRENT;
         if (searchRequest.size == null || searchRequest.size <= 0) searchRequest.size = Constants.DEFAULT_PAGE_SIZE;
-        LambdaQueryWrapper<UserRole> query = new LambdaQueryWrapper<>();
-        query.orderByDesc(UserRole::getCreateTime);
-        if (!StringUtils.isEmpty(searchRequest.userId)) query.eq(UserRole::getUserId, searchRequest.userId);
-        if (!StringUtils.isEmpty(searchRequest.roleId)) query.eq(UserRole::getRoleId, searchRequest.roleId);
-        if (!StringUtils.isEmpty(searchRequest.appId)) query.eq(UserRole::getAppId, searchRequest.appId);
+        Validator.validateOrderBy(UserRole.class, searchRequest);
+        QueryWrapper<UserRole> query = new QueryWrapper<>();
+        searchRequest.prepareOrderBy(query);
+        if (!StringUtils.isEmpty(searchRequest.userId)) query.eq("user_id", searchRequest.userId);
+        if (!StringUtils.isEmpty(searchRequest.roleId)) query.eq("role_id", searchRequest.roleId);
+        if (!StringUtils.isEmpty(searchRequest.appId)) query.eq("app_id", searchRequest.appId);
         IPage<UserRole> page = userRoleMapper.selectPage(new Page<>(searchRequest.current, searchRequest.size), query);
         return Converter.convert(page);
     }

@@ -1,6 +1,7 @@
 package xin.manong.hylian.server.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.commons.lang3.StringUtils;
@@ -14,6 +15,7 @@ import xin.manong.hylian.server.converter.Converter;
 import xin.manong.hylian.server.dao.mapper.RoleMapper;
 import xin.manong.hylian.server.service.RoleService;
 import xin.manong.hylian.server.service.request.RoleSearchRequest;
+import xin.manong.hylian.server.util.Validator;
 
 import javax.annotation.Resource;
 import javax.ws.rs.BadRequestException;
@@ -103,10 +105,11 @@ public class RoleServiceImpl implements RoleService {
         if (searchRequest == null) searchRequest = new RoleSearchRequest();
         if (searchRequest.current == null || searchRequest.current < 1) searchRequest.current = Constants.DEFAULT_CURRENT;
         if (searchRequest.size == null || searchRequest.size <= 0) searchRequest.size = Constants.DEFAULT_PAGE_SIZE;
-        LambdaQueryWrapper<Role> query = new LambdaQueryWrapper<>();
-        query.orderByDesc(Role::getCreateTime);
-        if (!StringUtils.isEmpty(searchRequest.name)) query.like(Role::getName, searchRequest.name);
-        if (!StringUtils.isEmpty(searchRequest.appId)) query.eq(Role::getAppId, searchRequest.appId);
+        Validator.validateOrderBy(Role.class, searchRequest);
+        QueryWrapper<Role> query = new QueryWrapper<>();
+        searchRequest.prepareOrderBy(query);
+        if (!StringUtils.isEmpty(searchRequest.name)) query.like("name", searchRequest.name);
+        if (!StringUtils.isEmpty(searchRequest.appId)) query.eq("app_id", searchRequest.appId);
         IPage<Role> page = roleMapper.selectPage(new Page<>(searchRequest.current, searchRequest.size), query);
         return Converter.convert(page);
     }

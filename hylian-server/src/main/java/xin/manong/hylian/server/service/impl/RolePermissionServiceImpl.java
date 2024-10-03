@@ -1,6 +1,7 @@
 package xin.manong.hylian.server.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.commons.lang3.StringUtils;
@@ -14,6 +15,7 @@ import xin.manong.hylian.server.converter.Converter;
 import xin.manong.hylian.server.dao.mapper.RolePermissionMapper;
 import xin.manong.hylian.server.service.RolePermissionService;
 import xin.manong.hylian.server.service.request.RolePermissionSearchRequest;
+import xin.manong.hylian.server.util.Validator;
 
 import javax.annotation.Resource;
 import javax.ws.rs.BadRequestException;
@@ -59,10 +61,11 @@ public class RolePermissionServiceImpl implements RolePermissionService {
         if (searchRequest == null) searchRequest = new RolePermissionSearchRequest();
         if (searchRequest.current == null || searchRequest.current < 1) searchRequest.current = Constants.DEFAULT_CURRENT;
         if (searchRequest.size == null || searchRequest.size <= 0) searchRequest.size = Constants.DEFAULT_PAGE_SIZE;
-        LambdaQueryWrapper<RolePermission> query = new LambdaQueryWrapper<>();
-        query.orderByDesc(RolePermission::getCreateTime);
-        if (searchRequest.roleIds != null && !searchRequest.roleIds.isEmpty()) query.in(RolePermission::getRoleId, searchRequest.roleIds);
-        if (!StringUtils.isEmpty(searchRequest.permissionId)) query.eq(RolePermission::getPermissionId, searchRequest.permissionId);
+        Validator.validateOrderBy(RolePermission.class, searchRequest);
+        QueryWrapper<RolePermission> query = new QueryWrapper<>();
+        searchRequest.prepareOrderBy(query);
+        if (searchRequest.roleIds != null && !searchRequest.roleIds.isEmpty()) query.in("role_id", searchRequest.roleIds);
+        if (!StringUtils.isEmpty(searchRequest.permissionId)) query.eq("permission_id", searchRequest.permissionId);
         IPage<RolePermission> page = rolePermissionMapper.selectPage(new Page<>(searchRequest.current, searchRequest.size), query);
         return Converter.convert(page);
     }

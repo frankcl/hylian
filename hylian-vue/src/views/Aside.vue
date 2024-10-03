@@ -3,10 +3,8 @@ import { Box, User, View } from '@element-plus/icons-vue'
 import { ElIcon, ElMenu, ElMenuItem, ElSubMenu } from 'element-plus'
 
 const handleOpen = (key, keyPath) => {
-  console.log(key, keyPath)
 }
 const handleClose = (key, keyPath) => {
-  console.log(key, keyPath)
 }
 </script>
 
@@ -37,7 +35,9 @@ const handleClose = (key, keyPath) => {
         <el-icon><Box /></el-icon>
         <span>应用管理</span>
       </template>
-      <el-menu-item>应用</el-menu-item>
+      <el-menu-item index="3-1">
+        <RouterLink :to="{ name: 'AppList' }">应用</RouterLink>
+      </el-menu-item>
       <el-menu-item>活跃</el-menu-item>
     </el-sub-menu>
   </el-menu>

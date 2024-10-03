@@ -1,6 +1,7 @@
 package xin.manong.hylian.server.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.commons.codec.digest.DigestUtils;
@@ -18,6 +19,7 @@ import xin.manong.hylian.model.Pager;
 import xin.manong.hylian.model.User;
 import xin.manong.hylian.server.service.TenantService;
 import xin.manong.hylian.server.service.UserService;
+import xin.manong.hylian.server.util.Validator;
 import xin.manong.weapon.aliyun.oss.OSSClient;
 import xin.manong.weapon.aliyun.oss.OSSMeta;
 import xin.manong.weapon.base.util.FileUtil;
@@ -127,11 +129,12 @@ public class UserServiceImpl implements UserService {
         if (searchRequest == null) searchRequest = new UserSearchRequest();
         if (searchRequest.current == null || searchRequest.current < 1) searchRequest.current = Constants.DEFAULT_CURRENT;
         if (searchRequest.size == null || searchRequest.size <= 0) searchRequest.size = Constants.DEFAULT_PAGE_SIZE;
-        LambdaQueryWrapper<User> query = new LambdaQueryWrapper<>();
-        query.orderByDesc(User::getCreateTime);
-        if (!StringUtils.isEmpty(searchRequest.userName)) query.eq(User::getUserName, searchRequest.userName);
-        if (!StringUtils.isEmpty(searchRequest.tenantId)) query.eq(User::getTenantId, searchRequest.tenantId);
-        if (!StringUtils.isEmpty(searchRequest.name)) query.like(User::getName, searchRequest.name);
+        Validator.validateOrderBy(User.class, searchRequest);
+        QueryWrapper<User> query = new QueryWrapper<>();
+        searchRequest.prepareOrderBy(query);
+        if (!StringUtils.isEmpty(searchRequest.userName)) query.eq("user_name", searchRequest.userName);
+        if (!StringUtils.isEmpty(searchRequest.tenantId)) query.eq("tenant_id", searchRequest.tenantId);
+        if (!StringUtils.isEmpty(searchRequest.name)) query.like("name", searchRequest.name);
         IPage<User> page = userMapper.selectPage(new Page<>(searchRequest.current, searchRequest.size), query);
         return Converter.convert(page);
     }

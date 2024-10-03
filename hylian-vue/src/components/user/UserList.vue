@@ -1,6 +1,6 @@
 <script setup>
 import { format } from 'date-fns'
-import { onMounted, reactive, ref, useTemplateRef, watch } from 'vue'
+import {onMounted, reactive, ref, useTemplateRef, watch} from 'vue'
 import { ArrowRight, Timer } from '@element-plus/icons-vue'
 import {
   ElBreadcrumb, ElBreadcrumbItem,
@@ -27,6 +27,10 @@ const pageSize = ref(20)
 const total = ref(0)
 const users = ref([])
 const tenants = ref([])
+const orderField = reactive({
+  field: null,
+  order: null
+})
 const searchForm = reactive({
   user_name : '',
   name: '',
@@ -38,6 +42,11 @@ const searchUser = async () => {
     current: currentPage.value,
     size: pageSize.value
   }
+  const orderArray = []
+  if (orderField.field && orderField.order) {
+    orderArray.push({ field: orderField.field, asc: orderField.order === 'ascending'})
+  }
+  searchRequest.order_by = orderArray
   if (searchForm['user_name'] !== '') searchRequest['user_name'] = searchForm['user_name']
   if (searchForm.name !== '') searchRequest.name = searchForm.name
   if (searchForm.tenant !== '') searchRequest['tenant_id'] = searchForm.tenant
@@ -80,7 +89,13 @@ const closeAddUserDialog = async () => {
   await searchUser()
 }
 
-watch([currentPage, pageSize], () => searchUser(), { immediate: true })
+const userSortChange = (event) => {
+  if (!event || !event.prop) return
+  orderField.field = event.prop
+  orderField.order = event.order
+}
+
+watch([currentPage, pageSize, orderField], () => searchUser(), { immediate: true })
 onMounted(async () => {
   const pager = await remoteSearchTenant({ size: 1000 })
   if (pager) tenants.value = pager.records
@@ -124,15 +139,22 @@ onMounted(async () => {
       <el-button @click="resetForm(searchFormRef); searchUser()">重置</el-button>
     </el-form-item>
   </el-form>
-  <el-table class="user-list" :data="users" max-height="500" table-layout="auto">
+  <el-table class="user-list" :data="users" max-height="500" table-layout="auto"
+            stripe @sort-change="userSortChange">
     <template #empty>没有用户数据</template>
     <el-table-column prop="user_name" label="用户名" />
     <el-table-column prop="name" label="真实姓名" />
     <el-table-column prop="tenant.name" label="所属租户" />
-    <el-table-column label="创建时间">
+    <el-table-column label="创建时间" prop="create_time" sortable="custom">
       <template #default="scope">
         <el-icon><timer /></el-icon>
         {{ format(new Date(scope.row['create_time']), 'yyyy-MM-dd HH:mm:ss') }}
+      </template>
+    </el-table-column>
+    <el-table-column label="更新时间" prop="update_time" sortable="custom">
+      <template #default="scope">
+        <el-icon><timer /></el-icon>
+        {{ format(new Date(scope.row['update_time']), 'yyyy-MM-dd HH:mm:ss') }}
       </template>
     </el-table-column>
     <el-table-column fixed="right" label="操作">

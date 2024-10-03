@@ -1,6 +1,7 @@
 package xin.manong.hylian.server.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.commons.lang3.StringUtils;
@@ -14,6 +15,7 @@ import xin.manong.hylian.server.dao.mapper.ActiveRecordMapper;
 import xin.manong.hylian.model.ActiveRecord;
 import xin.manong.hylian.server.service.ActiveRecordService;
 import xin.manong.hylian.server.service.request.ActiveRecordSearchRequest;
+import xin.manong.hylian.server.util.Validator;
 
 import javax.annotation.Resource;
 import java.util.List;
@@ -91,11 +93,12 @@ public class ActiveRecordServiceImpl implements ActiveRecordService {
         if (searchRequest == null) searchRequest = new ActiveRecordSearchRequest();
         if (searchRequest.current == null || searchRequest.current < 1) searchRequest.current = Constants.DEFAULT_CURRENT;
         if (searchRequest.size == null || searchRequest.size <= 0) searchRequest.size = Constants.DEFAULT_PAGE_SIZE;
-        LambdaQueryWrapper<ActiveRecord> query = new LambdaQueryWrapper<>();
-        query.orderByDesc(ActiveRecord::getCreateTime);
-        if (!StringUtils.isEmpty(searchRequest.appId)) query.eq(ActiveRecord::getAppId, searchRequest.appId);
-        if (!StringUtils.isEmpty(searchRequest.userId)) query.eq(ActiveRecord::getUserId, searchRequest.userId);
-        if (!StringUtils.isEmpty(searchRequest.sessionId)) query.eq(ActiveRecord::getSessionId, searchRequest.sessionId);
+        Validator.validateOrderBy(ActiveRecord.class, searchRequest);
+        QueryWrapper<ActiveRecord> query = new QueryWrapper<>();
+        searchRequest.prepareOrderBy(query);
+        if (!StringUtils.isEmpty(searchRequest.appId)) query.eq("app_id", searchRequest.appId);
+        if (!StringUtils.isEmpty(searchRequest.userId)) query.eq("user_id", searchRequest.userId);
+        if (!StringUtils.isEmpty(searchRequest.sessionId)) query.eq("session_id", searchRequest.sessionId);
         IPage<ActiveRecord> page = activeRecordMapper.selectPage(new Page<>(searchRequest.current, searchRequest.size), query);
         return Converter.convert(page);
     }

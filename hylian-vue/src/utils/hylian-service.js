@@ -1,5 +1,12 @@
 import axios from './axios-plus'
 
+const API_APP_GET = '/api/app/get'
+const API_APP_ADD = '/api/app/add'
+const API_APP_UPDATE = '/api/app/update'
+const API_APP_DELETE = '/api/app/delete'
+const API_APP_SEARCH = '/api/app/search'
+const API_APP_CREATE_RANDOM_SECRET = '/api/app/createRandomSecret'
+
 const API_USER_GET = '/api/user/get'
 const API_USER_ADD = '/api/user/add'
 const API_USER_UPDATE = '/api/user/update'
@@ -24,6 +31,57 @@ const HTTP_GET = 'get'
 const HTTP_PUT = 'put'
 const HTTP_POST = 'post'
 const HTTP_DELETE = 'delete'
+
+export const remoteGetApp = async (id) => {
+  return await axios({
+    method: HTTP_GET,
+    url: API_APP_GET,
+    params: {
+      id: id
+    }
+  })
+}
+
+export const remoteAddApp = async (app) => {
+  return await axios({
+    method: HTTP_PUT,
+    url: API_APP_ADD,
+    data: app
+  })
+}
+
+export const remoteUpdateApp = async (app) => {
+  return await axios({
+    method: HTTP_POST,
+    url: API_APP_UPDATE,
+    data: app
+  })
+}
+
+export const remoteDeleteApp = async (id) => {
+  return await axios({
+    method: HTTP_DELETE,
+    url: API_APP_DELETE,
+    params: {
+      id: id
+    }
+  })
+}
+
+export const remoteSearchApp = async (searchRequest) => {
+  return await axios({
+    method: HTTP_POST,
+    url: API_APP_SEARCH,
+    data: searchRequest
+  })
+}
+
+export const remoteCreateRandomSecret = async () => {
+  return await axios({
+    method: HTTP_GET,
+    url: API_APP_CREATE_RANDOM_SECRET
+  })
+}
 
 export const remoteGetUser = async (id) => {
   return await axios({
@@ -159,20 +217,20 @@ export const remoteUploadAvatar = async (options) => {
       else formData.append(key, value)
     }
   }
-  const headers = options.headers || {}
-  const requestHeaders = { 'Content-Type': 'multipart/form-data' }
-  if (headers instanceof Headers) {
-    headers.forEach((value, key) => requestHeaders[key] = value)
+  const optionHeaders = options.headers || {}
+  const headers = { 'Content-Type': 'multipart/form-data' }
+  if (optionHeaders instanceof Headers) {
+    optionHeaders.forEach((value, key) => headers[key] = value)
   } else {
-    for (const [key, value] in Object.entries(headers)) {
+    for (const [key, value] in Object.entries(optionHeaders)) {
       if (!value) continue
-      requestHeaders[key] = value
+      headers[key] = value
     }
   }
   return await axios({
     method: HTTP_POST,
     url: API_USER_UPLOAD_AVATAR,
-    headers: requestHeaders,
+    headers: headers,
     data: formData
   })
 }

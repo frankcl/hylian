@@ -26,6 +26,10 @@ const currentPage = ref(1)
 const pageSize = ref(20)
 const total = ref(0)
 const tenants = ref([])
+const orderField = reactive({
+  field: null,
+  order: null
+})
 const searchForm = reactive({
   name: ''
 })
@@ -35,6 +39,11 @@ const searchTenant = async () => {
     current: currentPage.value,
     size: pageSize.value
   }
+  const orderArray = []
+  if (orderField.field && orderField.order) {
+    orderArray.push({ field: orderField.field, asc: orderField.order === 'ascending'})
+  }
+  searchRequest.order_by = orderArray
   if (searchForm.name !== '') searchRequest.name = searchForm.name
   const pager = await remoteSearchTenant(searchRequest)
   if (!pager) return
@@ -75,7 +84,13 @@ const closeAddTenantDialog = async () => {
   await searchTenant()
 }
 
-watch([currentPage, pageSize], () => searchTenant(), { immediate: true })
+const tenantSortChange = (event) => {
+  if (!event || !event.prop) return
+  orderField.field = event.prop
+  orderField.order = event.order
+}
+
+watch([currentPage, pageSize, orderField], () => searchTenant(), { immediate: true })
 </script>
 
 <template>
@@ -107,13 +122,20 @@ watch([currentPage, pageSize], () => searchTenant(), { immediate: true })
       <el-button @click="resetForm(searchFormRef); searchTenant()">重置</el-button>
     </el-form-item>
   </el-form>
-  <el-table class="tenant-list" :data="tenants" max-height="500" table-layout="auto">
+  <el-table class="tenant-list" :data="tenants" max-height="500" table-layout="auto"
+            stripe @sort-change="tenantSortChange">
     <template #empty>没有租户数据</template>
     <el-table-column prop="name" label="租户" />
-    <el-table-column label="创建时间">
+    <el-table-column label="创建时间" prop="create_time" sortable="custom">
       <template #default="scope">
         <el-icon><timer /></el-icon>
         {{ format(new Date(scope.row['create_time']), 'yyyy-MM-dd HH:mm:ss') }}
+      </template>
+    </el-table-column>
+    <el-table-column label="更新时间" prop="update_time" sortable="custom">
+      <template #default="scope">
+        <el-icon><timer /></el-icon>
+        {{ format(new Date(scope.row['update_time']), 'yyyy-MM-dd HH:mm:ss') }}
       </template>
     </el-table-column>
     <el-table-column fixed="right" label="操作">

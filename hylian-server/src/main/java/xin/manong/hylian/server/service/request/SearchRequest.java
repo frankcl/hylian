@@ -1,9 +1,11 @@
 package xin.manong.hylian.server.service.request;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.io.Serializable;
+import java.util.List;
 
 /**
  * 搜索请求
@@ -24,4 +26,24 @@ public class SearchRequest implements Serializable {
      */
     @JsonProperty("size")
     public Integer size;
+    /**
+     * 排序方式
+     */
+    @JsonProperty("order_by")
+    public List<OrderByRequest> orderBy;
+
+    /**
+     * 构建排序条件
+     *
+     * @param query 查询
+     */
+    public void prepareOrderBy(QueryWrapper<?> query) {
+        if (orderBy == null || orderBy.isEmpty()) {
+            query.orderBy(true, false, "create_time");
+            return;
+        }
+        for (OrderByRequest orderByItem : orderBy) {
+            query.orderBy(true, orderByItem.asc != null && orderByItem.asc, orderByItem.field);
+        }
+    }
 }

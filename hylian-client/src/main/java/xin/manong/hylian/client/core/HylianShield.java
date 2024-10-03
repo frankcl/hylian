@@ -18,6 +18,8 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * Hylian盾：负责安全检测和登录认证
@@ -29,17 +31,22 @@ public class HylianShield {
 
     private static final Logger logger = LoggerFactory.getLogger(HylianShield.class);
 
+    private static final long REFRESH_TIME_INTERVAL_MS = 60000L;
+
     private final String appId;
     private final String appSecret;
-    private String serverURL;
+    private final String serverURL;
+    private final Map<String, Long> refreshTokenMap;
+    private final ReentrantLock refreshLock;
 
     public HylianShield(String appId,
                         String appSecret,
                         String serverURL) {
         this.appId = appId;
         this.appSecret = appSecret;
-        this.serverURL = serverURL;
-        if (!this.serverURL.endsWith("/")) this.serverURL += "/";
+        this.serverURL = serverURL.endsWith("/") ? serverURL : serverURL + "/";
+        this.refreshTokenMap = new ConcurrentHashMap<>();
+        this.refreshLock = new ReentrantLock();
     }
 
     /**
@@ -61,11 +68,12 @@ public class HylianShield {
             sweepSession(httpRequest);
             return false;
         }
-        if (checkToken(httpRequest)) {
-            String token = SessionUtils.getToken(httpRequest);
+        String token = SessionUtils.getToken(httpRequest);
+        if (StringUtils.isNotEmpty(token)) {
             if (refreshUser(token, httpRequest) &&
                     refreshTenant(token, httpRequest) &&
                     refreshToken(token, httpRequest)) return true;
+            refreshTokenMap.remove(token);
             logger.warn("token is expired");
         }
         SessionUtils.removeResources(httpRequest);
@@ -79,7 +87,7 @@ public class HylianShield {
                     URLEncoder.encode(redirectURL, Constants.CHARSET_UTF8)));
             return false;
         }
-        String token = acquireToken(code, httpRequest);
+        token = acquireToken(code, httpRequest);
         String requestURL = HTTPUtils.getRequestURL(httpRequest);
         requestURL = HTTPUtils.removeQueries(requestURL, new HashSet<String>() {{
             add(Constants.PARAM_CODE);
@@ -91,6 +99,7 @@ public class HylianShield {
         }
         logger.info("acquire token success");
         SessionUtils.setToken(httpRequest, token);
+        refreshTokenMap.put(token, System.currentTimeMillis());
         httpResponse.sendRedirect(requestURL);
         return false;
     }
@@ -104,18 +113,6 @@ public class HylianShield {
         Map<String, String> queryMap = HTTPUtils.getRequestQueryMap(httpRequest);
         String sessionId = queryMap.getOrDefault(Constants.PARAM_SESSION_ID, null);
         SessionManager.invalidate(sessionId);
-    }
-
-    /**
-     * 检测token
-     * 1. session中是否存在token
-     *
-     * @param httpRequest HTTP请求
-     * @return 有效返回true，否则返回false
-     */
-    private boolean checkToken(HttpServletRequest httpRequest) {
-        String token = SessionUtils.getToken(httpRequest);
-        return StringUtils.isNotEmpty(token);
     }
 
     /**
@@ -174,17 +171,39 @@ public class HylianShield {
      * @return 刷新成功返回true，否则返回false
      */
     private boolean refreshToken(String token, HttpServletRequest httpServletRequest) {
-        String requestURL = String.format("%s%s", serverURL, Constants.SERVER_PATH_REFRESH_TOKEN);
-        RefreshTokenRequest request = new RefreshTokenRequest();
-        request.appId = appId;
-        request.appSecret = appSecret;
-        request.token = token;
-        Map<String, Object> body = JSON.parseObject(JSON.toJSONString(request));
-        HttpRequest httpRequest = HttpRequest.buildPostRequest(requestURL, RequestFormat.JSON, body);
-        String newToken = HTTPExecutor.executeAndUnwrap(httpRequest, String.class);
-        if (StringUtils.isEmpty(newToken)) return false;
-        SessionUtils.setToken(httpServletRequest, newToken);
-        return true;
+        if (!needRefresh(token)) return true;
+        refreshLock.lock();
+        try {
+            if (!token.equals(SessionUtils.getToken(httpServletRequest))) return true;
+            String requestURL = String.format("%s%s", serverURL, Constants.SERVER_PATH_REFRESH_TOKEN);
+            RefreshTokenRequest request = new RefreshTokenRequest();
+            request.appId = appId;
+            request.appSecret = appSecret;
+            request.token = token;
+            Map<String, Object> body = JSON.parseObject(JSON.toJSONString(request));
+            HttpRequest httpRequest = HttpRequest.buildPostRequest(requestURL, RequestFormat.JSON, body);
+            String newToken = HTTPExecutor.executeAndUnwrap(httpRequest, String.class);
+            if (StringUtils.isEmpty(newToken)) return false;
+            SessionUtils.setToken(httpServletRequest, newToken);
+            refreshTokenMap.put(newToken, System.currentTimeMillis());
+            refreshTokenMap.remove(token);
+            return true;
+        } finally {
+            refreshLock.unlock();
+        }
+    }
+
+    /**
+     * 判断token是否需要刷新
+     * 上次刷新间隔大于1分钟需要刷新
+     *
+     * @param token 令牌
+     * @return 需要刷新返回true，否则返回false
+     */
+    private boolean needRefresh(String token) {
+        if (!refreshTokenMap.containsKey(token)) return true;
+        Long lastRefreshTime = refreshTokenMap.get(token);
+        return System.currentTimeMillis() - lastRefreshTime > REFRESH_TIME_INTERVAL_MS;
     }
 
     /**

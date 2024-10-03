@@ -34,6 +34,8 @@ public class AppController {
 
     private static final Logger logger = LoggerFactory.getLogger(AppController.class);
 
+    private static final int APP_SECRET_LEN = 8;
+
     @Resource
     protected AppService appService;
 
@@ -108,11 +110,11 @@ public class AppController {
      */
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    @Path("randomSecret")
-    @GetMapping("randomSecret")
+    @Path("createRandomSecret")
+    @GetMapping("createRandomSecret")
     @EnableWebLogAspect
-    public String randomSecret() {
-        return AppSecretUtils.buildSecret();
+    public String createRandomSecret() {
+        return AppSecretUtils.buildSecret(APP_SECRET_LEN);
     }
 
     /**
