@@ -1,6 +1,6 @@
 package xin.manong.hylian.server.service;
 
-import xin.manong.hylian.model.ActiveRecord;
+import xin.manong.hylian.model.Activity;
 import xin.manong.hylian.model.Pager;
 import xin.manong.hylian.server.service.request.ActivitySearchRequest;
 
@@ -17,9 +17,9 @@ public interface ActivityService {
     /**
      * 添加活动记录
      *
-     * @param activeRecord 活动记录
+     * @param activity 活动记录
      */
-    boolean add(ActiveRecord activeRecord);
+    boolean add(Activity activity);
 
     /**
      * 清除过期活动记录
@@ -60,7 +60,7 @@ public interface ActivityService {
      * @param ticketId 票据ID
      * @return 活动记录列表
      */
-    List<ActiveRecord> getWithTicket(String ticketId);
+    List<Activity> getWithTicket(String ticketId);
 
     /**
      * 活动记录搜索
@@ -68,6 +68,6 @@ public interface ActivityService {
      * @param searchRequest 搜索请求
      * @return 活动记录分页列表
      */
-    Pager<ActiveRecord> search(ActivitySearchRequest searchRequest);
+    Pager<Activity> search(ActivitySearchRequest searchRequest);
 
 }

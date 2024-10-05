@@ -26,9 +26,9 @@ import java.io.Serializable;
 @Accessors(chain = true)
 @XmlAccessorType(XmlAccessType.FIELD)
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class RemoveActiveRecordRequest implements Serializable {
+public class RemoveActivityRequest implements Serializable {
 
-    private static final Logger logger = LoggerFactory.getLogger(RemoveActiveRecordRequest.class);
+    private static final Logger logger = LoggerFactory.getLogger(RemoveActivityRequest.class);
 
     /**
      * 应用ID

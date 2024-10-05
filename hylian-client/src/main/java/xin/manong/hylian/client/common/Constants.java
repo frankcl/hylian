@@ -27,7 +27,7 @@ public class Constants {
     public static final String SERVER_PATH_APPLY_CODE = "api/security/applyCode";
     public static final String SERVER_PATH_ACQUIRE_TOKEN = "api/security/acquireToken";
     public static final String SERVER_PATH_REFRESH_TOKEN = "api/security/refreshToken";
-    public static final String SERVER_PATH_REMOVE_ACTIVE_RECORD = "api/security/removeActiveRecord";
+    public static final String SERVER_PATH_REMOVE_ACTIVITY = "api/security/removeActivity";
     public static final String SERVER_PATH_GET_USER = "api/security/getUser";
     public static final String SERVER_PATH_GET_TENANT = "api/security/getTenant";
     public static final String SERVER_PATH_GET_APP_USER_ROLES = "api/security/getAppUserRoles";

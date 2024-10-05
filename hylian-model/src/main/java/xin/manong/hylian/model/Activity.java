@@ -25,11 +25,11 @@ import javax.xml.bind.annotation.XmlAccessorType;
 @Setter
 @Accessors(chain = true)
 @XmlAccessorType(XmlAccessType.FIELD)
-@TableName("active_record")
+@TableName("activity")
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class ActiveRecord extends BaseModel {
+public class Activity extends BaseModel {
 
-    private static final Logger logger = LoggerFactory.getLogger(ActiveRecord.class);
+    private static final Logger logger = LoggerFactory.getLogger(Activity.class);
 
     /**
      * 自增ID

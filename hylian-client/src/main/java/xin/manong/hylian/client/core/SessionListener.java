@@ -46,7 +46,7 @@ public class SessionListener implements HttpSessionListener {
     public void sessionDestroyed(HttpSessionEvent event) {
         HttpSession session = event.getSession();
         if (session == null) return;
-        removeActiveRecord(session.getId());
+        removeActivity(session.getId());
         SessionManager.remove(session);
         logger.info("destroy session[{}] success", session.getId());
     }
@@ -56,8 +56,8 @@ public class SessionListener implements HttpSessionListener {
      *
      * @param sessionId 会话ID
      */
-    private void removeActiveRecord(String sessionId) {
-        String requestURL = String.format("%s%s", hylianClientConfig.serverURL, Constants.SERVER_PATH_REMOVE_ACTIVE_RECORD);
+    private void removeActivity(String sessionId) {
+        String requestURL = String.format("%s%s", hylianClientConfig.serverURL, Constants.SERVER_PATH_REMOVE_ACTIVITY);
         Map<String, Object> body = new HashMap<>();
         body.put(Constants.PARAM_SESSION_ID, sessionId);
         body.put(Constants.PARAM_APP_ID, hylianClientConfig.appId);

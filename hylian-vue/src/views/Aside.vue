@@ -41,7 +41,7 @@ const handleClose = (key, keyPath) => {
         <RouterLink :to="{ name: 'AppList' }">应用</RouterLink>
       </el-menu-item>
       <el-menu-item index="3-2">
-        <RouterLink :to="{ name: 'ActiveList' }">活跃</RouterLink>
+        <RouterLink :to="{ name: 'ActivityList' }">活跃</RouterLink>
       </el-menu-item>
     </el-sub-menu>
   </el-menu>

@@ -265,7 +265,7 @@ public class Converter {
      * @param user 所属用户
      * @return 视图层活动记录
      */
-    public static ViewRecord convert(ActiveRecord record, App app, ViewUser user) {
+    public static ViewRecord convert(Activity record, App app, ViewUser user) {
         ViewRecord viewRecord = new ViewRecord();
         viewRecord.id = record.id;
         viewRecord.sessionId = record.sessionId;

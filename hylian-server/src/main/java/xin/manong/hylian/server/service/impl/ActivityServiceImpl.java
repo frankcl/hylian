@@ -11,8 +11,8 @@ import org.springframework.stereotype.Service;
 import xin.manong.hylian.model.Pager;
 import xin.manong.hylian.server.common.Constants;
 import xin.manong.hylian.server.converter.Converter;
-import xin.manong.hylian.server.dao.mapper.ActiveRecordMapper;
-import xin.manong.hylian.model.ActiveRecord;
+import xin.manong.hylian.server.dao.mapper.ActivityMapper;
+import xin.manong.hylian.model.Activity;
 import xin.manong.hylian.server.service.ActivityService;
 import xin.manong.hylian.server.service.request.ActivitySearchRequest;
 import xin.manong.hylian.server.util.Validator;
@@ -32,38 +32,38 @@ public class ActivityServiceImpl implements ActivityService {
     private static final Logger logger = LoggerFactory.getLogger(ActivityServiceImpl.class);
 
     @Resource
-    protected ActiveRecordMapper activeRecordMapper;
+    protected ActivityMapper activityMapper;
 
     @Override
-    public boolean add(ActiveRecord activeRecord) {
-        LambdaQueryWrapper<ActiveRecord> query = new LambdaQueryWrapper<>();
-        query.eq(ActiveRecord::getSessionId, activeRecord.sessionId).eq(ActiveRecord::getAppId, activeRecord.appId);
-        if (activeRecordMapper.selectCount(query) > 0) {
-            logger.error("user has login for app[{}] and session[{}]", activeRecord.appId, activeRecord.sessionId);
+    public boolean add(Activity activity) {
+        LambdaQueryWrapper<Activity> query = new LambdaQueryWrapper<>();
+        query.eq(Activity::getSessionId, activity.sessionId).eq(Activity::getAppId, activity.appId);
+        if (activityMapper.selectCount(query) > 0) {
+            logger.error("user has login for app[{}] and session[{}]", activity.appId, activity.sessionId);
             throw new IllegalStateException("用户已登录应用");
         }
-        return activeRecordMapper.insert(activeRecord) > 0;
+        return activityMapper.insert(activity) > 0;
     }
 
     @Override
     public int removeExpires(Long maxUpdateTime) {
-        LambdaQueryWrapper<ActiveRecord> query = new LambdaQueryWrapper<>();
-        query.lt(ActiveRecord::getUpdateTime, maxUpdateTime);
-        return activeRecordMapper.delete(query);
+        LambdaQueryWrapper<Activity> query = new LambdaQueryWrapper<>();
+        query.lt(Activity::getUpdateTime, maxUpdateTime);
+        return activityMapper.delete(query);
     }
 
     @Override
     public void remove(String ticketId) {
-        LambdaQueryWrapper<ActiveRecord> query = new LambdaQueryWrapper<>();
-        query.eq(ActiveRecord::getTicketId, ticketId);
-        activeRecordMapper.delete(query);
+        LambdaQueryWrapper<Activity> query = new LambdaQueryWrapper<>();
+        query.eq(Activity::getTicketId, ticketId);
+        activityMapper.delete(query);
     }
 
     @Override
     public boolean remove(String sessionId, String appId) {
-        LambdaQueryWrapper<ActiveRecord> query = new LambdaQueryWrapper<>();
-        query.eq(ActiveRecord::getSessionId, sessionId).eq(ActiveRecord::getAppId, appId);
-        return activeRecordMapper.delete(query) > 0;
+        LambdaQueryWrapper<Activity> query = new LambdaQueryWrapper<>();
+        query.eq(Activity::getSessionId, sessionId).eq(Activity::getAppId, appId);
+        return activityMapper.delete(query) > 0;
     }
 
     @Override
@@ -76,30 +76,30 @@ public class ActivityServiceImpl implements ActivityService {
             logger.error("session id is empty");
             throw new RuntimeException("会话ID为空");
         }
-        LambdaQueryWrapper<ActiveRecord> query = new LambdaQueryWrapper<>();
-        query.eq(ActiveRecord::getAppId, appId).eq(ActiveRecord::getSessionId, sessionId);
-        return activeRecordMapper.selectCount(query) > 0;
+        LambdaQueryWrapper<Activity> query = new LambdaQueryWrapper<>();
+        query.eq(Activity::getAppId, appId).eq(Activity::getSessionId, sessionId);
+        return activityMapper.selectCount(query) > 0;
     }
 
     @Override
-    public List<ActiveRecord> getWithTicket(String ticketId) {
-        LambdaQueryWrapper<ActiveRecord> query = new LambdaQueryWrapper<>();
-        query.eq(ActiveRecord::getTicketId, ticketId);
-        return activeRecordMapper.selectList(query);
+    public List<Activity> getWithTicket(String ticketId) {
+        LambdaQueryWrapper<Activity> query = new LambdaQueryWrapper<>();
+        query.eq(Activity::getTicketId, ticketId);
+        return activityMapper.selectList(query);
     }
 
     @Override
-    public Pager<ActiveRecord> search(ActivitySearchRequest searchRequest) {
+    public Pager<Activity> search(ActivitySearchRequest searchRequest) {
         if (searchRequest == null) searchRequest = new ActivitySearchRequest();
         if (searchRequest.current == null || searchRequest.current < 1) searchRequest.current = Constants.DEFAULT_CURRENT;
         if (searchRequest.size == null || searchRequest.size <= 0) searchRequest.size = Constants.DEFAULT_PAGE_SIZE;
-        Validator.validateOrderBy(ActiveRecord.class, searchRequest);
-        QueryWrapper<ActiveRecord> query = new QueryWrapper<>();
+        Validator.validateOrderBy(Activity.class, searchRequest);
+        QueryWrapper<Activity> query = new QueryWrapper<>();
         searchRequest.prepareOrderBy(query);
         if (StringUtils.isNotEmpty(searchRequest.appId)) query.eq("app_id", searchRequest.appId);
         if (StringUtils.isNotEmpty(searchRequest.userId)) query.eq("user_id", searchRequest.userId);
         if (StringUtils.isNotEmpty(searchRequest.sessionId)) query.eq("session_id", searchRequest.sessionId);
-        IPage<ActiveRecord> page = activeRecordMapper.selectPage(new Page<>(searchRequest.current, searchRequest.size), query);
+        IPage<Activity> page = activityMapper.selectPage(new Page<>(searchRequest.current, searchRequest.size), query);
         return Converter.convert(page);
     }
 }

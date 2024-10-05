@@ -5,7 +5,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import xin.manong.hylian.model.ActiveRecord;
+import xin.manong.hylian.model.Activity;
 import xin.manong.hylian.model.App;
 import xin.manong.hylian.model.Pager;
 import xin.manong.hylian.model.User;
@@ -55,13 +55,13 @@ public class ActivityController {
     @PostMapping("search")
     @EnableWebLogAspect
     public Pager<ViewRecord> search(@RequestBody ActivitySearchRequest searchRequest) {
-        Pager<ActiveRecord> pager = activityService.search(searchRequest);
+        Pager<Activity> pager = activityService.search(searchRequest);
         Pager<ViewRecord> viewPager = new Pager<>();
         viewPager.current = pager.current;
         viewPager.size = pager.size;
         viewPager.total = pager.total;
         viewPager.records = new ArrayList<>();
-        for (ActiveRecord record : pager.records) viewPager.records.add(fillAndConvert(record));
+        for (Activity record : pager.records) viewPager.records.add(fillAndConvert(record));
         return viewPager;
     }
 
@@ -71,7 +71,7 @@ public class ActivityController {
      * @param record 活动记录
      * @return 视图层活动记录
      */
-    private ViewRecord fillAndConvert(ActiveRecord record) {
+    private ViewRecord fillAndConvert(Activity record) {
         App app = appService.get(record.appId);
         if (app == null) throw new NotFoundException("应用不存在");
         User user = userService.get(record.userId);

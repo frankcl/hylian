@@ -61,7 +61,7 @@ public class Sweeper implements Runnable {
             try {
                 Long maxUpdateTime = System.currentTimeMillis() - EXPIRED_INTERVAL_MS;
                 int n = activityService.removeExpires(maxUpdateTime);
-                logger.info("sweep {} expired active records", n);
+                logger.info("sweep {} expired activities", n);
                 Thread.sleep(CHECK_INTERVAL_MS);
             } catch (Exception e) {
                 logger.error(e.getMessage(), e);

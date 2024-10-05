@@ -14,7 +14,7 @@ import xin.manong.hylian.server.common.Constants;
 import xin.manong.hylian.server.request.AcquireTokenRequest;
 import xin.manong.hylian.server.request.AppRolePermissionsRequest;
 import xin.manong.hylian.server.request.LoginRequest;
-import xin.manong.hylian.server.request.RemoveActiveRecordRequest;
+import xin.manong.hylian.server.request.RemoveActivityRequest;
 import xin.manong.hylian.server.service.*;
 import xin.manong.hylian.server.service.request.RolePermissionSearchRequest;
 import xin.manong.hylian.server.service.request.UserRoleSearchRequest;
@@ -131,11 +131,11 @@ public class SecurityController {
         tokenService.putToken(token, ticket);
         ticketService.addToken(profile.id, token);
         if (!activityService.isCheckin(request.appId, request.sessionId)) {
-            ActiveRecord activeRecord = new ActiveRecord().setAppId(request.appId).setUserId(profile.userId).
+            Activity activity = new Activity().setAppId(request.appId).setUserId(profile.userId).
                     setTicketId(profile.id).setSessionId(request.sessionId);
-            if (!activityService.add(activeRecord)) {
-                logger.warn("add active record failed for app[{}] and user[{}]",
-                        activeRecord.appId, activeRecord.userId);
+            if (!activityService.add(activity)) {
+                logger.warn("add activity failed for app[{}] and user[{}]",
+                        activity.appId, activity.userId);
             }
         }
         return token;
@@ -239,10 +239,10 @@ public class SecurityController {
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    @Path("removeActiveRecord")
-    @PostMapping("removeActiveRecord")
+    @Path("removeActivity")
+    @PostMapping("removeActivity")
     @EnableWebLogAspect
-    public boolean removeActiveRecord(@RequestBody RemoveActiveRecordRequest request) {
+    public boolean removeActivity(@RequestBody RemoveActivityRequest request) {
         if (request == null) throw new BadRequestException("移除活动记录请求为空");
         request.check();
         appService.verifyApp(request.appId, request.appSecret);
