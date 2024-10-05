@@ -18,7 +18,6 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
@@ -36,7 +35,6 @@ public class HylianShield {
     private final String appId;
     private final String appSecret;
     private final String serverURL;
-    private final Map<String, Long> refreshTokenMap;
     private final ReentrantLock refreshLock;
 
     public HylianShield(String appId,
@@ -45,7 +43,6 @@ public class HylianShield {
         this.appId = appId;
         this.appSecret = appSecret;
         this.serverURL = serverURL.endsWith("/") ? serverURL : serverURL + "/";
-        this.refreshTokenMap = new ConcurrentHashMap<>();
         this.refreshLock = new ReentrantLock();
     }
 
@@ -73,7 +70,6 @@ public class HylianShield {
             if (refreshUser(token, httpRequest) &&
                     refreshTenant(token, httpRequest) &&
                     refreshToken(token, httpRequest)) return true;
-            refreshTokenMap.remove(token);
             logger.warn("token is expired");
         }
         SessionUtils.removeResources(httpRequest);
@@ -99,7 +95,6 @@ public class HylianShield {
         }
         logger.info("acquire token success");
         SessionUtils.setToken(httpRequest, token);
-        refreshTokenMap.put(token, System.currentTimeMillis());
         httpResponse.sendRedirect(requestURL);
         return false;
     }
@@ -171,7 +166,9 @@ public class HylianShield {
      * @return 刷新成功返回true，否则返回false
      */
     private boolean refreshToken(String token, HttpServletRequest httpServletRequest) {
-        if (!needRefresh(token)) return true;
+        Long refreshTime = SessionUtils.getTokenRefreshTime(httpServletRequest);
+        long refreshInterval = refreshTime == null ? Long.MAX_VALUE : System.currentTimeMillis() - refreshTime;
+        if (refreshInterval <= REFRESH_TIME_INTERVAL_MS) return true;
         refreshLock.lock();
         try {
             if (!token.equals(SessionUtils.getToken(httpServletRequest))) return true;
@@ -185,25 +182,10 @@ public class HylianShield {
             String newToken = HTTPExecutor.executeAndUnwrap(httpRequest, String.class);
             if (StringUtils.isEmpty(newToken)) return false;
             SessionUtils.setToken(httpServletRequest, newToken);
-            refreshTokenMap.put(newToken, System.currentTimeMillis());
-            refreshTokenMap.remove(token);
             return true;
         } finally {
             refreshLock.unlock();
         }
-    }
-
-    /**
-     * 判断token是否需要刷新
-     * 上次刷新间隔大于1分钟需要刷新
-     *
-     * @param token 令牌
-     * @return 需要刷新返回true，否则返回false
-     */
-    private boolean needRefresh(String token) {
-        if (!refreshTokenMap.containsKey(token)) return true;
-        Long lastRefreshTime = refreshTokenMap.get(token);
-        return System.currentTimeMillis() - lastRefreshTime > REFRESH_TIME_INTERVAL_MS;
     }
 
     /**

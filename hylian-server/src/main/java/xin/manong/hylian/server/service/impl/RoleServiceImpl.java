@@ -7,13 +7,16 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import xin.manong.hylian.model.Pager;
 import xin.manong.hylian.model.Role;
 import xin.manong.hylian.server.common.Constants;
 import xin.manong.hylian.server.converter.Converter;
 import xin.manong.hylian.server.dao.mapper.RoleMapper;
+import xin.manong.hylian.server.service.RolePermissionService;
 import xin.manong.hylian.server.service.RoleService;
+import xin.manong.hylian.server.service.UserRoleService;
 import xin.manong.hylian.server.service.request.RoleSearchRequest;
 import xin.manong.hylian.server.util.Validator;
 
@@ -38,6 +41,12 @@ public class RoleServiceImpl implements RoleService {
 
     @Resource
     protected RoleMapper roleMapper;
+    @Lazy
+    @Resource
+    protected UserRoleService userRoleService;
+    @Lazy
+    @Resource
+    protected RolePermissionService rolePermissionService;
 
     @Override
     public Role get(String id) {
@@ -73,12 +82,7 @@ public class RoleServiceImpl implements RoleService {
 
     @Override
     public boolean add(Role role) {
-        LambdaQueryWrapper<Role> query = new LambdaQueryWrapper<>();
-        query.eq(Role::getAppId, role.appId).eq(Role::getName, role.name);
-        if (roleMapper.selectCount(query) > 0) {
-            logger.error("role has existed for the same name[{}]", role.name);
-            throw new IllegalStateException("角色存在");
-        }
+        beforeAddUpdate(role);
         return roleMapper.insert(role) > 0;
     }
 
@@ -88,6 +92,7 @@ public class RoleServiceImpl implements RoleService {
             logger.error("role is not found for id[{}]", role.id);
             throw new NotFoundException("角色不存在");
         }
+        beforeAddUpdate(role);
         return roleMapper.updateById(role) > 0;
     }
 
@@ -97,7 +102,12 @@ public class RoleServiceImpl implements RoleService {
             logger.error("role id is empty for deleting");
             throw new BadRequestException("角色ID为空");
         }
-        return roleMapper.deleteById(id) > 0;
+        boolean result = roleMapper.deleteById(id) > 0;
+        if (result) {
+            userRoleService.deleteByRole(id);
+            rolePermissionService.deleteByRole(id);
+        }
+        return result;
     }
 
     @Override
@@ -112,5 +122,19 @@ public class RoleServiceImpl implements RoleService {
         if (!StringUtils.isEmpty(searchRequest.appId)) query.eq("app_id", searchRequest.appId);
         IPage<Role> page = roleMapper.selectPage(new Page<>(searchRequest.current, searchRequest.size), query);
         return Converter.convert(page);
+    }
+
+    /**
+     * 添加更新前检查
+     *
+     * @param role 角色
+     */
+    private void beforeAddUpdate(Role role) {
+        LambdaQueryWrapper<Role> query = new LambdaQueryWrapper<>();
+        query.eq(Role::getAppId, role.appId).eq(Role::getName, role.name);
+        if (roleMapper.selectCount(query) > 0) {
+            logger.error("role has existed for the same name[{}]", role.name);
+            throw new IllegalStateException("角色已存在");
+        }
     }
 }

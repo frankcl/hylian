@@ -10,7 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 import xin.manong.hylian.model.Pager;
 import xin.manong.hylian.server.ApplicationTest;
 import xin.manong.hylian.model.ActiveRecord;
-import xin.manong.hylian.server.service.request.ActiveRecordSearchRequest;
+import xin.manong.hylian.server.service.request.ActivitySearchRequest;
 
 import javax.annotation.Resource;
 import java.util.List;
@@ -21,10 +21,10 @@ import java.util.List;
  */
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = { ApplicationTest.class })
-public class ActiveRecordServiceImplSuite {
+public class ActivityServiceImplSuite {
 
     @Resource
-    protected ActiveRecordService activeRecordService;
+    protected ActivityService activityService;
 
     @Test
     @Transactional
@@ -34,25 +34,25 @@ public class ActiveRecordServiceImplSuite {
             ActiveRecord activeRecord = new ActiveRecord();
             activeRecord.setTicketId("xxx").setUserId("user1").setSessionId("session1").
                     setAppId("app1");
-            Assert.assertTrue(activeRecordService.add(activeRecord));
+            Assert.assertTrue(activityService.add(activeRecord));
         }
         {
             ActiveRecord activeRecord = new ActiveRecord();
             activeRecord.setTicketId("xxx").setUserId("user1").setSessionId("session2").
                     setAppId("app2");
-            Assert.assertTrue(activeRecordService.add(activeRecord));
+            Assert.assertTrue(activityService.add(activeRecord));
         }
         {
-            Assert.assertTrue(activeRecordService.isCheckin("app1", "session1"));
+            Assert.assertTrue(activityService.isCheckin("app1", "session1"));
         }
         {
-            Assert.assertTrue(activeRecordService.isCheckin("app2", "session2"));
+            Assert.assertTrue(activityService.isCheckin("app2", "session2"));
         }
         {
-            Assert.assertFalse(activeRecordService.isCheckin("app3", "session3"));
+            Assert.assertFalse(activityService.isCheckin("app3", "session3"));
         }
         {
-            List<ActiveRecord> activeRecords = activeRecordService.getWithTicket("xxx");
+            List<ActiveRecord> activeRecords = activityService.getWithTicket("xxx");
             Assert.assertTrue(activeRecords != null && activeRecords.size() == 2);
             Assert.assertEquals("xxx", activeRecords.get(0).ticketId);
             Assert.assertEquals("user1", activeRecords.get(0).userId);
@@ -69,15 +69,15 @@ public class ActiveRecordServiceImplSuite {
             Assert.assertTrue(activeRecords.get(1).updateTime > 0);
         }
         {
-            ActiveRecordSearchRequest searchRequest = new ActiveRecordSearchRequest();
+            ActivitySearchRequest searchRequest = new ActivitySearchRequest();
             searchRequest.appId = "app1";
             searchRequest.userId = "user1";
-            Pager<ActiveRecord> pager = activeRecordService.search(searchRequest);
+            Pager<ActiveRecord> pager = activityService.search(searchRequest);
             Assert.assertTrue(pager != null && pager.total == 1 && pager.records.size() == 1);
         }
         {
-            activeRecordService.remove("xxx");
-            List<ActiveRecord> activeRecords = activeRecordService.getWithTicket("xxx");
+            activityService.remove("xxx");
+            List<ActiveRecord> activeRecords = activityService.getWithTicket("xxx");
             Assert.assertTrue(activeRecords == null || activeRecords.isEmpty());
         }
     }

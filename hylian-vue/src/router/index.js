@@ -9,6 +9,8 @@ import { isLogin, refreshUser } from '@/utils/hylian'
 import UserList from '@/components/user/UserList'
 import TenantList from '@/components/tenant/TenantList'
 import AppList from '@/views/app/AppList'
+import ActiveList from '@/views/active/ActivityList.vue'
+import PermissionList from '@/views/permission/PermissionList'
 
 const routes = [
   {
@@ -49,9 +51,19 @@ const routes = [
         component: TenantList
       },
       {
+        path: 'permissionList',
+        name: 'PermissionList',
+        component: PermissionList
+      },
+      {
         path: 'appList',
         name: 'AppList',
         component: AppList
+      },
+      {
+        path: 'activeList',
+        name: 'ActiveList',
+        component: ActiveList
       },
     ]
   }

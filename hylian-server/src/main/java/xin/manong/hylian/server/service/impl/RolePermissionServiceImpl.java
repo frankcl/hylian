@@ -57,6 +57,30 @@ public class RolePermissionServiceImpl implements RolePermissionService {
     }
 
     @Override
+    public void deleteByRole(String roleId) {
+        if (StringUtils.isEmpty(roleId)) {
+            logger.error("role id is empty");
+            throw new BadRequestException("角色ID为空");
+        }
+        LambdaQueryWrapper<RolePermission> query = new LambdaQueryWrapper<>();
+        query.eq(RolePermission::getRoleId, roleId);
+        int n = rolePermissionMapper.delete(query);
+        logger.info("delete role permission relationship num[{}] for role[{}]", n, roleId);
+    }
+
+    @Override
+    public void deleteByPermission(String permissionId) {
+        if (StringUtils.isEmpty(permissionId)) {
+            logger.error("permission id is empty");
+            throw new BadRequestException("权限ID为空");
+        }
+        LambdaQueryWrapper<RolePermission> query = new LambdaQueryWrapper<>();
+        query.eq(RolePermission::getPermissionId, permissionId);
+        int n = rolePermissionMapper.delete(query);
+        logger.info("delete role permission relationship num[{}] for permission[{}]", n, permissionId);
+    }
+
+    @Override
     public Pager<RolePermission> search(RolePermissionSearchRequest searchRequest) {
         if (searchRequest == null) searchRequest = new RolePermissionSearchRequest();
         if (searchRequest.current == null || searchRequest.current < 1) searchRequest.current = Constants.DEFAULT_CURRENT;

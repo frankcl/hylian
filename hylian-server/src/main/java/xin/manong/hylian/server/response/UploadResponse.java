@@ -8,6 +8,7 @@ import lombok.experimental.Accessors;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
+import java.io.Serializable;
 
 /**
  * 上传响应
@@ -20,7 +21,7 @@ import javax.xml.bind.annotation.XmlAccessorType;
 @Accessors(chain = true)
 @XmlAccessorType(XmlAccessType.FIELD)
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class UploadResponse {
+public class UploadResponse implements Serializable {
 
     /**
      * OSS地址

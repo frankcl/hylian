@@ -64,7 +64,7 @@ public class SecurityController {
     @Resource
     protected TenantService tenantService;
     @Resource
-    protected ActiveRecordService activeRecordService;
+    protected ActivityService activityService;
     @Resource
     protected RoleService roleService;
     @Resource
@@ -130,10 +130,10 @@ public class SecurityController {
         String token = tokenService.buildToken(profile, Constants.CACHE_TOKEN_EXPIRED_TIME_MS);
         tokenService.putToken(token, ticket);
         ticketService.addToken(profile.id, token);
-        if (!activeRecordService.isCheckin(request.appId, request.sessionId)) {
+        if (!activityService.isCheckin(request.appId, request.sessionId)) {
             ActiveRecord activeRecord = new ActiveRecord().setAppId(request.appId).setUserId(profile.userId).
                     setTicketId(profile.id).setSessionId(request.sessionId);
-            if (!activeRecordService.add(activeRecord)) {
+            if (!activityService.add(activeRecord)) {
                 logger.warn("add active record failed for app[{}] and user[{}]",
                         activeRecord.appId, activeRecord.userId);
             }
@@ -246,7 +246,7 @@ public class SecurityController {
         if (request == null) throw new BadRequestException("移除活动记录请求为空");
         request.check();
         appService.verifyApp(request.appId, request.appSecret);
-        return activeRecordService.remove(request.sessionId, request.appId);
+        return activityService.remove(request.sessionId, request.appId);
     }
 
     /**
@@ -333,7 +333,7 @@ public class SecurityController {
         CookieUtils.removeCookie(Constants.COOKIE_TOKEN, "/", httpResponse);
         CookieUtils.removeCookie(Constants.COOKIE_TICKET, "/", httpResponse);
         Profile profile = jwtService.decodeProfile(ticket);
-        if (profile != null) activeRecordService.remove(profile.id);
+        if (profile != null) activityService.remove(profile.id);
         return true;
     }
 

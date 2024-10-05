@@ -10,7 +10,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  * @date 2023-09-05 14:16:42
  */
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class ActiveRecordSearchRequest extends SearchRequest {
+public class ActivitySearchRequest extends SearchRequest {
 
     /**
      * 用户ID

@@ -5,6 +5,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import xin.manong.hylian.model.*;
 import xin.manong.hylian.server.request.*;
+import xin.manong.hylian.server.response.ViewPermission;
+import xin.manong.hylian.server.response.ViewRecord;
 import xin.manong.hylian.server.response.ViewTenant;
 import xin.manong.hylian.server.response.ViewUser;
 
@@ -214,7 +216,7 @@ public class Converter {
     }
 
     /**
-     * 转换租户信息为视图层租户信息
+     * 转换视图层租户信息
      *
      * @param tenant 租户信息
      * @return 视图层租户信息
@@ -230,7 +232,7 @@ public class Converter {
     }
 
     /**
-     * 转换用户信息为视图层用户信息
+     * 转换视图层用户信息
      *
      * @param user 用户信息
      * @param tenant 视图层租户信息
@@ -253,5 +255,42 @@ public class Converter {
             }
         }
         return viewUser;
+    }
+
+    /**
+     * 转换视图层活动记录
+     *
+     * @param record 活动记录
+     * @param app 所属应用
+     * @param user 所属用户
+     * @return 视图层活动记录
+     */
+    public static ViewRecord convert(ActiveRecord record, App app, ViewUser user) {
+        ViewRecord viewRecord = new ViewRecord();
+        viewRecord.id = record.id;
+        viewRecord.sessionId = record.sessionId;
+        viewRecord.createTime = record.createTime;
+        viewRecord.updateTime = record.updateTime;
+        viewRecord.app = app;
+        viewRecord.user = user;
+        return viewRecord;
+    }
+
+    /**
+     * 转换视图层权限
+     *
+     * @param permission 权限
+     * @param app 应用
+     * @return 视图层权限
+     */
+    public static ViewPermission convert(Permission permission, App app) {
+        ViewPermission viewPermission = new ViewPermission();
+        viewPermission.id = permission.id;
+        viewPermission.name = permission.name;
+        viewPermission.resource = permission.resource;
+        viewPermission.createTime = permission.createTime;
+        viewPermission.updateTime = permission.updateTime;
+        viewPermission.app = app;
+        return viewPermission;
     }
 }

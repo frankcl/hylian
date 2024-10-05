@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import xin.manong.hylian.server.config.ServerConfig;
+import xin.manong.hylian.server.service.UserRoleService;
 import xin.manong.hylian.server.service.request.UserSearchRequest;
 import xin.manong.hylian.server.common.Constants;
 import xin.manong.hylian.server.converter.Converter;
@@ -51,6 +52,9 @@ public class UserServiceImpl implements UserService {
     @Lazy
     @Resource
     protected TenantService tenantService;
+    @Lazy
+    @Resource
+    protected UserRoleService userRoleService;
 
     @Override
     public User get(String id) {
@@ -121,6 +125,7 @@ public class UserServiceImpl implements UserService {
         }
         boolean result = userMapper.deleteById(id) > 0;
         if (result) deleteAvatar(user);
+        userRoleService.deleteByUser(id);
         return result;
     }
 

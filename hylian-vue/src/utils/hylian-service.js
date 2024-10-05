@@ -1,5 +1,13 @@
 import axios from './axios-plus'
 
+const API_ACTIVITY_SEARCH = '/api/activity/search'
+
+const API_PERMISSION_GET = '/api/permission/get'
+const API_PERMISSION_ADD = '/api/permission/add'
+const API_PERMISSION_UPDATE = '/api/permission/update'
+const API_PERMISSION_DELETE = '/api/permission/delete'
+const API_PERMISSION_SEARCH = '/api/permission/search'
+
 const API_APP_GET = '/api/app/get'
 const API_APP_ADD = '/api/app/add'
 const API_APP_UPDATE = '/api/app/update'
@@ -31,6 +39,58 @@ const HTTP_GET = 'get'
 const HTTP_PUT = 'put'
 const HTTP_POST = 'post'
 const HTTP_DELETE = 'delete'
+
+export const remoteSearchActivity = async (searchRequest) => {
+  return await axios({
+    method: HTTP_POST,
+    url: API_ACTIVITY_SEARCH,
+    data: searchRequest
+  })
+}
+
+export const remoteGetPermission = async (id) => {
+  return await axios({
+    method: HTTP_GET,
+    url: API_PERMISSION_GET,
+    params: {
+      id: id
+    }
+  })
+}
+
+export const remoteAddPermission = async (permission) => {
+  return await axios({
+    method: HTTP_PUT,
+    url: API_PERMISSION_ADD,
+    data: permission
+  })
+}
+
+export const remoteUpdatePermission = async (permission) => {
+  return await axios({
+    method: HTTP_POST,
+    url: API_PERMISSION_UPDATE,
+    data: permission
+  })
+}
+
+export const remoteDeletePermission = async (id) => {
+  return await axios({
+    method: HTTP_DELETE,
+    url: API_PERMISSION_DELETE,
+    params: {
+      id: id
+    }
+  })
+}
+
+export const remoteSearchPermission = async (searchRequest) => {
+  return await axios({
+    method: HTTP_POST,
+    url: API_PERMISSION_SEARCH,
+    data: searchRequest
+  })
+}
 
 export const remoteGetApp = async (id) => {
   return await axios({

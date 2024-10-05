@@ -13,8 +13,8 @@ import xin.manong.hylian.server.common.Constants;
 import xin.manong.hylian.server.converter.Converter;
 import xin.manong.hylian.server.dao.mapper.ActiveRecordMapper;
 import xin.manong.hylian.model.ActiveRecord;
-import xin.manong.hylian.server.service.ActiveRecordService;
-import xin.manong.hylian.server.service.request.ActiveRecordSearchRequest;
+import xin.manong.hylian.server.service.ActivityService;
+import xin.manong.hylian.server.service.request.ActivitySearchRequest;
 import xin.manong.hylian.server.util.Validator;
 
 import javax.annotation.Resource;
@@ -27,9 +27,9 @@ import java.util.List;
  * @date 2023-09-04 10:53:42
  */
 @Service
-public class ActiveRecordServiceImpl implements ActiveRecordService {
+public class ActivityServiceImpl implements ActivityService {
 
-    private static final Logger logger = LoggerFactory.getLogger(ActiveRecordServiceImpl.class);
+    private static final Logger logger = LoggerFactory.getLogger(ActivityServiceImpl.class);
 
     @Resource
     protected ActiveRecordMapper activeRecordMapper;
@@ -89,16 +89,16 @@ public class ActiveRecordServiceImpl implements ActiveRecordService {
     }
 
     @Override
-    public Pager<ActiveRecord> search(ActiveRecordSearchRequest searchRequest) {
-        if (searchRequest == null) searchRequest = new ActiveRecordSearchRequest();
+    public Pager<ActiveRecord> search(ActivitySearchRequest searchRequest) {
+        if (searchRequest == null) searchRequest = new ActivitySearchRequest();
         if (searchRequest.current == null || searchRequest.current < 1) searchRequest.current = Constants.DEFAULT_CURRENT;
         if (searchRequest.size == null || searchRequest.size <= 0) searchRequest.size = Constants.DEFAULT_PAGE_SIZE;
         Validator.validateOrderBy(ActiveRecord.class, searchRequest);
         QueryWrapper<ActiveRecord> query = new QueryWrapper<>();
         searchRequest.prepareOrderBy(query);
-        if (!StringUtils.isEmpty(searchRequest.appId)) query.eq("app_id", searchRequest.appId);
-        if (!StringUtils.isEmpty(searchRequest.userId)) query.eq("user_id", searchRequest.userId);
-        if (!StringUtils.isEmpty(searchRequest.sessionId)) query.eq("session_id", searchRequest.sessionId);
+        if (StringUtils.isNotEmpty(searchRequest.appId)) query.eq("app_id", searchRequest.appId);
+        if (StringUtils.isNotEmpty(searchRequest.userId)) query.eq("user_id", searchRequest.userId);
+        if (StringUtils.isNotEmpty(searchRequest.sessionId)) query.eq("session_id", searchRequest.sessionId);
         IPage<ActiveRecord> page = activeRecordMapper.selectPage(new Page<>(searchRequest.current, searchRequest.size), query);
         return Converter.convert(page);
     }

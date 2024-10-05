@@ -29,6 +29,20 @@ public interface RolePermissionService {
     boolean delete(Long id);
 
     /**
+     * 删除角色相关关系
+     *
+     * @param roleId 角色ID
+     */
+    void deleteByRole(String roleId);
+
+    /**
+     * 删除权限相关关系
+     *
+     * @param permissionId 权限ID
+     */
+    void deleteByPermission(String permissionId);
+
+    /**
      * 搜索角色权限关系
      *
      * @param searchRequest 搜索请求

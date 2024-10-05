@@ -7,6 +7,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import xin.manong.hylian.model.Pager;
 import xin.manong.hylian.model.Permission;
@@ -14,6 +15,7 @@ import xin.manong.hylian.server.common.Constants;
 import xin.manong.hylian.server.converter.Converter;
 import xin.manong.hylian.server.dao.mapper.PermissionMapper;
 import xin.manong.hylian.server.service.PermissionService;
+import xin.manong.hylian.server.service.RolePermissionService;
 import xin.manong.hylian.server.service.request.PermissionSearchRequest;
 import xin.manong.hylian.server.util.Validator;
 
@@ -38,6 +40,9 @@ public class PermissionServiceImpl implements PermissionService {
 
     @Resource
     protected PermissionMapper permissionMapper;
+    @Lazy
+    @Resource
+    protected RolePermissionService rolePermissionService;
 
     @Override
     public Permission get(String id) {
@@ -73,17 +78,7 @@ public class PermissionServiceImpl implements PermissionService {
 
     @Override
     public boolean add(Permission permission) {
-        LambdaQueryWrapper<Permission> query = new LambdaQueryWrapper<>();
-        query.eq(Permission::getAppId, permission.appId);
-        query.and(wrapper -> {
-            wrapper.eq(Permission::getResource, permission.resource);
-            wrapper.or().eq(Permission::getName, permission.name);
-        });
-        if (permissionMapper.selectCount(query) > 0) {
-            logger.error("permission has existed for the same name[{}] or resource[{}]",
-                    permission.name, permission.resource);
-            throw new IllegalStateException("权限已存在");
-        }
+        beforeAddUpdate(permission);
         return permissionMapper.insert(permission) > 0;
     }
 
@@ -93,6 +88,7 @@ public class PermissionServiceImpl implements PermissionService {
             logger.error("permission is not found for id[{}]", permission.id);
             throw new NotFoundException("权限不存在");
         }
+        beforeAddUpdate(permission);
         return permissionMapper.updateById(permission) > 0;
     }
 
@@ -102,7 +98,9 @@ public class PermissionServiceImpl implements PermissionService {
             logger.error("permission id is empty for deleting");
             throw new BadRequestException("权限ID为空");
         }
-        return permissionMapper.deleteById(id) > 0;
+        boolean result = permissionMapper.deleteById(id) > 0;
+        if (result) rolePermissionService.deleteByPermission(id);
+        return result;
     }
 
     @Override
@@ -118,5 +116,24 @@ public class PermissionServiceImpl implements PermissionService {
         if (!StringUtils.isEmpty(searchRequest.appId)) query.eq("app_id", searchRequest.appId);
         IPage<Permission> page = permissionMapper.selectPage(new Page<>(searchRequest.current, searchRequest.size), query);
         return Converter.convert(page);
+    }
+
+    /**
+     * 添加更新前置检查
+     *
+     * @param permission 权限
+     */
+    private void beforeAddUpdate(Permission permission) {
+        LambdaQueryWrapper<Permission> query = new LambdaQueryWrapper<>();
+        query.eq(Permission::getAppId, permission.appId);
+        query.and(wrapper -> {
+            wrapper.eq(Permission::getResource, permission.resource);
+            wrapper.or().eq(Permission::getName, permission.name);
+        });
+        if (permissionMapper.selectCount(query) > 0) {
+            logger.error("permission has existed for the same name[{}] or resource[{}]",
+                    permission.name, permission.resource);
+            throw new IllegalStateException("权限已存在");
+        }
     }
 }

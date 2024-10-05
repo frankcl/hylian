@@ -40,6 +40,17 @@ public class SessionUtils {
     }
 
     /**
+     * 从session中获取token刷新时间
+     *
+     * @param httpRequest HTTP请求
+     * @return 成功返回token刷新时间，否则返回null
+     */
+    public static Long getTokenRefreshTime(HttpServletRequest httpRequest) {
+        if (httpRequest == null) return null;
+        return (Long) httpRequest.getSession().getAttribute(SessionConstants.TOKEN_REFRESH_TIME);
+    }
+
+    /**
      * 从session中获取用户信息
      *
      * @param httpRequest HTTP请求
@@ -91,7 +102,9 @@ public class SessionUtils {
      */
     public static void setToken(HttpServletRequest httpRequest, String token) {
         if (httpRequest == null || StringUtils.isEmpty(token)) return;
-        httpRequest.getSession().setAttribute(SessionConstants.TOKEN, token);
+        HttpSession session = httpRequest.getSession();
+        session.setAttribute(SessionConstants.TOKEN, token);
+        session.setAttribute(SessionConstants.TOKEN_REFRESH_TIME, System.currentTimeMillis());
     }
 
     /**
@@ -147,6 +160,7 @@ public class SessionUtils {
         if (httpRequest == null) return;
         HttpSession httpSession = httpRequest.getSession();
         httpSession.removeAttribute(SessionConstants.TOKEN);
+        httpSession.removeAttribute(SessionConstants.TOKEN_REFRESH_TIME);
         httpSession.removeAttribute(SessionConstants.USER);
         httpSession.removeAttribute(SessionConstants.TENANT);
         httpSession.removeAttribute(SessionConstants.ROLES);

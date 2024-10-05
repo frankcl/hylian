@@ -28,7 +28,9 @@ const handleClose = (key, keyPath) => {
         <span>授权管理</span>
       </template>
       <el-menu-item>角色</el-menu-item>
-      <el-menu-item>权限</el-menu-item>
+      <el-menu-item>
+        <RouterLink :to="{ name: 'PermissionList' }">权限</RouterLink>
+      </el-menu-item>
     </el-sub-menu>
     <el-sub-menu index="3" popper-class="dark-mode">
       <template #title>
@@ -38,7 +40,9 @@ const handleClose = (key, keyPath) => {
       <el-menu-item index="3-1">
         <RouterLink :to="{ name: 'AppList' }">应用</RouterLink>
       </el-menu-item>
-      <el-menu-item>活跃</el-menu-item>
+      <el-menu-item index="3-2">
+        <RouterLink :to="{ name: 'ActiveList' }">活跃</RouterLink>
+      </el-menu-item>
     </el-sub-menu>
   </el-menu>
 </template>

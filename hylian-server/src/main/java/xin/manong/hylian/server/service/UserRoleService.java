@@ -29,6 +29,20 @@ public interface UserRoleService {
     boolean delete(Long id);
 
     /**
+     * 删除用户相关所有关系
+     *
+     * @param userId 用户ID
+     */
+    void deleteByUser(String userId);
+
+    /**
+     * 删除角色相关所有关系
+     *
+     * @param roleId 角色ID
+     */
+    void deleteByRole(String roleId);
+
+    /**
      * 搜索用户角色关系
      *
      * @param searchRequest 搜索请求

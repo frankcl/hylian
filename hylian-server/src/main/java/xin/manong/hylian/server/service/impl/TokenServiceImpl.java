@@ -6,6 +6,7 @@ import org.apache.commons.codec.digest.DigestUtils;
 import org.redisson.api.RBucket;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import xin.manong.hylian.model.Profile;
 import xin.manong.hylian.server.common.Constants;
@@ -32,6 +33,7 @@ public class TokenServiceImpl implements TokenService {
 
     @Resource
     protected RedisClient redisClient;
+    @Lazy
     @Resource
     protected JWTService jwtService;
 

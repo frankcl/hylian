@@ -110,6 +110,7 @@ watch(searcher, () => searchApp(), { immediate: true })
   <el-table class="app-list" :data="apps" max-height="500" table-layout="auto"
             stripe @sort-change="appSortChange">
     <template #empty>没有应用数据</template>
+    <el-table-column prop="id" label="应用ID" />
     <el-table-column prop="name" label="应用名" />
     <el-table-column label="创建时间" prop="create_time" sortable="custom">
       <template #default="scope">

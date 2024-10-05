@@ -55,6 +55,30 @@ public class UserRoleServiceImpl implements UserRoleService {
     }
 
     @Override
+    public void deleteByUser(String userId) {
+        if (StringUtils.isEmpty(userId)) {
+            logger.error("user id is empty");
+            throw new BadRequestException("用户ID为空");
+        }
+        LambdaQueryWrapper<UserRole> query = new LambdaQueryWrapper<>();
+        query.eq(UserRole::getUserId, userId);
+        int n = userRoleMapper.delete(query);
+        logger.info("delete user role relationship num[{}] for user[{}]", n, userId);
+    }
+
+    @Override
+    public void deleteByRole(String roleId) {
+        if (StringUtils.isEmpty(roleId)) {
+            logger.error("role id is empty");
+            throw new BadRequestException("角色ID为空");
+        }
+        LambdaQueryWrapper<UserRole> query = new LambdaQueryWrapper<>();
+        query.eq(UserRole::getRoleId, roleId);
+        int n = userRoleMapper.delete(query);
+        logger.info("delete user role relationship num[{}] for role[{}]", n, roleId);
+    }
+
+    @Override
     public Pager<UserRole> search(UserRoleSearchRequest searchRequest) {
         if (searchRequest == null) searchRequest = new UserRoleSearchRequest();
         if (searchRequest.current == null || searchRequest.current < 1) searchRequest.current = Constants.DEFAULT_CURRENT;

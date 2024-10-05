@@ -4,11 +4,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
+import xin.manong.hylian.model.App;
 import xin.manong.hylian.model.Pager;
 import xin.manong.hylian.model.Permission;
 import xin.manong.hylian.server.converter.Converter;
 import xin.manong.hylian.server.request.PermissionRequest;
 import xin.manong.hylian.server.request.PermissionUpdateRequest;
+import xin.manong.hylian.server.response.ViewPermission;
+import xin.manong.hylian.server.service.AppService;
 import xin.manong.hylian.server.service.PermissionService;
 import xin.manong.hylian.server.service.request.PermissionSearchRequest;
 import xin.manong.weapon.base.util.RandomID;
@@ -34,6 +37,8 @@ public class PermissionController {
 
     private static final Logger logger = LoggerFactory.getLogger(PermissionController.class);
 
+    @Resource
+    protected AppService appService;
     @Resource
     protected PermissionService permissionService;
 
@@ -141,7 +146,26 @@ public class PermissionController {
     @Path("search")
     @PostMapping("search")
     @EnableWebLogAspect
-    public Pager<Permission> search(@RequestBody PermissionSearchRequest searchRequest) {
-        return permissionService.search(searchRequest);
+    public Pager<ViewPermission> search(@RequestBody PermissionSearchRequest searchRequest) {
+        Pager<Permission> pager = permissionService.search(searchRequest);
+        Pager<ViewPermission> viewPager = new Pager<>();
+        viewPager.current = pager.current;
+        viewPager.size = pager.size;
+        viewPager.total = pager.total;
+        viewPager.records = new ArrayList<>();
+        for (Permission permission : pager.records) viewPager.records.add(fillAndConvert(permission));
+        return viewPager;
+    }
+
+    /**
+     * 填充和转换权限
+     *
+     * @param permission 权限
+     * @return 视图层权限
+     */
+    private ViewPermission fillAndConvert(Permission permission) {
+        App app = appService.get(permission.appId);
+        if (app == null) throw new NotFoundException("应用不存在");
+        return Converter.convert(permission, app);
     }
 }

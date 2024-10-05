@@ -2,7 +2,7 @@ package xin.manong.hylian.server.monitor;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import xin.manong.hylian.server.service.ActiveRecordService;
+import xin.manong.hylian.server.service.ActivityService;
 
 import javax.annotation.Resource;
 
@@ -23,7 +23,7 @@ public class Sweeper implements Runnable {
     private volatile boolean running = false;
     private Thread runThread;
     @Resource
-    protected ActiveRecordService activeRecordService;
+    protected ActivityService activityService;
 
     /**
      * 启动清理
@@ -60,7 +60,7 @@ public class Sweeper implements Runnable {
         while (running) {
             try {
                 Long maxUpdateTime = System.currentTimeMillis() - EXPIRED_INTERVAL_MS;
-                int n = activeRecordService.removeExpires(maxUpdateTime);
+                int n = activityService.removeExpires(maxUpdateTime);
                 logger.info("sweep {} expired active records", n);
                 Thread.sleep(CHECK_INTERVAL_MS);
             } catch (Exception e) {

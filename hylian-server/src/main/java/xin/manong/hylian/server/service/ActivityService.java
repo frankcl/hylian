@@ -2,7 +2,7 @@ package xin.manong.hylian.server.service;
 
 import xin.manong.hylian.model.ActiveRecord;
 import xin.manong.hylian.model.Pager;
-import xin.manong.hylian.server.service.request.ActiveRecordSearchRequest;
+import xin.manong.hylian.server.service.request.ActivitySearchRequest;
 
 import java.util.List;
 
@@ -12,7 +12,7 @@ import java.util.List;
  * @author frankcl
  * @date 2023-09-01 19:37:02
  */
-public interface ActiveRecordService {
+public interface ActivityService {
 
     /**
      * 添加活动记录
@@ -68,6 +68,6 @@ public interface ActiveRecordService {
      * @param searchRequest 搜索请求
      * @return 活动记录分页列表
      */
-    Pager<ActiveRecord> search(ActiveRecordSearchRequest searchRequest);
+    Pager<ActiveRecord> search(ActivitySearchRequest searchRequest);
 
 }

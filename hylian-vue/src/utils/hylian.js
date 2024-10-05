@@ -16,6 +16,11 @@ export const isJsonStr = str => {
   }
 }
 
+export const copyToClipboard = async text => {
+  if (!text) return
+  await navigator.clipboard.writeText(text)
+}
+
 export const isLogin = () => {
   const token = Cookies.get(COOKIE_TOKEN)
   return token !== undefined
