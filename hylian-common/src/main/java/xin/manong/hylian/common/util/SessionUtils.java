@@ -7,6 +7,7 @@ import xin.manong.hylian.common.SessionConstants;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import java.util.List;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * session工具
@@ -92,6 +93,17 @@ public class SessionUtils {
     public static List<Permission> getPermissions(HttpServletRequest httpRequest) {
         if (httpRequest == null) return null;
         return (List<Permission>) httpRequest.getSession().getAttribute(SessionConstants.PERMISSIONS);
+    }
+
+    /**
+     * 从session中获取锁
+     *
+     * @param httpRequest HTTP请求
+     * @return 成功返回会话锁，否则返回null
+     */
+    public static ReentrantLock getLock(HttpServletRequest httpRequest) {
+        if (httpRequest == null) return null;
+        return (ReentrantLock) httpRequest.getSession().getAttribute(SessionConstants.LOCK);
     }
 
     /**

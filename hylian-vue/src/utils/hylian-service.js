@@ -2,6 +2,12 @@ import axios from './axios-plus'
 
 const API_ACTIVITY_SEARCH = '/api/activity/search'
 
+const API_ROLE_GET = '/api/role/get'
+const API_ROLE_ADD = '/api/role/add'
+const API_ROLE_UPDATE = '/api/role/update'
+const API_ROLE_DELETE = '/api/role/delete'
+const API_ROLE_SEARCH = '/api/role/search'
+
 const API_PERMISSION_GET = '/api/permission/get'
 const API_PERMISSION_ADD = '/api/permission/add'
 const API_PERMISSION_UPDATE = '/api/permission/update'
@@ -44,6 +50,50 @@ export const remoteSearchActivity = async (searchRequest) => {
   return await axios({
     method: HTTP_POST,
     url: API_ACTIVITY_SEARCH,
+    data: searchRequest
+  })
+}
+
+export const remoteGetRole = async (id) => {
+  return await axios({
+    method: HTTP_GET,
+    url: API_ROLE_GET,
+    params: {
+      id: id
+    }
+  })
+}
+
+export const remoteAddRole = async (role) => {
+  return await axios({
+    method: HTTP_PUT,
+    url: API_ROLE_ADD,
+    data: role
+  })
+}
+
+export const remoteUpdateRole = async (role) => {
+  return await axios({
+    method: HTTP_POST,
+    url: API_ROLE_UPDATE,
+    data: role
+  })
+}
+
+export const remoteDeleteRole = async (id) => {
+  return await axios({
+    method: HTTP_DELETE,
+    url: API_ROLE_DELETE,
+    params: {
+      id: id
+    }
+  })
+}
+
+export const remoteSearchRole = async (searchRequest) => {
+  return await axios({
+    method: HTTP_POST,
+    url: API_ROLE_SEARCH,
     data: searchRequest
   })
 }

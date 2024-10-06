@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import xin.manong.hylian.client.common.Constants;
 import xin.manong.hylian.client.config.HylianClientConfig;
+import xin.manong.hylian.common.SessionConstants;
 import xin.manong.weapon.base.http.HttpRequest;
 import xin.manong.weapon.base.http.RequestFormat;
 
@@ -13,6 +14,7 @@ import javax.servlet.http.HttpSessionEvent;
 import javax.servlet.http.HttpSessionListener;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * session监听器
@@ -37,6 +39,8 @@ public class SessionListener implements HttpSessionListener {
     public void sessionCreated(HttpSessionEvent event) {
         HttpSession session = event.getSession();
         if (session == null) return;
+        ReentrantLock lock = new ReentrantLock();
+        session.setAttribute(SessionConstants.LOCK, lock);
         SessionManager.put(session);
         session.setMaxInactiveInterval(MAX_SESSION_IDLE_TIME_SECONDS);
         logger.info("create session[{}] success", session.getId());

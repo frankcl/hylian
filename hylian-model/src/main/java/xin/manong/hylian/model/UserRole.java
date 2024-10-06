@@ -16,6 +16,7 @@ import org.slf4j.LoggerFactory;
 import javax.ws.rs.BadRequestException;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
+import java.util.Objects;
 
 /**
  * 用户角色关系
@@ -64,6 +65,18 @@ public class UserRole extends BaseModel {
     @JSONField(name = "app_id")
     @JsonProperty("app_id")
     public String appId;
+
+    @Override
+    public boolean equals(Object object) {
+        if (!(object instanceof UserRole)) return false;
+        UserRole userRole = (UserRole) object;
+        return Objects.equals(userRole.userId, userId) && Objects.equals(userRole.roleId, roleId);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(userId, roleId);
+    }
 
     /**
      * 检测用户角色关系有效性

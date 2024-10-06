@@ -18,7 +18,6 @@ public class Constants {
     public static final String PARAM_EXCLUDE_PATTERNS = "exclude_patterns";
     public static final String PARAM_USER_ID = "user_id";
     public static final String PARAM_ROLE_IDS = "role_ids";
-    public static final String PARAM_ALLOW_ORIGIN = "allow_origin";
 
     public static final String CLIENT_PATH_LOGOUT = "/api/logout";
     public static final String CLIENT_PATH_SWEEP = "/api/sweep";

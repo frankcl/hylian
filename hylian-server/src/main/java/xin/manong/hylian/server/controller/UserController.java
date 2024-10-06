@@ -1,5 +1,6 @@
 package xin.manong.hylian.server.controller;
 
+import com.google.common.collect.Sets;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
@@ -11,14 +12,11 @@ import org.springframework.web.bind.annotation.*;
 import xin.manong.hylian.model.*;
 import xin.manong.hylian.server.common.Constants;
 import xin.manong.hylian.server.config.ServerConfig;
+import xin.manong.hylian.server.request.*;
 import xin.manong.hylian.server.response.UploadResponse;
 import xin.manong.hylian.server.response.ViewTenant;
 import xin.manong.hylian.server.response.ViewUser;
 import xin.manong.hylian.server.converter.Converter;
-import xin.manong.hylian.server.request.PasswordChangeRequest;
-import xin.manong.hylian.server.request.UserRequest;
-import xin.manong.hylian.server.request.UserRoleRequest;
-import xin.manong.hylian.server.request.UserUpdateRequest;
 import xin.manong.hylian.server.service.TenantService;
 import xin.manong.hylian.server.service.UserRoleService;
 import xin.manong.hylian.server.service.UserService;
@@ -35,6 +33,10 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * 用户控制器
@@ -181,6 +183,30 @@ public class UserController {
     @EnableWebLogAspect
     public boolean removeUserRole(@QueryParam("id") @RequestParam("id") Long id) {
         return userRoleService.delete(id);
+    }
+
+    /**
+     * 批量更新用户角色关系
+     *
+     * @param request 请求
+     * @return 成功返回true，否则返回false
+     */
+    @POST
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("batchUpdateUserRole")
+    @PostMapping("batchUpdateUserRole")
+    @EnableWebLogAspect
+    public boolean batchUpdateUserRole(@RequestBody BatchUserRoleRequest request) {
+        if (request == null) throw new BadRequestException("批量更新请求为空");
+        request.check();
+        Set<UserRole> prevUserRoles = new HashSet<>(userRoleService.getByAppUser(request.appId, request.userId));
+        Set<UserRole> currentUserRoles = new HashSet<>(Converter.convert(request));
+        List<Long> removeUserRoles = Sets.difference(prevUserRoles, currentUserRoles).
+                stream().map(r -> r.id).collect(Collectors.toList());
+        List<UserRole> addUserRoles = new ArrayList<>(Sets.difference(currentUserRoles, prevUserRoles));
+        userRoleService.batchUpdate(addUserRoles, removeUserRoles);
+        return true;
     }
 
     /**

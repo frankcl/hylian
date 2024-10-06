@@ -1,6 +1,5 @@
 package xin.manong.hylian.client.core;
 
-import com.alibaba.fastjson.JSON;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,7 +34,6 @@ public class HylianShield {
     private final String appId;
     private final String appSecret;
     private final String serverURL;
-    private final ReentrantLock refreshLock;
 
     public HylianShield(String appId,
                         String appSecret,
@@ -43,7 +41,6 @@ public class HylianShield {
         this.appId = appId;
         this.appSecret = appSecret;
         this.serverURL = serverURL.endsWith("/") ? serverURL : serverURL + "/";
-        this.refreshLock = new ReentrantLock();
     }
 
     /**
@@ -83,20 +80,28 @@ public class HylianShield {
                     URLEncoder.encode(redirectURL, Constants.CHARSET_UTF8)));
             return false;
         }
-        token = acquireToken(code, httpRequest);
-        String requestURL = HTTPUtils.getRequestURL(httpRequest);
-        requestURL = HTTPUtils.removeQueries(requestURL, new HashSet<String>() {{
-            add(Constants.PARAM_CODE);
-        }});
-        if (StringUtils.isEmpty(token)) {
-            logger.error("acquire token failed");
+        String requestURL = HTTPUtils.removeQueries(HTTPUtils.getRequestURL(httpRequest),
+                new HashSet<String>() {{ add(Constants.PARAM_CODE); }});
+        ReentrantLock sessionLock = SessionUtils.getLock(httpRequest);
+        try {
+            if (sessionLock != null) sessionLock.lock();
+            if (SessionUtils.getToken(httpRequest) != null) {
+                httpResponse.sendRedirect(requestURL);
+                return false;
+            }
+            token = acquireToken(code, httpRequest);
+            if (StringUtils.isEmpty(token)) {
+                logger.error("acquire token failed");
+                httpResponse.sendRedirect(requestURL);
+                return false;
+            }
+            logger.info("acquire token success");
+            SessionUtils.setToken(httpRequest, token);
             httpResponse.sendRedirect(requestURL);
             return false;
+        } finally {
+            if (sessionLock != null) sessionLock.unlock();
         }
-        logger.info("acquire token success");
-        SessionUtils.setToken(httpRequest, token);
-        httpResponse.sendRedirect(requestURL);
-        return false;
     }
 
     /**
@@ -169,22 +174,22 @@ public class HylianShield {
         Long refreshTime = SessionUtils.getTokenRefreshTime(httpServletRequest);
         long refreshInterval = refreshTime == null ? Long.MAX_VALUE : System.currentTimeMillis() - refreshTime;
         if (refreshInterval <= REFRESH_TIME_INTERVAL_MS) return true;
-        refreshLock.lock();
+        ReentrantLock sessionLock = SessionUtils.getLock(httpServletRequest);
         try {
+            if (sessionLock != null) sessionLock.lock();
             if (!token.equals(SessionUtils.getToken(httpServletRequest))) return true;
             String requestURL = String.format("%s%s", serverURL, Constants.SERVER_PATH_REFRESH_TOKEN);
-            RefreshTokenRequest request = new RefreshTokenRequest();
-            request.appId = appId;
-            request.appSecret = appSecret;
-            request.token = token;
-            Map<String, Object> body = JSON.parseObject(JSON.toJSONString(request));
+            Map<String, Object> body = new HashMap<>();
+            body.put(Constants.PARAM_TOKEN, token);
+            body.put(Constants.PARAM_APP_ID, appId);
+            body.put(Constants.PARAM_APP_SECRET, appSecret);
             HttpRequest httpRequest = HttpRequest.buildPostRequest(requestURL, RequestFormat.JSON, body);
             String newToken = HTTPExecutor.executeAndUnwrap(httpRequest, String.class);
             if (StringUtils.isEmpty(newToken)) return false;
             SessionUtils.setToken(httpServletRequest, newToken);
             return true;
         } finally {
-            refreshLock.unlock();
+            if (sessionLock != null) sessionLock.unlock();
         }
     }
 

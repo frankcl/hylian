@@ -8,6 +8,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import xin.manong.hylian.model.Pager;
 import xin.manong.hylian.model.UserRole;
 import xin.manong.hylian.server.common.Constants;
@@ -19,6 +20,8 @@ import xin.manong.hylian.server.util.Validator;
 
 import javax.annotation.Resource;
 import javax.ws.rs.BadRequestException;
+import javax.ws.rs.InternalServerErrorException;
+import java.util.List;
 
 /**
  * 用户角色服务实现
@@ -43,6 +46,32 @@ public class UserRoleServiceImpl implements UserRoleService {
             throw new IllegalStateException("用户角色关系已存在");
         }
         return userRoleMapper.insert(userRole) > 0;
+    }
+
+    @Override
+    public List<UserRole> getByAppUser(String appId, String userId) {
+        if (StringUtils.isEmpty(appId)) {
+            logger.error("app id is empty for getByAppUser");
+            throw new BadRequestException("应用ID为空");
+        }
+        if (StringUtils.isEmpty(userId)) {
+            logger.error("user id is empty for getByAppUser");
+            throw new BadRequestException("用户ID为空");
+        }
+        LambdaQueryWrapper<UserRole> query = new LambdaQueryWrapper<>();
+        query.eq(UserRole::getAppId, appId).eq(UserRole::getUserId, userId);
+        return userRoleMapper.selectList(query);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void batchUpdate(List<UserRole> addUserRoles, List<Long> removeUserRoles) {
+        for (UserRole userRole : addUserRoles) {
+            if (!add(userRole)) throw new InternalServerErrorException("添加用户角色关系失败");
+        }
+        for (Long roleId : removeUserRoles) {
+            if (!delete(roleId)) throw new InternalServerErrorException("删除用户角色关系失败");
+        }
     }
 
     @Override

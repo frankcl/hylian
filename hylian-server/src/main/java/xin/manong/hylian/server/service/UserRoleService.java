@@ -4,6 +4,8 @@ import xin.manong.hylian.model.Pager;
 import xin.manong.hylian.model.UserRole;
 import xin.manong.hylian.server.service.request.UserRoleSearchRequest;
 
+import java.util.List;
+
 /**
  * 用户角色服务接口定义
  *
@@ -19,6 +21,23 @@ public interface UserRoleService {
      * @return 成功返回true，否则返回false
      */
     boolean add(UserRole userRole);
+
+    /**
+     * 获取应用用户所有关系
+     *
+     * @param appId 应用ID
+     * @param userId 用户ID
+     * @return 关系列表
+     */
+    List<UserRole> getByAppUser(String appId, String userId);
+
+    /**
+     * 批量更新
+     *
+     * @param addUserRoles 添加用户角色关系
+     * @param removeUserRoles 删除用户角色关系
+     */
+    void batchUpdate(List<UserRole> addUserRoles, List<Long> removeUserRoles);
 
     /**
      * 删除用户角色关系

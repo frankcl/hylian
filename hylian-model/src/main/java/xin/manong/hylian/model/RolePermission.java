@@ -16,6 +16,7 @@ import org.slf4j.LoggerFactory;
 import javax.ws.rs.BadRequestException;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
+import java.util.Objects;
 
 /**
  * 角色权限关系
@@ -56,6 +57,19 @@ public class RolePermission extends BaseModel {
     @JSONField(name = "role_id")
     @JsonProperty("role_id")
     public String roleId;
+
+    @Override
+    public boolean equals(Object object) {
+        if (!(object instanceof RolePermission)) return false;
+        RolePermission rolePermission = (RolePermission) object;
+        return Objects.equals(rolePermission.permissionId, permissionId) &&
+                Objects.equals(rolePermission.roleId, roleId);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(permissionId, roleId);
+    }
 
     /**
      * 检测角色权限关系有效性

@@ -10,6 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import xin.manong.hylian.server.config.ServerConfig;
 import xin.manong.hylian.server.service.UserRoleService;
 import xin.manong.hylian.server.service.request.UserSearchRequest;
@@ -113,6 +114,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public boolean delete(String id) {
         if (StringUtils.isEmpty(id)) {
             logger.error("user id is empty for deleting");
@@ -124,8 +126,10 @@ public class UserServiceImpl implements UserService {
             throw new IllegalStateException("用户不存在");
         }
         boolean result = userMapper.deleteById(id) > 0;
-        if (result) deleteAvatar(user);
-        userRoleService.deleteByUser(id);
+        if (result) {
+            userRoleService.deleteByUser(id);
+            deleteAvatar(user);
+        }
         return result;
     }
 

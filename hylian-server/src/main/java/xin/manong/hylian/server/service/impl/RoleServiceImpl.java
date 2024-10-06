@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import xin.manong.hylian.model.Pager;
 import xin.manong.hylian.model.Role;
 import xin.manong.hylian.server.common.Constants;
@@ -97,6 +98,7 @@ public class RoleServiceImpl implements RoleService {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public boolean delete(String id) {
         if (StringUtils.isEmpty(id)) {
             logger.error("role id is empty for deleting");

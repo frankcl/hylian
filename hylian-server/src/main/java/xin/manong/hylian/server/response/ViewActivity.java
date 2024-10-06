@@ -22,7 +22,7 @@ import java.io.Serializable;
 @Accessors(chain = true)
 @XmlAccessorType(XmlAccessType.FIELD)
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class ViewRecord implements Serializable {
+public class ViewActivity implements Serializable {
 
     /**
      * 自增ID

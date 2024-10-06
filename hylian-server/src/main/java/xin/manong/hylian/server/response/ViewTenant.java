@@ -14,7 +14,7 @@ import java.io.Serializable;
  * 视图层租户信息
  *
  * @author frankcl
- * @date 2023-09-05 10:51:30
+ * @date 2024-09-05 10:51:30
  */
 @Getter
 @Setter

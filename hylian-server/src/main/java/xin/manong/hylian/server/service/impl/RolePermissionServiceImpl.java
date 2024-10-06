@@ -8,6 +8,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import xin.manong.hylian.model.Pager;
 import xin.manong.hylian.model.RolePermission;
 import xin.manong.hylian.server.common.Constants;
@@ -19,6 +20,8 @@ import xin.manong.hylian.server.util.Validator;
 
 import javax.annotation.Resource;
 import javax.ws.rs.BadRequestException;
+import javax.ws.rs.InternalServerErrorException;
+import java.util.List;
 
 /**
  * 角色权限关系服务实现
@@ -45,6 +48,28 @@ public class RolePermissionServiceImpl implements RolePermissionService {
             throw new IllegalStateException("角色权限关系已存在");
         }
         return rolePermissionMapper.insert(rolePermission) > 0;
+    }
+
+    @Override
+    public List<RolePermission> getByRoleId(String roleId) {
+        if (StringUtils.isEmpty(roleId)) {
+            logger.error("role id is empty for getting");
+            throw new BadRequestException("角色ID为空");
+        }
+        LambdaQueryWrapper<RolePermission> query = new LambdaQueryWrapper<>();
+        query.eq(RolePermission::getRoleId, roleId);
+        return rolePermissionMapper.selectList(query);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void batchUpdate(List<RolePermission> addRolePermissions, List<Long> removeRolePermissions) {
+        for (RolePermission rolePermission : addRolePermissions) {
+            if (!add(rolePermission)) throw new InternalServerErrorException("添加角色权限关系失败");
+        }
+        for (Long roleId : removeRolePermissions) {
+            if (!delete(roleId)) throw new InternalServerErrorException("删除角色权限关系失败");
+        }
     }
 
     @Override

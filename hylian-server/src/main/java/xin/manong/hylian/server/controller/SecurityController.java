@@ -14,11 +14,11 @@ import xin.manong.hylian.server.common.Constants;
 import xin.manong.hylian.server.request.AcquireTokenRequest;
 import xin.manong.hylian.server.request.AppRolePermissionsRequest;
 import xin.manong.hylian.server.request.LoginRequest;
+import xin.manong.hylian.server.request.RefreshTokenRequest;
 import xin.manong.hylian.server.request.RemoveActivityRequest;
 import xin.manong.hylian.server.service.*;
 import xin.manong.hylian.server.service.request.RolePermissionSearchRequest;
 import xin.manong.hylian.server.service.request.UserRoleSearchRequest;
-import xin.manong.hylian.client.core.RefreshTokenRequest;
 import xin.manong.weapon.base.util.RandomID;
 import xin.manong.weapon.spring.web.ws.aspect.EnableWebLogAspect;
 

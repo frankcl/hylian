@@ -8,6 +8,7 @@ package xin.manong.hylian.common;
  */
 public class SessionConstants {
 
+    public static final String LOCK = "__LOCK__";
     public static final String TOKEN = "__TOKEN__";
     public static final String TOKEN_REFRESH_TIME = "__TOKEN_REFRESH_TIME__";
     public static final String USER = "__USER__";

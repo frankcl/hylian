@@ -11,6 +11,7 @@ import TenantList from '@/components/tenant/TenantList'
 import AppList from '@/views/app/AppList'
 import ActivityList from '@/views/activity/ActivityList.vue'
 import PermissionList from '@/views/permission/PermissionList'
+import RoleList from '@/views/role/RoleList'
 
 const routes = [
   {
@@ -49,6 +50,11 @@ const routes = [
         path: 'tenantList',
         name: 'TenantList',
         component: TenantList
+      },
+      {
+        path: 'roleList',
+        name: 'RoleList',
+        component: RoleList
       },
       {
         path: 'permissionList',

@@ -27,8 +27,10 @@ const handleClose = (key, keyPath) => {
         <el-icon><View /></el-icon>
         <span>授权管理</span>
       </template>
-      <el-menu-item>角色</el-menu-item>
-      <el-menu-item>
+      <el-menu-item index="2-1">
+        <RouterLink :to="{ name: 'RoleList' }">角色</RouterLink>
+      </el-menu-item>
+      <el-menu-item index="2-2">
         <RouterLink :to="{ name: 'PermissionList' }">权限</RouterLink>
       </el-menu-item>
     </el-sub-menu>

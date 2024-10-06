@@ -5,10 +5,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import xin.manong.hylian.model.*;
 import xin.manong.hylian.server.request.*;
-import xin.manong.hylian.server.response.ViewPermission;
-import xin.manong.hylian.server.response.ViewRecord;
-import xin.manong.hylian.server.response.ViewTenant;
-import xin.manong.hylian.server.response.ViewUser;
+import xin.manong.hylian.server.response.*;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * 数据转换器
@@ -265,15 +265,15 @@ public class Converter {
      * @param user 所属用户
      * @return 视图层活动记录
      */
-    public static ViewRecord convert(Activity record, App app, ViewUser user) {
-        ViewRecord viewRecord = new ViewRecord();
-        viewRecord.id = record.id;
-        viewRecord.sessionId = record.sessionId;
-        viewRecord.createTime = record.createTime;
-        viewRecord.updateTime = record.updateTime;
-        viewRecord.app = app;
-        viewRecord.user = user;
-        return viewRecord;
+    public static ViewActivity convert(Activity record, App app, ViewUser user) {
+        ViewActivity viewActivity = new ViewActivity();
+        viewActivity.id = record.id;
+        viewActivity.sessionId = record.sessionId;
+        viewActivity.createTime = record.createTime;
+        viewActivity.updateTime = record.updateTime;
+        viewActivity.app = app;
+        viewActivity.user = user;
+        return viewActivity;
     }
 
     /**
@@ -292,5 +292,59 @@ public class Converter {
         viewPermission.updateTime = permission.updateTime;
         viewPermission.app = app;
         return viewPermission;
+    }
+
+    /**
+     * 转换视图层角色
+     *
+     * @param role 角色
+     * @param app 应用
+     * @return 视图层角色
+     */
+    public static ViewRole convert(Role role, App app) {
+        ViewRole viewRole = new ViewRole();
+        viewRole.id = role.id;
+        viewRole.name = role.name;
+        viewRole.createTime = role.createTime;
+        viewRole.updateTime = role.updateTime;
+        viewRole.app = app;
+        return viewRole;
+    }
+
+    /**
+     * 转换批量更新请求为关系列表
+     *
+     * @param request 批量更新请求
+     * @return 关系列表
+     */
+    public static List<RolePermission> convert(BatchRolePermissionRequest request) {
+        List<RolePermission> rolePermissions = new ArrayList<>();
+        if (request.permissionIds == null) return rolePermissions;
+        for (String permissionId : request.permissionIds) {
+            RolePermission rolePermission = new RolePermission();
+            rolePermission.permissionId = permissionId;
+            rolePermission.roleId = request.roleId;
+            rolePermissions.add(rolePermission);
+        }
+        return rolePermissions;
+    }
+
+    /**
+     * 转换批量更新请求为关系列表
+     *
+     * @param request 批量更新请求
+     * @return 关系列表
+     */
+    public static List<UserRole> convert(BatchUserRoleRequest request) {
+        List<UserRole> userRoles = new ArrayList<>();
+        if (request.roleIds == null) return userRoles;
+        for (String roleId : request.roleIds) {
+            UserRole userRole = new UserRole();
+            userRole.userId = request.userId;
+            userRole.appId = request.appId;
+            userRole.roleId = roleId;
+            userRoles.add(userRole);
+        }
+        return userRoles;
     }
 }

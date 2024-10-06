@@ -10,7 +10,7 @@ import xin.manong.hylian.model.App;
 import xin.manong.hylian.model.Pager;
 import xin.manong.hylian.model.User;
 import xin.manong.hylian.server.converter.Converter;
-import xin.manong.hylian.server.response.ViewRecord;
+import xin.manong.hylian.server.response.ViewActivity;
 import xin.manong.hylian.server.response.ViewUser;
 import xin.manong.hylian.server.service.ActivityService;
 import xin.manong.hylian.server.service.AppService;
@@ -54,9 +54,9 @@ public class ActivityController {
     @Path("search")
     @PostMapping("search")
     @EnableWebLogAspect
-    public Pager<ViewRecord> search(@RequestBody ActivitySearchRequest searchRequest) {
+    public Pager<ViewActivity> search(@RequestBody ActivitySearchRequest searchRequest) {
         Pager<Activity> pager = activityService.search(searchRequest);
-        Pager<ViewRecord> viewPager = new Pager<>();
+        Pager<ViewActivity> viewPager = new Pager<>();
         viewPager.current = pager.current;
         viewPager.size = pager.size;
         viewPager.total = pager.total;
@@ -71,7 +71,7 @@ public class ActivityController {
      * @param record 活动记录
      * @return 视图层活动记录
      */
-    private ViewRecord fillAndConvert(Activity record) {
+    private ViewActivity fillAndConvert(Activity record) {
         App app = appService.get(record.appId);
         if (app == null) throw new NotFoundException("应用不存在");
         User user = userService.get(record.userId);
