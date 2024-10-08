@@ -50,7 +50,7 @@ public class UserServiceImplSuite {
         {
             User user = new User();
             user.id = "xxx";
-            user.userName = "abc";
+            user.username = "abc";
             user.name = "frankcl";
             user.tenantId = "t_abc";
             user.password = "xxxxxx";
@@ -60,7 +60,7 @@ public class UserServiceImplSuite {
         {
             User user = new User();
             user.id = "xxx";
-            user.userName = "abc";
+            user.username = "abc";
             user.name = "frankcl";
             user.tenantId = "t_abcd";
             user.password = "xxxxxx";
@@ -74,7 +74,7 @@ public class UserServiceImplSuite {
         {
             User user = new User();
             user.id = "xxx";
-            user.userName = "abc";
+            user.username = "abc";
             user.name = "frankcl";
             user.tenantId = "t_abc";
             user.password = "xxxxxx";
@@ -88,7 +88,7 @@ public class UserServiceImplSuite {
         {
             User user = new User();
             user.id = "xxx";
-            user.userName = "abcd";
+            user.username = "abcd";
             user.name = "frankcl";
             user.tenantId = "t_abc";
             user.password = "xxxxxx";
@@ -102,7 +102,7 @@ public class UserServiceImplSuite {
         {
             User user = new User();
             user.id = "xxxx";
-            user.userName = "abc";
+            user.username = "abc";
             user.name = "frankcl";
             user.tenantId = "t_abc";
             user.password = "xxxxxx";
@@ -117,7 +117,7 @@ public class UserServiceImplSuite {
             User user = userService.get("xxx");
             Assert.assertNotNull(user);
             Assert.assertEquals("xxx", user.id);
-            Assert.assertEquals("abc", user.userName);
+            Assert.assertEquals("abc", user.username);
             Assert.assertEquals("frankcl", user.name);
             Assert.assertEquals("t_abc", user.tenantId);
             Assert.assertEquals("dad3a37aa9d50688b5157698acfd7aee", user.password);
@@ -136,7 +136,7 @@ public class UserServiceImplSuite {
             User user = userService.get("xxx");
             Assert.assertNotNull(user);
             Assert.assertEquals("xxx", user.id);
-            Assert.assertEquals("abc", user.userName);
+            Assert.assertEquals("abc", user.username);
             Assert.assertEquals("frankcl", user.name);
             Assert.assertEquals("t_abc", user.tenantId);
             Assert.assertEquals("04adb4e2f055c978c9bb101ee1bc5cd4", user.password);
@@ -147,7 +147,7 @@ public class UserServiceImplSuite {
         {
             UserSearchRequest searchRequest = new UserSearchRequest();
             searchRequest.tenantId = "t_abc";
-            searchRequest.userName = "abc";
+            searchRequest.username = "abc";
             searchRequest.name = "frank";
             Pager<User> pager = userService.search(searchRequest);
             Assert.assertTrue(pager != null && pager.total == 1 && pager.records.size() == 1);

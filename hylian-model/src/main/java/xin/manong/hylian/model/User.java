@@ -42,10 +42,10 @@ public class User extends BaseModel {
     /**
      * 用户名
      */
-    @TableField(value = "user_name")
-    @JSONField(name = "user_name")
-    @JsonProperty("user_name")
-    public String userName;
+    @TableField(value = "username")
+    @JSONField(name = "username")
+    @JsonProperty("username")
+    public String username;
 
     /**
      * 密码
@@ -80,6 +80,14 @@ public class User extends BaseModel {
     public String avatar;
 
     /**
+     * 是否禁用
+     */
+    @TableField(value = "disabled")
+    @JSONField(name = "disabled")
+    @JsonProperty("disabled")
+    public Boolean disabled;
+
+    /**
      * 检测用户有效性
      * 无效抛出异常
      */
@@ -92,8 +100,8 @@ public class User extends BaseModel {
             logger.error("real name is empty");
             throw new BadRequestException("用户真实名称为空");
         }
-        if (StringUtils.isEmpty(userName)) {
-            logger.error("user name is empty");
+        if (StringUtils.isEmpty(username)) {
+            logger.error("username is empty");
             throw new BadRequestException("用户名为空");
         }
         if (StringUtils.isEmpty(tenantId)) {

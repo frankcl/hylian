@@ -1,10 +1,7 @@
 package xin.manong.hylian.server.controller;
 
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import xin.manong.hylian.model.Activity;
 import xin.manong.hylian.model.App;
 import xin.manong.hylian.model.Pager;
@@ -48,13 +45,13 @@ public class ActivityController {
      * @param searchRequest 搜索请求
      * @return 登录应用分页列表
      */
-    @POST
+    @GET
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @Path("search")
-    @PostMapping("search")
+    @GetMapping("search")
     @EnableWebLogAspect
-    public Pager<ViewActivity> search(@RequestBody ActivitySearchRequest searchRequest) {
+    public Pager<ViewActivity> search(@BeanParam ActivitySearchRequest searchRequest) {
         Pager<Activity> pager = activityService.search(searchRequest);
         Pager<ViewActivity> viewPager = new Pager<>();
         viewPager.current = pager.current;

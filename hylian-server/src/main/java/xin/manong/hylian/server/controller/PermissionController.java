@@ -140,13 +140,13 @@ public class PermissionController {
      * @param searchRequest 搜索请求
      * @return 权限分页列表
      */
-    @POST
+    @GET
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @Path("search")
-    @PostMapping("search")
+    @GetMapping("search")
     @EnableWebLogAspect
-    public Pager<ViewPermission> search(@RequestBody PermissionSearchRequest searchRequest) {
+    public Pager<ViewPermission> search(@BeanParam PermissionSearchRequest searchRequest) {
         Pager<Permission> pager = permissionService.search(searchRequest);
         Pager<ViewPermission> viewPager = new Pager<>();
         viewPager.current = pager.current;

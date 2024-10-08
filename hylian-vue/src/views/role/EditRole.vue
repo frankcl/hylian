@@ -1,16 +1,10 @@
 <script setup>
 import { onMounted, reactive, ref, useTemplateRef, watchEffect } from 'vue'
 import { ArrowRight } from '@element-plus/icons-vue'
-import {
-  ElBreadcrumb, ElBreadcrumbItem,
-  ElButton,
-  ElForm,
-  ElFormItem,
-  ElInput,
-  ElNotification, ElOption, ElSelect,
-} from 'element-plus'
-import { remoteGetRole, remoteUpdateRole } from '@/utils/hylian-service'
-import { fetchAllApps, formRules } from './common'
+import { ElBreadcrumb, ElBreadcrumbItem, ElButton, ElForm, ElFormItem, ElInput, ElOption, ElSelect } from 'element-plus'
+import { asyncGetRole, asyncUpdateRole } from '@/common/service'
+import { fetchAllApps, submitForm } from '@/common/assortment'
+import { formRules } from './common'
 
 const props = defineProps(['id'])
 const emits = defineEmits(['close'])
@@ -22,20 +16,15 @@ const roleForm = reactive({
   app_id: '',
 })
 
-const submitForm = async (formEl) => {
-  if (!await formEl.validate(valid => valid)) return
-  if (!await remoteUpdateRole(roleForm)) {
-    ElNotification.error('编辑角色失败')
-    return
-  }
-  ElNotification.success('编辑角色成功')
+const submit = async formEl => {
+  if (!await submitForm(formEl, roleForm, asyncUpdateRole,
+    '编辑角色成功', '编辑角色失败')) return
   emits('close')
 }
 
 watchEffect(async () => {
   if (!props.id) return
-  const role = await remoteGetRole(props.id)
-  if (!role) return
+  const role = await asyncGetRole(props.id)
   roleForm.id = role.id
   roleForm.name = role.name
   roleForm.app_id = role.app_id
@@ -61,7 +50,7 @@ onMounted(async () => apps.value = await fetchAllApps())
       <el-input v-model.trim="roleForm.name" clearable></el-input>
     </el-form-item>
     <el-form-item>
-      <el-button @click="submitForm(formRef)">保存</el-button>
+      <el-button @click="submit(formRef)">保存</el-button>
       <el-button @click="formRef.resetFields()">重置</el-button>
     </el-form-item>
   </el-form>

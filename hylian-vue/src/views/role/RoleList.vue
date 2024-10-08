@@ -3,20 +3,13 @@ import { format } from 'date-fns'
 import { onMounted, reactive, ref, watch } from 'vue'
 import { ArrowRight, Timer } from '@element-plus/icons-vue'
 import {
-  ElBreadcrumb, ElBreadcrumbItem,
-  ElButton, ElCol,
-  ElDialog,
-  ElIcon, ElInput,
-  ElNotification, ElOption,
-  ElPagination,
-  ElRow, ElSelect,
-  ElTable,
-  ElTableColumn
+  ElBreadcrumb, ElBreadcrumbItem, ElButton, ElCol, ElDialog, ElIcon, ElInput,
+  ElOption, ElPagination, ElRow, ElSelect, ElTable, ElTableColumn
 } from 'element-plus'
-import { remoteDeleteRole, remoteSearchRole } from '@/utils/hylian-service'
+import { asyncDeleteRole, asyncSearchRoles } from '@/common/service'
+import { confirmAndRemove, fetchAllApps, fillSearchQuerySort, searchQueryToRequest } from '@/common/assortment'
 import AddRole from '@/views/role/AddRole'
 import EditRole from '@/views/role/EditRole'
-import { fetchAllApps, initSearchRequest, popConfirmBox } from './common'
 
 const roleId = ref()
 const roles = ref([])
@@ -24,38 +17,31 @@ const apps = ref([])
 const total = ref(0)
 const addDialog = ref(false)
 const editDialog = ref(false)
-const searchQuery = reactive({
-  currentPage: 1,
-  pageSize: 20,
+const query = reactive({
+  current: 1,
+  size: 20,
   name: null,
   app_id: null,
-  sortField: null,
-  sortOrder: null
+  sort_field: null,
+  sort_order: null
 })
 
 const search = async () => {
-  const searchRequest = initSearchRequest(searchQuery)
-  if (searchQuery.name) searchRequest.name = searchQuery.name
-  if (searchQuery.app_id) searchRequest.app_id = searchQuery.app_id
-  const pager = await remoteSearchRole(searchRequest)
-  if (!pager) return
-  roles.value = pager.records
+  const request = searchQueryToRequest(query)
+  if (query.name) request.name = query.name
+  if (query.app_id) request.app_id = query.app_id
+  const pager = await asyncSearchRoles(request)
   total.value = pager.total
+  roles.value = pager.records
 }
 
-const deleteRole = id => {
-  popConfirmBox('删除提示', '确定删除角色信息？',
-    async () => {
-    if (!await remoteDeleteRole(id)) {
-      ElNotification.error('删除角色失败')
-      return
-    }
-    ElNotification.success('删除角色成功')
-    await search()
-  })
+const remove = async id => {
+  if (!await confirmAndRemove(id, asyncDeleteRole, '删除提示', '确定删除角色信息？',
+    '删除角色成功', '删除角色失败')) return
+  await search()
 }
 
-const openEditDialog = (id) => {
+const openEditDialog = id => {
   roleId.value = id
   editDialog.value = true
 }
@@ -70,13 +56,7 @@ const closeAddDialog = async () => {
   await search()
 }
 
-const roleSortChange = (event) => {
-  if (!event || !event.prop) return
-  searchQuery.sortField = event.prop
-  searchQuery.sortOrder = event.order
-}
-
-watch(searchQuery, () => search(), { immediate: true })
+watch(query, () => search(), { immediate: true })
 onMounted(async () => apps.value = await fetchAllApps() )
 </script>
 
@@ -96,7 +76,7 @@ onMounted(async () => apps.value = await fetchAllApps() )
   </el-row>
   <el-row style="margin-top: 20px;">
     <el-col :span="6">
-      <el-select v-model="searchQuery.app_id" filterable clearable placeholder="请选择应用">
+      <el-select v-model="query.app_id" filterable clearable placeholder="请选择应用">
         <el-option v-for="app in apps" :key="app.id" :label="app.name" :value="app.id"></el-option>
       </el-select>
     </el-col>
@@ -108,7 +88,7 @@ onMounted(async () => apps.value = await fetchAllApps() )
     <EditRole :id="roleId" @close="closeEditDialog"></EditRole>
   </el-dialog>
   <el-table class="role-list" :data="roles" max-height="500" table-layout="auto"
-            stripe @sort-change="roleSortChange">
+            stripe @sort-change="event => fillSearchQuerySort(event, query)">
     <template #empty>没有角色数据</template>
     <el-table-column prop="name" label="角色名称" />
     <el-table-column prop="app.name" label="所属应用" />
@@ -126,17 +106,17 @@ onMounted(async () => apps.value = await fetchAllApps() )
     </el-table-column>
     <el-table-column fixed="right">
       <template #header>
-        <el-input v-model="searchQuery.name" size="small" clearable placeholder="根据角色名搜索" />
+        <el-input v-model="query.name" size="small" clearable placeholder="根据角色名搜索" />
       </template>
       <template #default="scope">
         <el-button @click="openEditDialog(scope.row.id)">编辑</el-button>
-        <el-button @click="deleteRole(scope.row.id)">删除</el-button>
+        <el-button @click="remove(scope.row.id)">删除</el-button>
       </template>
     </el-table-column>
   </el-table>
   <el-row justify="center" align="middle" style="margin-top: 20px;">
     <el-pagination background layout="prev, pager, next" :total="total"
-                   v-model:page-size="searchQuery.pageSize" v-model:current-page="searchQuery.currentPage" />
+                   v-model:page-size="query.size" v-model:current-page="query.current" />
   </el-row>
 </template>
 

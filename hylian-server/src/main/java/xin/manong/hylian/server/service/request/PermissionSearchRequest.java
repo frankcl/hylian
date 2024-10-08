@@ -3,6 +3,8 @@ package xin.manong.hylian.server.service.request;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import javax.ws.rs.QueryParam;
+
 /**
  * 权限搜索请求
  *
@@ -16,15 +18,18 @@ public class PermissionSearchRequest extends SearchRequest {
      * 访问资源
      */
     @JsonProperty("resource")
+    @QueryParam("resource")
     public String resource;
     /**
      * 权限名称
      */
     @JsonProperty("name")
+    @QueryParam("name")
     public String name;
     /**
      * 应用ID
      */
     @JsonProperty("app_id")
+    @QueryParam("app_id")
     public String appId;
 }

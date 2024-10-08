@@ -11,18 +11,19 @@ export const useUserStore = defineStore(
     const tenant = ref()
     const roles = ref()
 
-    const injected = computed(() => username.value)
+    const injected = computed(() => username.value !== undefined)
 
-    function inject(user) {
+    const inject = user => {
+      if (!user) return
       id.value = user.id
-      username.value = user['user_name']
+      username.value = user.username
       name.value = user.name
       avatar.value = user.avatar
       tenant.value = user.tenant
       roles.value = user.roles
     }
 
-    function clear() {
+    const clear = () => {
       id.value = undefined
       username.value = undefined
       name.value = undefined

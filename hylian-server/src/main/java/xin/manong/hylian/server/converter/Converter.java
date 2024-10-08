@@ -46,11 +46,12 @@ public class Converter {
     public static User convert(UserRequest userRequest) {
         if (userRequest == null) return null;
         User user = new User();
-        user.userName = userRequest.userName;
+        user.username = userRequest.username;
         user.password = userRequest.password;
         user.name = userRequest.name;
         user.tenantId = userRequest.tenantId;
         user.avatar = userRequest.avatar;
+        user.disabled = userRequest.disabled == null || userRequest.disabled;
         return user;
     }
 
@@ -67,6 +68,7 @@ public class Converter {
         user.name = userRequest.name;
         user.tenantId = userRequest.tenantId;
         user.avatar = userRequest.avatar;
+        user.disabled = userRequest.disabled;
         return user;
     }
 
@@ -242,11 +244,12 @@ public class Converter {
         if (user == null) return null;
         ViewUser viewUser = new ViewUser();
         viewUser.id = user.id;
-        viewUser.userName = user.userName;
+        viewUser.username = user.username;
         viewUser.name = user.name;
         viewUser.avatar = user.avatar;
         viewUser.createTime = user.createTime;
         viewUser.updateTime = user.updateTime;
+        viewUser.disabled = user.disabled == null || user.disabled;
         viewUser.tenant = tenant;
         if (tenant != null) {
             if (!user.tenantId.equals(tenant.id)) {

@@ -23,10 +23,10 @@ public interface UserService {
     /**
      * 根据用户名获取用户信息
      *
-     * @param userName 用户名
+     * @param username 用户名
      * @return 成功返回用户信息，否则返回null
      */
-    User getByUserName(String userName);
+    User getByUserName(String username);
 
     /**
      * 添加用户信息
@@ -59,4 +59,13 @@ public interface UserService {
      * @return 用户分页列表
      */
     Pager<User> search(UserSearchRequest searchRequest);
+
+    /**
+     * 移除用户登录信息
+     * 1. ticket相关信息
+     * 2. token相关信息
+     *
+     * @param id profile id
+     */
+    void removeUserProfile(String id);
 }

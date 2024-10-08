@@ -32,7 +32,6 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -366,7 +365,7 @@ public class SecurityController {
             throw new BadRequestException("验证码不正确");
         }
         UserSearchRequest searchRequest = new UserSearchRequest();
-        searchRequest.userName = request.username.trim();
+        searchRequest.username = request.username.trim();
         searchRequest.current = 1;
         searchRequest.size = 1;
         Pager<User> pager = userService.search(searchRequest);
@@ -376,8 +375,12 @@ public class SecurityController {
         }
         User user = pager.records.get(0);
         if (!user.password.equals(DigestUtils.md5Hex(request.password.trim()))) {
-            logger.error("username and password are not matched");
-            throw new RuntimeException("用户名和密码不匹配");
+            logger.error("password are not correct");
+            throw new BadRequestException("密码不正确");
+        }
+        if (user.disabled) {
+            logger.error("user is disabled");
+            throw new IllegalStateException("用户处于禁用状态");
         }
         Profile profile = new Profile();
         profile.setId(RandomID.build()).setUserId(user.id).setTenantId(user.tenantId);
@@ -446,10 +449,7 @@ public class SecurityController {
     private void removeTicketResources(String ticket) {
         Profile profile = jwtService.decodeProfile(ticket);
         if (profile == null) return;
-        Set<String> tokenIds = ticketService.getTokens(profile.id);
-        for (String tokenId : tokenIds) tokenService.removeTokenWithId(tokenId);
-        ticketService.removeTokens(profile.id);
-        ticketService.removeTicket(profile.id);
+        userService.removeUserProfile(profile.id);
     }
 
     /**

@@ -1,16 +1,10 @@
 <script setup>
 import { onMounted, reactive, ref, useTemplateRef } from 'vue'
 import { ArrowRight } from '@element-plus/icons-vue'
-import {
-  ElBreadcrumb, ElBreadcrumbItem,
-  ElButton,
-  ElForm,
-  ElFormItem,
-  ElInput,
-  ElNotification, ElOption, ElSelect,
-} from 'element-plus'
-import { remoteAddRole } from '@/utils/hylian-service'
-import { fetchAllApps, formRules } from './common'
+import { ElBreadcrumb, ElBreadcrumbItem, ElButton, ElForm, ElFormItem, ElInput, ElOption, ElSelect } from 'element-plus'
+import { asyncAddRole } from '@/common/service'
+import { fetchAllApps, submitForm } from '@/common/assortment'
+import { formRules } from '@/views/role/common'
 
 const emits = defineEmits(['close'])
 const formRef = useTemplateRef('formRef')
@@ -20,13 +14,9 @@ const roleForm = reactive({
   app_id: ''
 })
 
-const submitForm = async (formEl) => {
-  if (!await formEl.validate(valid => valid)) return
-  if (!await remoteAddRole(roleForm)) {
-    ElNotification.error('新增角色失败')
-    return
-  }
-  ElNotification.success('新增角色成功')
+const submit = async formEl => {
+  if (!await submitForm(formEl, roleForm, asyncAddRole,
+    '新增角色成功', '新增角色失败')) return
   emits('close')
 }
 
@@ -50,7 +40,7 @@ onMounted(async () => apps.value = await fetchAllApps())
       <el-input v-model.trim="roleForm.name" clearable></el-input>
     </el-form-item>
     <el-form-item>
-      <el-button @click="submitForm(formRef)">新增</el-button>
+      <el-button @click="submit(formRef)">新增</el-button>
       <el-button @click="formRef.resetFields()">重置</el-button>
     </el-form-item>
   </el-form>

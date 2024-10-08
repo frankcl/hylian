@@ -3,88 +3,57 @@ import { format } from 'date-fns'
 import { reactive, ref, watch } from 'vue'
 import { ArrowRight, Timer } from '@element-plus/icons-vue'
 import {
-  ElBreadcrumb, ElBreadcrumbItem,
-  ElButton, ElCol,
-  ElDialog,
-  ElIcon, ElInput, ElMessageBox,
-  ElNotification,
-  ElPagination,
-  ElRow,
-  ElTable,
-  ElTableColumn
+  ElBreadcrumb, ElBreadcrumbItem, ElButton, ElCol, ElDialog, ElIcon,
+  ElInput, ElPagination, ElRow, ElTable, ElTableColumn
 } from 'element-plus'
-import { remoteDeleteApp, remoteSearchApp } from '@/utils/hylian-service'
+import { asyncDeleteApp, asyncSearchApps } from '@/common/service'
+import { confirmAndRemove, fillSearchQuerySort, searchQueryToRequest } from '@/common/assortment'
 import AddApp from '@/views/app/AddApp'
 import EditApp from '@/views/app/EditApp'
 
 const appId = ref()
 const apps = ref([])
 const total = ref(0)
-const addAppDialog = ref(false)
-const editAppDialog = ref(false)
-const searcher = reactive({
-  currentPage: 1,
-  pageSize: 20,
+const addDialog = ref(false)
+const editDialog = ref(false)
+const query = reactive({
+  current: 1,
+  size: 20,
   name: null,
-  sortField: null,
-  sortOrder: null
+  sort_field: null,
+  sort_order: null
 })
 
-const searchApp = async () => {
-  const searchRequest = {
-    current: searcher.currentPage,
-    size: searcher.pageSize
-  }
-  if (searcher.sortField && searcher.sortOrder) {
-    searchRequest.order_by = [{ field: searcher.sortField, asc: searcher.sortOrder === 'ascending' }]
-  }
-  if (searcher.name && searcher.name !== '') searchRequest.name = searcher.name
-  const pager = await remoteSearchApp(searchRequest)
-  if (!pager) return
-  apps.value = pager.records
+const search = async () => {
+  const request = searchQueryToRequest(query)
+  if (query.name) request.name = query.name
+  const pager = await asyncSearchApps(request)
   total.value = pager.total
+  apps.value = pager.records
 }
 
-const deleteApp = async (id) => {
-  ElMessageBox.confirm(
-    '确定删除应用信息？',
-    '删除提示',
-    {
-      confirmButtonText: '确认',
-      cancelButtonText: '取消'
-    }
-  ).then(async () => {
-    if (!await remoteDeleteApp(id)) {
-      ElNotification.error('删除应用失败')
-      return
-    }
-    ElNotification.success('删除应用成功')
-    await searchApp()
-  })
+const remove = async id => {
+  if (!await confirmAndRemove(id, asyncDeleteApp, '删除提示', '确定删除应用信息？',
+    '删除应用成功', '删除应用失败')) return
+  await search()
 }
 
-const openEditAppDialog = (id) => {
+const openEditDialog = id => {
   appId.value = id
-  editAppDialog.value = true
+  editDialog.value = true
 }
 
-const closeEditAppDialog = async () => {
-  editAppDialog.value = false
-  await searchApp()
+const closeEditDialog = async () => {
+  editDialog.value = false
+  await search()
 }
 
-const closeAddAppDialog = async () => {
-  addAppDialog.value = false
-  await searchApp()
+const closeAddDialog = async () => {
+  addDialog.value = false
+  await search()
 }
 
-const appSortChange = (event) => {
-  if (!event || !event.prop) return
-  searcher.sortField = event.prop
-  searcher.sortOrder = event.order
-}
-
-watch(searcher, () => searchApp(), { immediate: true })
+watch(query, () => search(), { immediate: true })
 </script>
 
 <template>
@@ -97,18 +66,18 @@ watch(searcher, () => searchApp(), { immediate: true })
     </el-col>
     <el-col :span="4">
       <el-row justify="end">
-        <el-button @click="addAppDialog = true">添加应用</el-button>
+        <el-button @click="addDialog = true">添加应用</el-button>
       </el-row>
     </el-col>
   </el-row>
-  <el-dialog v-model="addAppDialog" align-center show-close>
-    <AddApp @close="closeAddAppDialog"></AddApp>
+  <el-dialog v-model="addDialog" align-center show-close>
+    <AddApp @close="closeAddDialog"></AddApp>
   </el-dialog>
-  <el-dialog v-model="editAppDialog" align-center show-close>
-    <EditApp :id="appId" @close="closeEditAppDialog"></EditApp>
+  <el-dialog v-model="editDialog" align-center show-close>
+    <EditApp :id="appId" @close="closeEditDialog"></EditApp>
   </el-dialog>
   <el-table class="app-list" :data="apps" max-height="500" table-layout="auto"
-            stripe @sort-change="appSortChange">
+            stripe @sort-change="event => fillSearchQuerySort(event, query)">
     <template #empty>没有应用数据</template>
     <el-table-column prop="id" label="应用ID" />
     <el-table-column prop="name" label="应用名" />
@@ -126,17 +95,17 @@ watch(searcher, () => searchApp(), { immediate: true })
     </el-table-column>
     <el-table-column fixed="right">
       <template #header>
-        <el-input v-model="searcher.name" size="small" clearable placeholder="根据应用名搜索" />
+        <el-input v-model="query.name" size="small" clearable placeholder="根据应用名搜索" />
       </template>
       <template #default="scope">
-        <el-button @click="openEditAppDialog(scope.row.id)">编辑</el-button>
-        <el-button @click="deleteApp(scope.row.id)">删除</el-button>
+        <el-button @click="openEditDialog(scope.row.id)">编辑</el-button>
+        <el-button @click="remove(scope.row.id)">删除</el-button>
       </template>
     </el-table-column>
   </el-table>
   <el-row justify="center" align="middle" style="margin-top: 20px;">
     <el-pagination background layout="prev, pager, next" :total="total"
-                   v-model:page-size="searcher.pageSize" v-model:current-page="searcher.currentPage" />
+                   v-model:page-size="query.size" v-model:current-page="query.current" />
   </el-row>
 </template>
 

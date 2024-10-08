@@ -1,23 +1,24 @@
 <script setup>
-import { onMounted, watch } from 'vue'
+import { onMounted, useTemplateRef, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { ElCol, ElContainer, ElRow } from 'element-plus'
 
+const passwordNavRef = useTemplateRef('passwordNavRef')
+const wechatNavRef = useTemplateRef('wechatNavRef')
 const route = useRoute()
 
-function stroke() {
-  const items = document.getElementsByName('nav-item')
-  for (let i = 0; i < items.length; i++) {
-    items[i].className = 'login-nav-item'
-    const aElement = items[i].querySelector('a')
-    if (aElement['href'].endsWith(route.path)) {
-      items[i].className += ' login-nav-item-selected'
+function highlight() {
+  [ passwordNavRef, wechatNavRef ].forEach(navRef => {
+    navRef.value.$el.className = 'login-nav-item'
+    const link = navRef.value.$el.querySelector('a')
+    if (link.href.endsWith(route.path)) {
+      navRef.value.$el.className += ' login-nav-item-selected'
     }
-  }
+  })
 }
 
-watch(() => route.path, stroke)
-onMounted(stroke)
+watch(() => route.path, highlight)
+onMounted(highlight)
 </script>
 
 <template>
@@ -26,14 +27,14 @@ onMounted(stroke)
       <img src="@/assets/logo_blue.png" style="height: 27px;" alt="logo" />
     </el-row>
     <el-row class="login-box-nav">
-      <el-col class="login-nav-item" name="nav-item" :span="12">
+      <el-col class="login-nav-item" ref="passwordNavRef" :span="12">
         <el-row justify="center">
-          <RouterLink to="/home/passwordLogin"><strong>密码登录</strong></RouterLink>
+          <RouterLink :to="{ name: 'PasswordLogin' }"><strong>密码登录</strong></RouterLink>
         </el-row>
       </el-col>
-      <el-col class="login-nav-item" name="nav-item" :span="12">
+      <el-col class="login-nav-item" ref="wechatNavRef" :span="12">
         <el-row justify="center">
-          <RouterLink to="/home/wechatLogin"><strong>微信登录</strong></RouterLink>
+          <RouterLink :to="{ name: 'WechatLogin' }"><strong>微信登录</strong></RouterLink>
         </el-row>
       </el-col>
     </el-row>

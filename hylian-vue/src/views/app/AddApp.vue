@@ -1,45 +1,21 @@
 <script setup>
 import { reactive, useTemplateRef } from 'vue'
 import { ArrowRight, Refresh } from '@element-plus/icons-vue'
-import {
-  ElBreadcrumb, ElBreadcrumbItem,
-  ElButton, ElCol,
-  ElForm,
-  ElFormItem, ElIcon,
-  ElInput,
-  ElNotification,
-} from 'element-plus'
-import { remoteAddApp, remoteCreateRandomSecret } from '@/utils/hylian-service'
+import { ElBreadcrumb, ElBreadcrumbItem, ElButton, ElCol, ElForm, ElFormItem, ElIcon, ElInput } from 'element-plus'
+import { asyncAddApp } from '@/common/service'
+import { submitForm } from '@/common/assortment'
+import { formRules, refreshAppSecret } from '@/views/app/common'
 
 const emits = defineEmits(['close'])
-const appFormRef = useTemplateRef('appFormRef')
+const formRef = useTemplateRef('formRef')
 const appForm = reactive({
   name: '',
   secret: ''
 })
-const appRules = reactive({
-  name: [
-    { required: true, message: '请输入应用名', trigger: 'change' }
-  ],
-  secret: [
-    { required: true, message: '请输入应用秘钥', trigger: 'change' },
-    { min: 8, message: '应用秘钥至少8位', trigger: 'change' }
-  ]
-})
 
-const refreshAppSecret = async () => {
-  const secret = await remoteCreateRandomSecret()
-  if (secret) appForm.secret = secret
-}
-
-const submitForm = async (formEl) => {
-  if (!formEl) return
-  if (!await formEl.validate(valid => valid)) return
-  if (!await remoteAddApp(appForm)) {
-    ElNotification.error('新增应用失败')
-    return
-  }
-  ElNotification.success('新增应用成功')
+const submit = async formEl => {
+  if (!await submitForm(formEl, appForm, asyncAddApp,
+    '新增应用成功', '新增应用失败')) return
   emits('close')
 }
 </script>
@@ -50,7 +26,7 @@ const submitForm = async (formEl) => {
     <el-breadcrumb-item>应用</el-breadcrumb-item>
     <el-breadcrumb-item>新增</el-breadcrumb-item>
   </el-breadcrumb>
-  <el-form ref="appFormRef" :model="appForm" :rules="appRules" style="margin-top: 20px;"
+  <el-form ref="formRef" :model="appForm" :rules="formRules" style="margin-top: 20px;"
            label-width="auto" label-position="right">
     <el-form-item label="应用名" prop="name">
       <el-input v-model.trim="appForm.name" clearable></el-input>
@@ -60,12 +36,12 @@ const submitForm = async (formEl) => {
         <el-input v-model.trim="appForm.secret" clearable></el-input>
       </el-col>
       <el-col :offset="1" :span="1">
-        <el-icon @click="refreshAppSecret"><Refresh /></el-icon>
+        <el-icon @click="refreshAppSecret(appForm)"><Refresh /></el-icon>
       </el-col>
     </el-form-item>
     <el-form-item>
-      <el-button @click="submitForm(appFormRef)">新增</el-button>
-      <el-button @click="appFormRef.resetFields()">重置</el-button>
+      <el-button @click="submit(formRef)">新增</el-button>
+      <el-button @click="formRef.resetFields()">重置</el-button>
     </el-form-item>
   </el-form>
 </template>

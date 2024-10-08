@@ -118,13 +118,13 @@ public class TenantController {
      * @param searchRequest 搜索请求
      * @return 租户分页列表
      */
-    @POST
+    @GET
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @Path("search")
-    @PostMapping("search")
+    @GetMapping("search")
     @EnableWebLogAspect
-    public Pager<ViewTenant> search(@RequestBody TenantSearchRequest searchRequest) {
+    public Pager<ViewTenant> search(@BeanParam TenantSearchRequest searchRequest) {
         Pager<Tenant> pager = tenantService.search(searchRequest);
         Pager<ViewTenant> viewPager = new Pager<>();
         viewPager.current = pager.current;

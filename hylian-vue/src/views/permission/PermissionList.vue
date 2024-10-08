@@ -1,19 +1,14 @@
 <script setup>
 import { format } from 'date-fns'
-import {onMounted, reactive, ref, watch} from 'vue'
+import { onMounted, reactive, ref, watch } from 'vue'
 import { ArrowRight, Timer } from '@element-plus/icons-vue'
 import {
-  ElBreadcrumb, ElBreadcrumbItem,
-  ElButton, ElCol,
-  ElDialog,
-  ElIcon, ElInput, ElMessageBox,
-  ElNotification, ElOption,
-  ElPagination,
-  ElRow, ElSelect,
-  ElTable,
-  ElTableColumn
+  ElBreadcrumb, ElBreadcrumbItem, ElButton, ElCol, ElDialog,
+  ElIcon, ElInput, ElOption, ElPagination,
+  ElRow, ElSelect, ElTable, ElTableColumn
 } from 'element-plus'
-import {remoteDeletePermission, remoteSearchApp, remoteSearchPermission} from '@/utils/hylian-service'
+import { asyncDeletePermission, asyncSearchPermissions } from '@/common/service'
+import { confirmAndRemove, fetchAllApps, fillSearchQuerySort, searchQueryToRequest } from '@/common/assortment'
 import AddPermission from '@/views/permission/AddPermission'
 import EditPermission from '@/views/permission/EditPermission'
 
@@ -23,50 +18,31 @@ const apps = ref([])
 const total = ref(0)
 const addDialog = ref(false)
 const editDialog = ref(false)
-const searchQuery = reactive({
-  currentPage: 1,
-  pageSize: 20,
+const query = reactive({
+  current: 1,
+  size: 20,
   name: null,
   app_id: null,
-  sortField: null,
-  sortOrder: null
+  sort_field: null,
+  sort_order: null
 })
 
 const search = async () => {
-  const searchRequest = {
-    current: searchQuery.currentPage,
-    size: searchQuery.pageSize
-  }
-  if (searchQuery.sortField && searchQuery.sortOrder) {
-    searchRequest.order_by = [{ field: searchQuery.sortField, asc: searchQuery.sortOrder === 'ascending' }]
-  }
-  if (searchQuery.name) searchRequest.name = searchQuery.name
-  if (searchQuery.app_id) searchRequest.app_id = searchQuery.app_id
-  const pager = await remoteSearchPermission(searchRequest)
-  if (!pager) return
-  permissions.value = pager.records
+  const request = searchQueryToRequest(query)
+  if (query.name) request.name = query.name
+  if (query.app_id) request.app_id = query.app_id
+  const pager = await asyncSearchPermissions(request)
   total.value = pager.total
+  permissions.value = pager.records
 }
 
-const deletePermission = async (id) => {
-  ElMessageBox.confirm(
-    '确定删除权限信息？',
-    '删除提示',
-    {
-      confirmButtonText: '确认',
-      cancelButtonText: '取消'
-    }
-  ).then(async () => {
-    if (!await remoteDeletePermission(id)) {
-      ElNotification.error('删除权限失败')
-      return
-    }
-    ElNotification.success('删除权限成功')
-    await search()
-  })
+const remove = async id => {
+  if (!await confirmAndRemove(id, asyncDeletePermission, '删除提示', '确定删除权限信息？',
+    '删除权限成功', '删除权限失败')) return
+  await search()
 }
 
-const openEditDialog = (id) => {
+const openEditDialog = id => {
   permissionId.value = id
   editDialog.value = true
 }
@@ -81,17 +57,8 @@ const closeAddDialog = async () => {
   await search()
 }
 
-const permissionSortChange = (event) => {
-  if (!event || !event.prop) return
-  searchQuery.sortField = event.prop
-  searchQuery.sortOrder = event.order
-}
-
-watch(searchQuery, () => search(), { immediate: true })
-onMounted(async () => {
-  const pager = await remoteSearchApp()
-  if (pager) apps.value = pager.records
-})
+watch(query, () => search(), { immediate: true })
+onMounted(async () => apps.value = await fetchAllApps())
 </script>
 
 <template>
@@ -110,7 +77,7 @@ onMounted(async () => {
   </el-row>
   <el-row style="margin-top: 20px;">
     <el-col :span="6">
-      <el-select v-model="searchQuery.app_id" filterable clearable placeholder="请选择应用">
+      <el-select v-model="query.app_id" filterable clearable placeholder="请选择应用">
         <el-option v-for="app in apps" :key="app.id" :label="app.name" :value="app.id"></el-option>
       </el-select>
     </el-col>
@@ -122,7 +89,7 @@ onMounted(async () => {
     <EditPermission :id="permissionId" @close="closeEditDialog"></EditPermission>
   </el-dialog>
   <el-table class="permission-list" :data="permissions" max-height="500" table-layout="auto"
-            stripe @sort-change="permissionSortChange">
+            stripe @sort-change="event => fillSearchQuerySort(event, query)">
     <template #empty>没有权限数据</template>
     <el-table-column prop="name" label="权限名称" />
     <el-table-column prop="resource" label="资源路径" />
@@ -141,17 +108,17 @@ onMounted(async () => {
     </el-table-column>
     <el-table-column fixed="right">
       <template #header>
-        <el-input v-model="searchQuery.name" size="small" clearable placeholder="根据权限名搜索" />
+        <el-input v-model="query.name" size="small" clearable placeholder="根据权限名搜索" />
       </template>
       <template #default="scope">
         <el-button @click="openEditDialog(scope.row.id)">编辑</el-button>
-        <el-button @click="deletePermission(scope.row.id)">删除</el-button>
+        <el-button @click="remove(scope.row.id)">删除</el-button>
       </template>
     </el-table-column>
   </el-table>
   <el-row justify="center" align="middle" style="margin-top: 20px;">
     <el-pagination background layout="prev, pager, next" :total="total"
-                   v-model:page-size="searchQuery.pageSize" v-model:current-page="searchQuery.currentPage" />
+                   v-model:page-size="query.size" v-model:current-page="query.current" />
   </el-row>
 </template>
 

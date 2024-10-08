@@ -2,16 +2,14 @@
 import { computed, ref, watchEffect } from 'vue'
 import { ElIcon, ElNotification, ElUpload } from 'element-plus'
 import { Plus } from '@element-plus/icons-vue'
-import { remoteUploadAvatar } from '@/utils/hylian-service'
+import { asyncUploadAvatar } from '@/common/service'
 
 const props = defineProps(['width', 'height', 'avatar'])
 const emits = defineEmits(['finish'])
 const displayAvatar = ref()
-const avatarSize = computed(() => {
-  return { width: props.width + 'px', height: props.height + 'px' }
-})
+const avatarSize = computed(() => { return { width: props.width + 'px', height: props.height + 'px' } })
 
-const beforeUploadAvatar = (rawFile) => {
+const beforeUploadAvatar = rawFile => {
   if (rawFile.type !== 'image/jpeg') {
     ElNotification.error('头像图片必须是jpeg格式')
     return false
@@ -22,12 +20,10 @@ const beforeUploadAvatar = (rawFile) => {
   return true
 }
 
-const uploadAvatar = async (file) => {
-  const response = await remoteUploadAvatar(file)
-  if (response) {
-    displayAvatar.value = response['signed_url']
-    emits('finish', response['oss_url'])
-  }
+const uploadAvatar = async file => {
+  const response = await asyncUploadAvatar(file)
+  displayAvatar.value = response.signed_url
+  emits('finish', response.oss_url)
 }
 
 watchEffect(() => displayAvatar.value = props.avatar && props.avatar !== '' ? props.avatar : undefined)

@@ -1,15 +1,10 @@
 <script setup>
 import { onMounted, reactive, ref, useTemplateRef } from 'vue'
 import { ArrowRight } from '@element-plus/icons-vue'
-import {
-  ElBreadcrumb, ElBreadcrumbItem,
-  ElButton,
-  ElForm,
-  ElFormItem,
-  ElInput,
-  ElNotification, ElOption, ElSelect,
-} from 'element-plus'
-import { remoteAddPermission, remoteSearchApp } from '@/utils/hylian-service'
+import { ElBreadcrumb, ElBreadcrumbItem, ElButton, ElForm, ElFormItem, ElInput, ElOption, ElSelect } from 'element-plus'
+import { asyncAddPermission } from '@/common/service'
+import { fetchAllApps, submitForm } from '@/common/assortment'
+import { formRules } from '@/views/permission/common'
 
 const emits = defineEmits(['close'])
 const formRef = useTemplateRef('formRef')
@@ -19,33 +14,14 @@ const permissionForm = reactive({
   resource: '',
   app_id: ''
 })
-const formRules = reactive({
-  name: [
-    { required: true, message: '请输入权限名称', trigger: 'change' }
-  ],
-  resource: [
-    { required: true, message: '请输入资源路径', trigger: 'change' },
-  ],
-  app_id: [
-    { required: true, message: '请选择应用', trigger: 'change' },
-  ]
-})
 
-const submitForm = async (formEl) => {
-  if (!formEl) return
-  if (!await formEl.validate(valid => valid)) return
-  if (!await remoteAddPermission(permissionForm)) {
-    ElNotification.error('新增权限失败')
-    return
-  }
-  ElNotification.success('新增权限成功')
+const submit = async formEl => {
+  if (!await submitForm(formEl, permissionForm, asyncAddPermission,
+    '新增权限成功', '新增权限失败')) return
   emits('close')
 }
 
-onMounted(async () => {
-  const pager = await remoteSearchApp({})
-  if (pager) apps.value = pager.records
-})
+onMounted(async () => apps.value = await fetchAllApps())
 </script>
 
 <template>
@@ -68,7 +44,7 @@ onMounted(async () => {
       <el-input v-model.trim="permissionForm.resource" clearable></el-input>
     </el-form-item>
     <el-form-item>
-      <el-button @click="submitForm(formRef)">新增</el-button>
+      <el-button @click="submit(formRef)">新增</el-button>
       <el-button @click="formRef.resetFields()">重置</el-button>
     </el-form-item>
   </el-form>

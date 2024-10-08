@@ -1,54 +1,29 @@
 <script setup>
 import { reactive, useTemplateRef, watchEffect } from 'vue'
 import { ArrowRight, Refresh } from '@element-plus/icons-vue'
-import {
-  ElBreadcrumb, ElBreadcrumbItem,
-  ElButton, ElCol,
-  ElForm,
-  ElFormItem, ElIcon,
-  ElInput,
-  ElNotification,
-} from 'element-plus'
-import { remoteCreateRandomSecret, remoteGetApp, remoteUpdateApp } from '@/utils/hylian-service'
+import { ElBreadcrumb, ElBreadcrumbItem, ElButton, ElCol, ElForm, ElFormItem, ElIcon, ElInput } from 'element-plus'
+import { asyncGetApp, asyncUpdateApp } from '@/common/service'
+import { submitForm } from '@/common/assortment'
+import { formRules, refreshAppSecret } from '@/views/app/common'
 
 const props = defineProps(['id'])
 const emits = defineEmits(['close'])
-const appFormRef = useTemplateRef('appFormRef')
+const formRef = useTemplateRef('formRef')
 const appForm = reactive({
   id: '',
   name: '',
   secret: '',
 })
-const appRules = reactive({
-  name: [
-    { required: true, message: '请输入应用名', trigger: 'change' }
-  ],
-  secret: [
-    { required: true, message: '请输入应用秘钥', trigger: 'change' },
-    { min: 8, message: '应用秘钥至少8位', trigger: 'change' }
-  ]
-})
 
-const refreshAppSecret = async () => {
-  const secret = await remoteCreateRandomSecret()
-  if (secret) appForm.secret = secret
-}
-
-const submitForm = async (formEl) => {
-  if (!formEl) return
-  if (!await formEl.validate(valid => valid)) return
-  if (!await remoteUpdateApp(appForm)) {
-    ElNotification.error('编辑应用失败')
-    return
-  }
-  ElNotification.success('编辑应用成功')
+const submit = async formEl => {
+  if (!await submitForm(formEl, appForm, asyncUpdateApp,
+    '编辑应用成功', '编辑应用失败')) return
   emits('close')
 }
 
 watchEffect(async () => {
   if (!props.id) return
-  const app = await remoteGetApp(props.id)
-  if (!app) return
+  const app = await asyncGetApp(props.id)
   appForm.id = app.id
   appForm.name = app.name
   appForm.secret = app.secret
@@ -61,7 +36,7 @@ watchEffect(async () => {
     <el-breadcrumb-item>应用</el-breadcrumb-item>
     <el-breadcrumb-item>编辑</el-breadcrumb-item>
   </el-breadcrumb>
-  <el-form ref="appFormRef" :model="appForm" :rules="appRules" style="margin-top: 20px;"
+  <el-form ref="formRef" :model="appForm" :rules="formRules" style="margin-top: 20px;"
            label-width="auto" label-position="right">
     <el-form-item label="应用名" prop="name">
       <el-input v-model.trim="appForm.name" clearable></el-input>
@@ -71,12 +46,12 @@ watchEffect(async () => {
         <el-input v-model.trim="appForm.secret" clearable></el-input>
       </el-col>
       <el-col :offset="1" :span="1">
-        <el-icon @click="refreshAppSecret"><Refresh /></el-icon>
+        <el-icon @click="refreshAppSecret(appForm)"><Refresh /></el-icon>
       </el-col>
     </el-form-item>
     <el-form-item>
-      <el-button @click="submitForm(appFormRef)">保存</el-button>
-      <el-button @click="appFormRef.resetFields()">重置</el-button>
+      <el-button @click="submit(formRef)">保存</el-button>
+      <el-button @click="formRef.resetFields()">重置</el-button>
     </el-form-item>
   </el-form>
 </template>

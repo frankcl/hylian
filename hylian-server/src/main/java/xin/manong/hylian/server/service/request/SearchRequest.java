@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import javax.ws.rs.QueryParam;
 import java.io.Serializable;
 import java.util.List;
 
@@ -20,17 +21,22 @@ public class SearchRequest implements Serializable {
      * 页码，从1开始
      */
     @JsonProperty("current")
+    @QueryParam("current")
     public Integer current;
     /**
      * 分页大小，默认20
      */
     @JsonProperty("size")
+    @QueryParam("size")
     public Integer size;
     /**
      * 排序方式
      */
     @JsonProperty("order_by")
-    public List<OrderByRequest> orderBy;
+    @QueryParam("order_by")
+    public String orderBy;
+
+    public List<OrderByRequest> orderByRequests;
 
     /**
      * 构建排序条件
@@ -38,12 +44,12 @@ public class SearchRequest implements Serializable {
      * @param query 查询
      */
     public void prepareOrderBy(QueryWrapper<?> query) {
-        if (orderBy == null || orderBy.isEmpty()) {
+        if (orderByRequests == null || orderByRequests.isEmpty()) {
             query.orderBy(true, false, "create_time");
             return;
         }
-        for (OrderByRequest orderByItem : orderBy) {
-            query.orderBy(true, orderByItem.asc != null && orderByItem.asc, orderByItem.field);
+        for (OrderByRequest orderByRequest : orderByRequests) {
+            query.orderBy(true, orderByRequest.asc != null && orderByRequest.asc, orderByRequest.field);
         }
     }
 }

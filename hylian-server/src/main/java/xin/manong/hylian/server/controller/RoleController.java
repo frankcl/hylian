@@ -195,13 +195,13 @@ public class RoleController {
      * @param searchRequest 搜索请求
      * @return 角色分页列表
      */
-    @POST
+    @GET
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @Path("search")
-    @PostMapping("search")
+    @GetMapping("search")
     @EnableWebLogAspect
-    public Pager<ViewRole> search(@RequestBody RoleSearchRequest searchRequest) {
+    public Pager<ViewRole> search(@BeanParam RoleSearchRequest searchRequest) {
         Pager<Role> pager = roleService.search(searchRequest);
         Pager<ViewRole> viewPager = new Pager<>();
         viewPager.current = pager.size;

@@ -110,10 +110,10 @@ public class AppController {
      */
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    @Path("createRandomSecret")
-    @GetMapping("createRandomSecret")
+    @Path("randomSecret")
+    @GetMapping("randomSecret")
     @EnableWebLogAspect
-    public String createRandomSecret() {
+    public String randomSecret() {
         return AppSecretUtils.buildSecret(APP_SECRET_LEN);
     }
 
@@ -138,13 +138,13 @@ public class AppController {
      * @param searchRequest 搜索请求
      * @return 应用分页列表
      */
-    @POST
+    @GET
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @Path("search")
-    @PostMapping("search")
+    @GetMapping("search")
     @EnableWebLogAspect
-    public Pager<App> search(@RequestBody AppSearchRequest searchRequest) {
+    public Pager<App> search(@BeanParam AppSearchRequest searchRequest) {
         return appService.search(searchRequest);
     }
 }

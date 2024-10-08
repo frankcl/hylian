@@ -1,15 +1,10 @@
 <script setup>
 import { onMounted, reactive, ref, useTemplateRef, watchEffect } from 'vue'
 import { ArrowRight } from '@element-plus/icons-vue'
-import {
-  ElBreadcrumb, ElBreadcrumbItem,
-  ElButton,
-  ElForm,
-  ElFormItem,
-  ElInput,
-  ElNotification, ElOption, ElSelect,
-} from 'element-plus'
-import { remoteGetPermission, remoteSearchApp, remoteUpdatePermission } from '@/utils/hylian-service'
+import { ElBreadcrumb, ElBreadcrumbItem, ElButton, ElForm, ElFormItem, ElInput, ElOption, ElSelect } from 'element-plus'
+import { asyncGetPermission, asyncUpdatePermission } from '@/common/service'
+import { fetchAllApps, submitForm } from '@/common/assortment'
+import { formRules } from '@/views/permission/common'
 
 const props = defineProps(['id'])
 const emits = defineEmits(['close'])
@@ -21,43 +16,23 @@ const permissionForm = reactive({
   resource: '',
   app_id: '',
 })
-const formRules = reactive({
-  name: [
-    { required: true, message: '请输入权限名称', trigger: 'change' }
-  ],
-  resource: [
-    { required: true, message: '请输入资源路径', trigger: 'change' },
-  ],
-  app_id: [
-    { required: true, message: '请选择应用', trigger: 'change' },
-  ]
-})
 
-const submitForm = async (formEl) => {
-  if (!formEl) return
-  if (!await formEl.validate(valid => valid)) return
-  if (!await remoteUpdatePermission(permissionForm)) {
-    ElNotification.error('编辑权限失败')
-    return
-  }
-  ElNotification.success('编辑权限成功')
+const submit = async formEl => {
+  if (!await submitForm(formEl, permissionForm, asyncUpdatePermission,
+    '编辑权限成功', '编辑权限失败')) return
   emits('close')
 }
 
 watchEffect(async () => {
   if (!props.id) return
-  const permission = await remoteGetPermission(props.id)
-  if (!permission) return
+  const permission = await asyncGetPermission(props.id)
   permissionForm.id = permission.id
   permissionForm.name = permission.name
   permissionForm.resource = permission.resource
   permissionForm.app_id = permission.app_id
 })
 
-onMounted(async () => {
-  const pager = await remoteSearchApp({})
-  if (pager) apps.value = pager.records
-})
+onMounted(async () => apps.value = await fetchAllApps())
 </script>
 
 <template>
@@ -80,7 +55,7 @@ onMounted(async () => {
       <el-input v-model.trim="permissionForm.resource" clearable></el-input>
     </el-form-item>
     <el-form-item>
-      <el-button @click="submitForm(formRef)">保存</el-button>
+      <el-button @click="submit(formRef)">保存</el-button>
       <el-button @click="formRef.resetFields()">重置</el-button>
     </el-form-item>
   </el-form>

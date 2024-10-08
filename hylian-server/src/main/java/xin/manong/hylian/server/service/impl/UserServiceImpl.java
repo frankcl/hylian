@@ -11,16 +11,16 @@ import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import xin.manong.hylian.model.Activity;
 import xin.manong.hylian.server.config.ServerConfig;
-import xin.manong.hylian.server.service.UserRoleService;
+import xin.manong.hylian.server.service.*;
+import xin.manong.hylian.server.service.request.ActivitySearchRequest;
 import xin.manong.hylian.server.service.request.UserSearchRequest;
 import xin.manong.hylian.server.common.Constants;
 import xin.manong.hylian.server.converter.Converter;
 import xin.manong.hylian.server.dao.mapper.UserMapper;
 import xin.manong.hylian.model.Pager;
 import xin.manong.hylian.model.User;
-import xin.manong.hylian.server.service.TenantService;
-import xin.manong.hylian.server.service.UserService;
 import xin.manong.hylian.server.util.Validator;
 import xin.manong.weapon.aliyun.oss.OSSClient;
 import xin.manong.weapon.aliyun.oss.OSSMeta;
@@ -32,6 +32,8 @@ import javax.ws.rs.BadRequestException;
 import javax.ws.rs.InternalServerErrorException;
 import javax.ws.rs.NotFoundException;
 import java.io.InputStream;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * 用户服务实现
@@ -56,6 +58,15 @@ public class UserServiceImpl implements UserService {
     @Lazy
     @Resource
     protected UserRoleService userRoleService;
+    @Lazy
+    @Resource
+    protected ActivityService activityService;
+    @Lazy
+    @Resource
+    protected TicketService ticketService;
+    @Lazy
+    @Resource
+    protected TokenService tokenService;
 
     @Override
     public User get(String id) {
@@ -67,15 +78,15 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User getByUserName(String userName) {
-        if (StringUtils.isEmpty(userName)) {
-            logger.error("user name is empty");
+    public User getByUserName(String username) {
+        if (StringUtils.isEmpty(username)) {
+            logger.error("username is empty");
             throw new BadRequestException("用户名为空");
         }
         UserSearchRequest searchRequest = new UserSearchRequest();
         searchRequest.current = 1;
         searchRequest.size = 1;
-        searchRequest.userName = userName;
+        searchRequest.username = username;
         Pager<User> pager = search(searchRequest);
         if (pager == null || pager.total == 0 || pager.records.isEmpty()) return null;
         return pager.records.get(0);
@@ -88,9 +99,9 @@ public class UserServiceImpl implements UserService {
             throw new NotFoundException("租户不存在");
         }
         LambdaQueryWrapper<User> query = new LambdaQueryWrapper<>();
-        query.eq(User::getId, user.id).or().eq(User::getUserName, user.userName);
+        query.eq(User::getId, user.id).or().eq(User::getUsername, user.username);
         if (userMapper.selectCount(query) > 0) {
-            logger.error("user has existed for the same id[{}] or username[{}]", user.id, user.userName);
+            logger.error("user has existed for the same id[{}] or username[{}]", user.id, user.username);
             throw new IllegalStateException("用户已存在");
         }
         user.password = DigestUtils.md5Hex(user.password.trim());
@@ -106,10 +117,11 @@ public class UserServiceImpl implements UserService {
             throw new NotFoundException("用户不存在");
         }
         saveAvatar(user);
-        user.userName = null;
+        user.username = null;
         if (user.password != null) user.password = DigestUtils.md5Hex(user.password);
         boolean result = userMapper.updateById(user) > 0;
         if (StringUtils.isNotEmpty(user.avatar) && result) deleteAvatar(prevUser);
+        if (result && !prevUser.disabled && user.disabled) removeUserProfile(user);
         return result;
     }
 
@@ -129,6 +141,7 @@ public class UserServiceImpl implements UserService {
         if (result) {
             userRoleService.deleteByUser(id);
             deleteAvatar(user);
+            removeUserProfile(user);
         }
         return result;
     }
@@ -141,11 +154,39 @@ public class UserServiceImpl implements UserService {
         Validator.validateOrderBy(User.class, searchRequest);
         QueryWrapper<User> query = new QueryWrapper<>();
         searchRequest.prepareOrderBy(query);
-        if (!StringUtils.isEmpty(searchRequest.userName)) query.eq("user_name", searchRequest.userName);
+        if (!StringUtils.isEmpty(searchRequest.username)) query.eq("username", searchRequest.username);
         if (!StringUtils.isEmpty(searchRequest.tenantId)) query.eq("tenant_id", searchRequest.tenantId);
         if (!StringUtils.isEmpty(searchRequest.name)) query.like("name", searchRequest.name);
+        if (searchRequest.disabled != null) query.eq("disabled", searchRequest.disabled ? 1 : 0);
         IPage<User> page = userMapper.selectPage(new Page<>(searchRequest.current, searchRequest.size), query);
         return Converter.convert(page);
+    }
+
+    @Override
+    public void removeUserProfile(String id) {
+        Set<String> tokenIds = ticketService.getTokens(id);
+        for (String tokenId : tokenIds) tokenService.removeTokenWithId(tokenId);
+        ticketService.removeTokens(id);
+        ticketService.removeTicket(id);
+    }
+
+    /**
+     * 移除用户登录信息
+     *
+     * @param user 用户
+     */
+    private void removeUserProfile(User user) {
+        ActivitySearchRequest request = new ActivitySearchRequest();
+        request.userId = user.id;
+        request.size = 100;
+        Pager<Activity> pager = activityService.search(request);
+        if (pager.records == null || pager.records.isEmpty()) return;
+        Set<String> tickets = new HashSet<>();
+        for (Activity activity : pager.records) {
+            if (tickets.contains(activity.ticketId)) continue;
+            removeUserProfile(activity.ticketId);
+            tickets.add(activity.ticketId);
+        }
     }
 
     /**

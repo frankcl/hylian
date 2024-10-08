@@ -3,6 +3,8 @@ package xin.manong.hylian.server.service.request;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import javax.ws.rs.QueryParam;
+
 /**
  * 应用搜索请求
  *
@@ -16,5 +18,6 @@ public class AppSearchRequest extends SearchRequest {
      * 应用名
      */
     @JsonProperty("name")
+    @QueryParam("name")
     public String name;
 }

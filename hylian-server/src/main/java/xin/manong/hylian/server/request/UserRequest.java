@@ -33,8 +33,8 @@ public class UserRequest implements Serializable {
     /**
      * 用户名
      */
-    @JsonProperty("user_name")
-    public String userName;
+    @JsonProperty("username")
+    public String username;
 
     /**
      * 密码
@@ -67,12 +67,18 @@ public class UserRequest implements Serializable {
     public String avatar;
 
     /**
+     * 是否禁用
+     */
+    @JsonProperty("disabled")
+    public Boolean disabled;
+
+    /**
      * 检测有效性
      * 无效信息抛出异常
      */
     public void check() {
-        if (StringUtils.isEmpty(userName)) {
-            logger.error("user name is empty");
+        if (StringUtils.isEmpty(username)) {
+            logger.error("username is empty");
             throw new BadRequestException("用户名为空");
         }
         if (StringUtils.isEmpty(name)) {

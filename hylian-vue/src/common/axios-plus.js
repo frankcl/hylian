@@ -1,14 +1,15 @@
 import Qs from 'qs'
 import Axios from 'axios'
 import router from '@/router'
-import { useUserStore } from '@/store'
 import { ElNotification } from 'element-plus'
-import { isJsonStr } from './hylian'
+import { useUserStore } from '@/store'
+import { isJsonStr } from '@/common/assortment'
 
-const pendingRequests = new Map()
+const pendingRequestMap = new Map()
 
 const buildRequestKey = config => {
   if (config && config.data && isJsonStr(config.data)) config.data = JSON.parse(config.data)
+  if (config && config.params && isJsonStr(config.params)) config.params = JSON.parse(config.params)
   const { url, method, params, data } = config
   return [url, method, Qs.stringify(params), Qs.stringify(data)].join('&')
 }
@@ -16,38 +17,39 @@ const buildRequestKey = config => {
 const addPendingRequest = config => {
   if (!config || !config.cancelRequest) return
   const key = buildRequestKey(config)
-  if (pendingRequests.has(key)) {
+  if (pendingRequestMap.has(key)) {
     config.cancelToken = new Axios.CancelToken(
       cancel => cancel(`重复请求取消：${config.url}`))
     return
   }
-  pendingRequests.set(key, key)
+  pendingRequestMap.set(key, key)
 }
 
 const removePendingRequest = response => {
   if (!response || !response.config || !response.config.cancelRequest) return
   const key = buildRequestKey(response.config)
-  if (pendingRequests.has(key)) pendingRequests.delete(key)
+  if (pendingRequestMap.has(key)) pendingRequestMap.delete(key)
 }
 
 const repeatRequest = async error => {
   const config = error.config
   if (!config || !config.retry) return Promise.reject(error)
-  config.__retryCount = config.__retryCount || 0
-  if (config.__retryCount >= config.retry) return Promise.reject(error)
-  config.__retryCount += 1
-  const backOff = new Promise(resolve => {
+  config.__retryCnt = config.__retryCnt || 0
+  if (config.__retryCnt >= config.retry) return Promise.reject(error)
+  config.__retryCnt += 1
+  const future = new Promise(resolve => {
     setTimeout(() => resolve(), config.retryDelay || 1000)
   })
-  return await backOff.then(() => {
+  return await future.then(() => {
     if (config.data && isJsonStr(config.data)) config.data = JSON.parse(config.data)
+    if (config.params && isJsonStr(config.params)) config.params = JSON.parse(config.params)
     return axios(config)
   })
 }
 
 const axios = Axios.create({
   timeout: 6000,
-  retry: 0,
+  retry: 3,
   retryDelay: 1000,
   method: 'get',
   cancelRequest: true,
@@ -58,7 +60,7 @@ const axios = Axios.create({
   }
 })
 
-const sweep = async () => {
+const sweepAndRedirect = async () => {
   const userStore = useUserStore()
   userStore.clear()
   await router.push('/')
@@ -69,7 +71,7 @@ const handleResponse = async response => {
     case 200: return response.data.data
     case 401:
       ElNotification.error('登录状态已过期，请重新登录')
-      await sweep()
+      await sweepAndRedirect()
       return Promise.reject(response.data.message)
     default:
       ElNotification.error(response.data.message)
@@ -94,7 +96,7 @@ axios.interceptors.response.use(
     removePendingRequest(error || {})
     if (error.status === 401) {
       ElNotification.error('登录状态已过期，请重新登录')
-      await sweep()
+      await sweepAndRedirect()
       return Promise.reject(error)
     }
     if (!Axios.isCancel(error)) return repeatRequest(error)

@@ -3,6 +3,8 @@ package xin.manong.hylian.server.service.request;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import javax.ws.rs.QueryParam;
+
 /**
  * 角色搜索请求
  *
@@ -16,10 +18,12 @@ public class RoleSearchRequest extends SearchRequest {
      * 角色名称
      */
     @JsonProperty("name")
+    @QueryParam("name")
     public String name;
     /**
      * 应用ID
      */
     @JsonProperty("app_id")
+    @QueryParam("app_id")
     public String appId;
 }

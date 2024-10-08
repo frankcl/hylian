@@ -3,6 +3,8 @@ package xin.manong.hylian.server.service.request;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import javax.ws.rs.QueryParam;
+
 /**
  * 用户搜索请求
  *
@@ -15,16 +17,25 @@ public class UserSearchRequest extends SearchRequest {
     /**
      * 用户名
      */
-    @JsonProperty("user_name")
-    public String userName;
+    @JsonProperty("username")
+    @QueryParam("username")
+    public String username;
     /**
      * 真实名称
      */
     @JsonProperty("name")
+    @QueryParam("name")
     public String name;
     /**
      * 租户ID
      */
     @JsonProperty("tenant_id")
+    @QueryParam("tenant_id")
     public String tenantId;
+    /**
+     * 是否禁用
+     */
+    @JsonProperty("disabled")
+    @QueryParam("disabled")
+    public Boolean disabled;
 }

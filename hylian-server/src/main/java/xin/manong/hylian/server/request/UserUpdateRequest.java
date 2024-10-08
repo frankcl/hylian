@@ -54,6 +54,12 @@ public class UserUpdateRequest implements Serializable {
     public String avatar;
 
     /**
+     * 是否禁用
+     */
+    @JsonProperty("disabled")
+    public Boolean disabled;
+
+    /**
      * 检测有效性
      * 无效信息抛出异常
      */

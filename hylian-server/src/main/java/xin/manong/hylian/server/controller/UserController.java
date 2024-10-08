@@ -215,13 +215,13 @@ public class UserController {
      * @param searchRequest 搜索请求
      * @return 用户分页列表
      */
-    @POST
+    @GET
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @Path("search")
-    @PostMapping("search")
+    @GetMapping("search")
     @EnableWebLogAspect
-    public Pager<ViewUser> search(@RequestBody UserSearchRequest searchRequest) {
+    public Pager<ViewUser> search(@BeanParam UserSearchRequest searchRequest) {
         Pager<User> pager = userService.search(searchRequest);
         Pager<ViewUser> viewPager = new Pager<>();
         viewPager.current = pager.current;

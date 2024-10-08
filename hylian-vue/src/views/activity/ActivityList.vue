@@ -4,51 +4,35 @@ import { reactive, ref, useTemplateRef, watch } from 'vue'
 import { ArrowRight, DocumentChecked, DocumentCopy, Timer } from '@element-plus/icons-vue'
 import {
   ElBreadcrumb, ElBreadcrumbItem, ElButton, ElForm, ElFormItem,
-  ElIcon, ElInput,
-  ElPagination,
-  ElRow,
-  ElTable,
-  ElTableColumn
+  ElIcon, ElInput, ElPagination, ElRow, ElTable, ElTableColumn
 } from 'element-plus'
-import { remoteSearchActivity } from '@/utils/hylian-service'
-import { copyToClipboard } from '@/utils/hylian'
+import { copyToClipboard, fillSearchQuerySort, searchQueryToRequest } from '@/common/assortment'
+import { asyncSearchActivities } from '@/common/service'
 
-const searchFormRef = useTemplateRef('searchFormRef')
-const records = ref([])
+const formRef = useTemplateRef('formRef')
 const total = ref(0)
-const copied = ref()
-const searchQuery = reactive({
-  currentPage: 1,
-  pageSize: 20,
-  userId: '',
-  appId: '',
-  sortField: null,
-  sortOrder: null
+const copiedId = ref()
+const activityList = ref([])
+const query = reactive({
+  current: 1,
+  size: 20,
+  user_id: '',
+  app_id: '',
+  sort_field: null,
+  sort_order: null
 })
 
 const search = async () => {
-  const searchRequest = {
-    current: searchQuery.currentPage,
-    size: searchQuery.pageSize
-  }
-  if (searchQuery.sortField && searchQuery.sortOrder) {
-    searchRequest.order_by = [{ field: searchQuery.sortField, asc: searchQuery.sortOrder === 'ascending' }]
-  }
-  if (searchQuery.appId) searchRequest.app_id = searchQuery.appId
-  if (searchQuery.userId) searchRequest.user_id = searchQuery.userId
-  const pager = await remoteSearchActivity(searchRequest)
+  const request = searchQueryToRequest(query)
+  if (query.app_id) request.app_id = query.app_id
+  if (query.user_id) request.user_id = query.user_id
+  const pager = await asyncSearchActivities(request)
   if (!pager) return
-  records.value = pager.records
   total.value = pager.total
+  activityList.value = pager.records
 }
 
-const activitySortChange = (event) => {
-  if (!event || !event.prop) return
-  searchQuery.sortField = event.prop
-  searchQuery.sortOrder = event.order
-}
-
-watch(searchQuery, () => search(), { immediate: true })
+watch(query, () => search(), { immediate: true })
 </script>
 
 <template>
@@ -58,27 +42,27 @@ watch(searchQuery, () => search(), { immediate: true })
       <el-breadcrumb-item>活动记录</el-breadcrumb-item>
     </el-breadcrumb>
   </el-row>
-  <el-form :inline="true" :model="searchQuery" ref="searchFormRef" style="margin-top: 20px;">
-    <el-form-item label="应用ID" prop="appId">
-      <el-input v-model="searchQuery.appId" clearable></el-input>
+  <el-form :inline="true" :model="query" ref="formRef" style="margin-top: 20px;">
+    <el-form-item label="应用ID" prop="app_id">
+      <el-input v-model="query.app_id" clearable></el-input>
     </el-form-item>
-    <el-form-item label="用户ID" prop="userId">
-      <el-input v-model="searchQuery.userId" clearable></el-input>
+    <el-form-item label="用户ID" prop="user_id">
+      <el-input v-model="query.user_id" clearable></el-input>
     </el-form-item>
     <el-form-item>
       <el-button @click="search">搜索</el-button>
-      <el-button @click="searchFormRef.resetFields(); search()">重置</el-button>
+      <el-button @click="formRef.resetFields(); search()">重置</el-button>
     </el-form-item>
   </el-form>
-  <el-table class="record-list" :data="records" max-height="500" table-layout="auto"
-            stripe @sort-change="activitySortChange">
+  <el-table class="record-list" :data="activityList" max-height="500" table-layout="auto"
+            stripe @sort-change="event => fillSearchQuerySort(event, query)">
     <template #empty>没有活动记录</template>
     <el-table-column prop="session_id" label="会话ID" />
     <el-table-column prop="app.name" label="应用名">
       <template #default="scope">
         {{ scope.row.app.name }}
-        <el-icon class="hover-text" @click="copyToClipboard(scope.row.app.id); copied = `app#${scope.row.id}`">
-          <document-copy v-if="copied !== `app#${scope.row.id}`"></document-copy>
+        <el-icon class="hover-text" @click="copyToClipboard(scope.row.app.id); copiedId = `app#${scope.row.id}`">
+          <document-copy v-if="copiedId !== `app#${scope.row.id}`"></document-copy>
           <document-checked v-else></document-checked>
         </el-icon>
       </template>
@@ -86,8 +70,8 @@ watch(searchQuery, () => search(), { immediate: true })
     <el-table-column prop="user.name" label="用户名">
       <template #default="scope">
         {{ scope.row.user.name }}
-        <el-icon class="hover-text" @click="copyToClipboard(scope.row.user.id); copied = `user#${scope.row.id}`">
-          <document-copy v-if="copied !== `user#${scope.row.id}`"></document-copy>
+        <el-icon class="hover-text" @click="copyToClipboard(scope.row.user.id); copiedId = `user#${scope.row.id}`">
+          <document-copy v-if="copiedId !== `user#${scope.row.id}`"></document-copy>
           <document-checked v-else></document-checked>
         </el-icon>
       </template>
@@ -107,7 +91,7 @@ watch(searchQuery, () => search(), { immediate: true })
   </el-table>
   <el-row justify="center" align="middle" style="margin-top: 20px;">
     <el-pagination background layout="prev, pager, next" :total="total"
-                   v-model:page-size="searchQuery.pageSize" v-model:current-page="searchQuery.currentPage" />
+                   v-model:page-size="query.size" v-model:current-page="query.current" />
   </el-row>
 </template>
 

@@ -34,8 +34,8 @@ public class ViewUser implements Serializable {
     /**
      * 用户名
      */
-    @JsonProperty("user_name")
-    public String userName;
+    @JsonProperty("username")
+    public String username;
 
     /**
      * 真实名称
@@ -60,6 +60,12 @@ public class ViewUser implements Serializable {
      */
     @JsonProperty("avatar")
     public String avatar;
+
+    /**
+     * 是否禁用
+     */
+    @JsonProperty("disabled")
+    public boolean disabled = true;
 
     /**
      * 创建时间

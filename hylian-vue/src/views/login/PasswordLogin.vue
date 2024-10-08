@@ -3,19 +3,20 @@ import { onMounted, reactive, ref, useTemplateRef, watchEffect } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/store'
 import { ElButton, ElCol, ElForm, ElFormItem, ElInput, ElRow } from 'element-plus'
-import { paintCaptcha } from '@/utils/hylian'
-import { remoteApplyCaptcha, remoteGetCurrentUser, remotePasswordLogin } from '@/utils/hylian-service'
+import { asyncApplyCaptcha, asyncCurrentUser, asyncPasswordLogin } from '@/common/service'
+import { drawCaptcha, submitForm } from '@/common/assortment'
 
 const router = useRouter()
 const userStore = useUserStore()
 const captcha = ref('')
-const userFormRef = useTemplateRef('userFormRef')
+const formRef = useTemplateRef('formRef')
+const captchaRef = useTemplateRef('captchaRef')
 const userForm = reactive({
   username: '',
   password: '',
   captcha: ''
 })
-const rules = ref({
+const formRules = ref({
   username: [
     { required: true, message: '请输入用户名', trigger: 'change' }
   ],
@@ -27,8 +28,16 @@ const rules = ref({
   ]
 })
 
-onMounted(async () => captcha.value = await remoteApplyCaptcha())
+const refreshCaptcha = async () => captcha.value = await asyncApplyCaptcha()
 
+async function submit(formEl) {
+  if (!await submitForm(formEl, userForm, asyncPasswordLogin)) return
+  const user = await asyncCurrentUser()
+  userStore.inject(user)
+  await router.push('/workbench')
+}
+
+onMounted(async () => refreshCaptcha())
 watchEffect(() => {
   if (!captcha.value) return
   const config = {
@@ -38,27 +47,12 @@ watchEffect(() => {
     fontColor: '#8b8c8c',
     font: 'italic 18px Arial'
   }
-  const image = paintCaptcha(captcha.value, config)
-  const imageElement = document.getElementById('image-captcha')
-  imageElement.src = image
+  captchaRef.value.src = drawCaptcha(captcha.value, config)
 })
-
-async function refreshCaptcha() {
-  captcha.value = await remoteApplyCaptcha()
-}
-
-async function submitForm(formEl) {
-  if (!formEl) return
-  if (!await formEl.validate((valid) => valid)) return
-  if (!await remotePasswordLogin(userForm)) return
-  const user = await remoteGetCurrentUser()
-  if (user) userStore.inject(user)
-  await router.push('/workbench')
-}
 </script>
 
 <template>
-  <el-form ref="userFormRef" :model="userForm" :rules="rules">
+  <el-form ref="formRef" :model="userForm" :rules="formRules">
     <el-form-item prop="username">
       <el-input v-model.trim="userForm.username" clearable placeholder="请输入用户名"></el-input>
     </el-form-item>
@@ -69,16 +63,15 @@ async function submitForm(formEl) {
     <el-form-item>
       <el-col :span="13">
         <el-form-item prop="captcha">
-          <el-input id="input-captcha" v-model.trim="userForm.captcha" clearable
-                    placeholder="请输入验证码"></el-input>
+          <el-input v-model.trim="userForm.captcha" clearable placeholder="请输入验证码"></el-input>
         </el-form-item>
       </el-col>
       <el-col :span="8" :offset="3" class="captcha">
-        <img id="image-captcha" src="" title="点击刷新验证码" alt="图片验证码" @click="refreshCaptcha" />
+        <img ref="captchaRef" src="" title="点击刷新验证码" alt="验证码" @click="refreshCaptcha" />
       </el-col>
     </el-form-item>
     <el-form-item>
-      <el-button style="width: 100%" color="#6077ff" @click="submitForm(userFormRef)">登录</el-button>
+      <el-button style="width: 100%" color="#6077ff" @click="submit(formRef)">登录</el-button>
     </el-form-item>
     <el-row class="register-prompt" align="middle" justify="center">
       <span>没有账号？</span><a>注册</a><span>一个</span>
