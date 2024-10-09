@@ -24,7 +24,7 @@ import javax.xml.bind.annotation.XmlAccessorType;
 @Accessors(chain = true)
 @XmlAccessorType(XmlAccessType.FIELD)
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class BaseModel extends Model {
+public class BaseModel extends Model<BaseModel> {
 
     @TableField(value = "create_time", fill = FieldFill.INSERT)
     @JSONField(name = "create_time")

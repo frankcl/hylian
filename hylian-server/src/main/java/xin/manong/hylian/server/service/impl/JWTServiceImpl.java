@@ -15,10 +15,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import xin.manong.hylian.server.common.Constants;
 import xin.manong.hylian.server.config.ServerConfig;
-import xin.manong.hylian.model.Profile;
+import xin.manong.hylian.server.model.UserProfile;
 import xin.manong.hylian.server.service.JWTService;
 
-import javax.annotation.Resource;
 import java.util.*;
 
 /**
@@ -48,9 +47,9 @@ public class JWTServiceImpl implements JWTService {
     }
 
     @Override
-    public String buildJWT(Profile profile, Date expiresAt,
+    public String buildJWT(UserProfile userProfile, Date expiresAt,
                            String algoName, Map<String, Object> headers) {
-        if (profile == null) {
+        if (userProfile == null) {
             logger.error("profile is null");
             return null;
         }
@@ -59,7 +58,7 @@ public class JWTServiceImpl implements JWTService {
             return null;
         }
         Algorithm algorithm = algorithmMap.get(algoName);
-        return JWT.create().withHeader(headers).withClaim(Constants.JWT_CLAIM_PROFILE, JSON.toJSONString(profile))
+        return JWT.create().withHeader(headers).withClaim(Constants.JWT_CLAIM_PROFILE, JSON.toJSONString(userProfile))
                 .withExpiresAt(expiresAt).sign(algorithm);
     }
 
@@ -109,7 +108,7 @@ public class JWTServiceImpl implements JWTService {
     }
 
     @Override
-    public Profile decodeProfile(String jwt) {
+    public UserProfile decodeProfile(String jwt) {
         DecodedJWT decodedJWT = decodeJWT(jwt);
         if (decodedJWT == null) return null;
         try {
@@ -118,7 +117,7 @@ public class JWTServiceImpl implements JWTService {
                 logger.error("claim[{}] is not found", Constants.JWT_CLAIM_PROFILE);
                 return null;
             }
-            return JSON.parseObject(claim.asString(), Profile.class);
+            return JSON.parseObject(claim.asString(), UserProfile.class);
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
             return null;

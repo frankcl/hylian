@@ -1,6 +1,6 @@
 package xin.manong.hylian.server.service;
 
-import xin.manong.hylian.model.Pager;
+import xin.manong.hylian.server.model.Pager;
 import xin.manong.hylian.model.Permission;
 import xin.manong.hylian.server.service.request.PermissionSearchRequest;
 

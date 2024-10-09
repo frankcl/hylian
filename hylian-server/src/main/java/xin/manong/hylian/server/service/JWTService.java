@@ -1,7 +1,7 @@
 package xin.manong.hylian.server.service;
 
 import com.auth0.jwt.interfaces.DecodedJWT;
-import xin.manong.hylian.model.Profile;
+import xin.manong.hylian.server.model.UserProfile;
 
 import java.util.Date;
 import java.util.Map;
@@ -17,13 +17,13 @@ public interface JWTService {
     /**
      * 构建JWT
      *
-     * @param profile 用户信息
+     * @param userProfile 用户信息
      * @param expiresAt 过期时间
      * @param algorithm 加密算法
      * @param headers JWT headers
      * @return 成功返回JWT，否则返回null
      */
-    String buildJWT(Profile profile, Date expiresAt,
+    String buildJWT(UserProfile userProfile, Date expiresAt,
                     String algorithm, Map<String, Object> headers);
 
     /**
@@ -32,7 +32,7 @@ public interface JWTService {
      * @param jwt JWT
      * @return 成功返回用户信息，否则返回null
      */
-    Profile decodeProfile(String jwt);
+    UserProfile decodeProfile(String jwt);
 
     /**
      * 解码JWT

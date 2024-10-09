@@ -19,7 +19,7 @@ import xin.manong.hylian.server.service.request.UserSearchRequest;
 import xin.manong.hylian.server.common.Constants;
 import xin.manong.hylian.server.converter.Converter;
 import xin.manong.hylian.server.dao.mapper.UserMapper;
-import xin.manong.hylian.model.Pager;
+import xin.manong.hylian.server.model.Pager;
 import xin.manong.hylian.model.User;
 import xin.manong.hylian.server.util.ModelValidator;
 import xin.manong.weapon.aliyun.oss.OSSClient;

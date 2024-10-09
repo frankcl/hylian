@@ -6,7 +6,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import xin.manong.hylian.model.App;
-import xin.manong.hylian.model.Pager;
+import xin.manong.hylian.server.model.Pager;
 import xin.manong.hylian.model.Role;
 import xin.manong.hylian.model.RolePermission;
 import xin.manong.hylian.server.converter.Converter;

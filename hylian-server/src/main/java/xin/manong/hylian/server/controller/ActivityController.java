@@ -4,7 +4,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import xin.manong.hylian.model.Activity;
 import xin.manong.hylian.model.App;
-import xin.manong.hylian.model.Pager;
+import xin.manong.hylian.server.model.Pager;
 import xin.manong.hylian.model.User;
 import xin.manong.hylian.server.converter.Converter;
 import xin.manong.hylian.server.controller.response.ViewActivity;

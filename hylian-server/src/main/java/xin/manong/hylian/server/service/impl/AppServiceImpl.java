@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service;
 import xin.manong.hylian.server.common.Constants;
 import xin.manong.hylian.server.converter.Converter;
 import xin.manong.hylian.server.dao.mapper.AppMapper;
-import xin.manong.hylian.model.Pager;
+import xin.manong.hylian.server.model.Pager;
 import xin.manong.hylian.model.App;
 import xin.manong.hylian.server.service.AppService;
 import xin.manong.hylian.server.service.request.AppSearchRequest;

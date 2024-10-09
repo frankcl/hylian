@@ -1,7 +1,7 @@
 package xin.manong.hylian.server.service;
 
 import xin.manong.hylian.model.Activity;
-import xin.manong.hylian.model.Pager;
+import xin.manong.hylian.server.model.Pager;
 import xin.manong.hylian.server.service.request.ActivitySearchRequest;
 
 import java.util.List;

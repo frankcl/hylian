@@ -17,6 +17,7 @@ import xin.manong.hylian.server.controller.response.UploadResponse;
 import xin.manong.hylian.server.controller.response.ViewTenant;
 import xin.manong.hylian.server.controller.response.ViewUser;
 import xin.manong.hylian.server.converter.Converter;
+import xin.manong.hylian.server.model.Pager;
 import xin.manong.hylian.server.service.TenantService;
 import xin.manong.hylian.server.service.UserRoleService;
 import xin.manong.hylian.server.service.UserService;

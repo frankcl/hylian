@@ -1,4 +1,4 @@
-package xin.manong.hylian.model;
+package xin.manong.hylian.server.model;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -6,8 +6,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
+import java.io.Serializable;
 
 /**
  * 用户信息，包含用户、租户基本信息
@@ -18,9 +17,8 @@ import javax.xml.bind.annotation.XmlAccessorType;
 @Getter
 @Setter
 @Accessors(chain = true)
-@XmlAccessorType(XmlAccessType.FIELD)
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class Profile {
+public class UserProfile implements Serializable {
 
     /**
      * 唯一ID

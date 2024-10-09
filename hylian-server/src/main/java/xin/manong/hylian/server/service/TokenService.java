@@ -1,6 +1,6 @@
 package xin.manong.hylian.server.service;
 
-import xin.manong.hylian.model.Profile;
+import xin.manong.hylian.server.model.UserProfile;
 
 /**
  * token服务接口定义
@@ -21,11 +21,11 @@ public interface TokenService {
     /**
      * 构建token
      *
-     * @param profile 用户信息
+     * @param userProfile 用户信息
      * @param expiredTime 过期时间，单位：毫秒
      * @return 成功返回token，否则返回null
      */
-    String buildToken(Profile profile, Long expiredTime);
+    String buildToken(UserProfile userProfile, Long expiredTime);
 
     /**
      * 根据token获取ticket

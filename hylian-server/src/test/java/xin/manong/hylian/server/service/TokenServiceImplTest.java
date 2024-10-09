@@ -6,7 +6,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
-import xin.manong.hylian.model.Profile;
+import xin.manong.hylian.server.model.UserProfile;
 import xin.manong.hylian.server.ApplicationTest;
 import xin.manong.weapon.base.util.RandomID;
 
@@ -25,18 +25,18 @@ public class TokenServiceImplTest {
 
     @Test
     public void testBuildAndVerify() {
-        Profile profile = new Profile();
-        profile.setId(RandomID.build()).setUserId("user").setTenantId("tenant");
-        String token = tokenService.buildToken(profile, 600000L);
+        UserProfile userProfile = new UserProfile();
+        userProfile.setId(RandomID.build()).setUserId("user").setTenantId("tenant");
+        String token = tokenService.buildToken(userProfile, 600000L);
         Assert.assertFalse(StringUtils.isEmpty(token));
         Assert.assertTrue(tokenService.verifyToken(token));
     }
 
     @Test
     public void testTokenCache() {
-        Profile profile = new Profile();
-        profile.setId(RandomID.build()).setUserId("user").setTenantId("tenant");
-        String token = tokenService.buildToken(profile, 600000L);
+        UserProfile userProfile = new UserProfile();
+        userProfile.setId(RandomID.build()).setUserId("user").setTenantId("tenant");
+        String token = tokenService.buildToken(userProfile, 600000L);
         Assert.assertFalse(StringUtils.isEmpty(token));
         String ticket = "ticket";
         tokenService.putToken(token, ticket);

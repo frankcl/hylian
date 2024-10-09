@@ -9,7 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
-import xin.manong.hylian.model.Profile;
+import xin.manong.hylian.server.model.UserProfile;
 import xin.manong.hylian.server.common.Constants;
 import xin.manong.hylian.server.service.JWTService;
 import xin.manong.hylian.server.service.TicketService;
@@ -38,12 +38,12 @@ public class TicketServiceImpl implements TicketService {
     protected JWTService jwtService;
 
     @Override
-    public String buildTicket(Profile profile, Long expiredTime) {
+    public String buildTicket(UserProfile userProfile, Long expiredTime) {
         Date expiresAt = new Date(System.currentTimeMillis() +
                 (expiredTime == null ? Constants.COOKIE_TICKET_EXPIRED_TIME_MS : expiredTime));
         Map<String, Object> headers = new HashMap<>();
         headers.put(Constants.JWT_HEADER_CATEGORY, Constants.JWT_CATEGORY_TICKET);
-        return jwtService.buildJWT(profile, expiresAt, Constants.ALGORITHM_HS256, headers);
+        return jwtService.buildJWT(userProfile, expiresAt, Constants.ALGORITHM_HS256, headers);
     }
 
     @Override

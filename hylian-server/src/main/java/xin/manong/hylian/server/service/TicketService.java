@@ -1,6 +1,6 @@
 package xin.manong.hylian.server.service;
 
-import xin.manong.hylian.model.Profile;
+import xin.manong.hylian.server.model.UserProfile;
 
 import java.util.Set;
 
@@ -15,11 +15,11 @@ public interface TicketService {
     /**
      * 构建ticket
      *
-     * @param profile 用户信息
+     * @param userProfile 用户信息
      * @param expiredTime 过期时间，单位：毫秒
      * @return 成功返回ticket，否则返回null
      */
-    String buildTicket(Profile profile, Long expiredTime);
+    String buildTicket(UserProfile userProfile, Long expiredTime);
 
     /**
      * 验证ticket

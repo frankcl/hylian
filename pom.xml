@@ -40,7 +40,7 @@
     </properties>
 
     <profiles>
-        <profile>
+        <userProfile>
             <id>dev</id>
             <properties>
                 <profileActive>dev</profileActive>
@@ -48,19 +48,19 @@
             <activation>
                 <activeByDefault>true</activeByDefault>
             </activation>
-        </profile>
-        <profile>
+        </userProfile>
+        <userProfile>
             <id>test</id>
             <properties>
                 <profileActive>test</profileActive>
             </properties>
-        </profile>
-        <profile>
+        </userProfile>
+        <userProfile>
             <id>prod</id>
             <properties>
                 <profileActive>prod</profileActive>
             </properties>
-        </profile>
+        </userProfile>
     </profiles>
 
     <build>

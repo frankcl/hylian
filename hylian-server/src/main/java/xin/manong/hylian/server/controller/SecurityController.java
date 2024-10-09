@@ -7,6 +7,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import xin.manong.hylian.model.*;
+import xin.manong.hylian.server.model.Pager;
+import xin.manong.hylian.server.model.UserProfile;
 import xin.manong.hylian.server.util.CookieUtils;
 import xin.manong.hylian.client.util.SessionUtils;
 import xin.manong.hylian.server.service.request.UserSearchRequest;
@@ -125,13 +127,13 @@ public class SecurityController {
         String ticket = codeService.getTicket(request.code);
         codeService.removeCode(request.code);
         verifyTicket(ticket);
-        Profile profile = jwtService.decodeProfile(ticket);
-        String token = tokenService.buildToken(profile, Constants.CACHE_TOKEN_EXPIRED_TIME_MS);
+        UserProfile userProfile = jwtService.decodeProfile(ticket);
+        String token = tokenService.buildToken(userProfile, Constants.CACHE_TOKEN_EXPIRED_TIME_MS);
         tokenService.putToken(token, ticket);
-        ticketService.addToken(profile.id, token);
+        ticketService.addToken(userProfile.id, token);
         if (!activityService.isCheckin(request.appId, request.sessionId)) {
-            Activity activity = new Activity().setAppId(request.appId).setUserId(profile.userId).
-                    setTicketId(profile.id).setSessionId(request.sessionId);
+            Activity activity = new Activity().setAppId(request.appId).setUserId(userProfile.userId).
+                    setTicketId(userProfile.id).setSessionId(request.sessionId);
             if (!activityService.add(activity)) {
                 logger.warn("add activity failed for app[{}] and user[{}]",
                         activity.appId, activity.userId);
@@ -159,10 +161,10 @@ public class SecurityController {
                         @QueryParam("app_secret") @RequestParam("app_secret") String appSecret) {
         appService.verifyApp(appId, appSecret);
         if (!verifyToken(token)) return null;
-        Profile profile = jwtService.decodeProfile(token);
-        User user = userService.get(profile.userId);
+        UserProfile userProfile = jwtService.decodeProfile(token);
+        User user = userService.get(userProfile.userId);
         if (user == null) {
-            logger.error("user[{}] is not found", profile.userId);
+            logger.error("user[{}] is not found", userProfile.userId);
             throw new NotAuthorizedException("用户不存在");
         }
         return user;
@@ -187,10 +189,10 @@ public class SecurityController {
                             @QueryParam("app_secret") @RequestParam("app_secret") String appSecret) {
         appService.verifyApp(appId, appSecret);
         if (!verifyToken(token)) return null;
-        Profile profile = jwtService.decodeProfile(token);
-        Tenant tenant = tenantService.get(profile.tenantId);
+        UserProfile userProfile = jwtService.decodeProfile(token);
+        Tenant tenant = tenantService.get(userProfile.tenantId);
         if (tenant == null) {
-            logger.error("tenant[{}] is not found", profile.tenantId);
+            logger.error("tenant[{}] is not found", userProfile.tenantId);
             throw new NotAuthorizedException("租户不存在");
         }
         return tenant;
@@ -219,13 +221,13 @@ public class SecurityController {
             logger.error("cached ticket is expired");
             throw new NotAuthorizedException("缓存ticket过期");
         }
-        Profile profile = jwtService.decodeProfile(ticket);
+        UserProfile userProfile = jwtService.decodeProfile(ticket);
         tokenService.removeToken(request.token);
-        ticketService.removeToken(profile.id, request.token);
-        String newToken = tokenService.buildToken(profile, Constants.CACHE_TOKEN_EXPIRED_TIME_MS);
+        ticketService.removeToken(userProfile.id, request.token);
+        String newToken = tokenService.buildToken(userProfile, Constants.CACHE_TOKEN_EXPIRED_TIME_MS);
         tokenService.putToken(newToken, ticket);
-        ticketService.addToken(profile.id, newToken);
-        ticketService.putTicket(profile.id, ticket);
+        ticketService.addToken(userProfile.id, newToken);
+        ticketService.putTicket(userProfile.id, ticket);
         return newToken;
     }
 
@@ -331,8 +333,8 @@ public class SecurityController {
         removeTicketResources(ticket);
         CookieUtils.removeCookie(Constants.COOKIE_TOKEN, "/", httpResponse);
         CookieUtils.removeCookie(Constants.COOKIE_TICKET, "/", httpResponse);
-        Profile profile = jwtService.decodeProfile(ticket);
-        if (profile != null) activityService.remove(profile.id);
+        UserProfile userProfile = jwtService.decodeProfile(ticket);
+        if (userProfile != null) activityService.remove(userProfile.id);
         return true;
     }
 
@@ -382,10 +384,10 @@ public class SecurityController {
             logger.error("user is disabled");
             throw new IllegalStateException("用户处于禁用状态");
         }
-        Profile profile = new Profile();
-        profile.setId(RandomID.build()).setUserId(user.id).setTenantId(user.tenantId);
-        ticket = ticketService.buildTicket(profile, Constants.COOKIE_TICKET_EXPIRED_TIME_MS);
-        ticketService.putTicket(profile.id, ticket);
+        UserProfile userProfile = new UserProfile();
+        userProfile.setId(RandomID.build()).setUserId(user.id).setTenantId(user.tenantId);
+        ticket = ticketService.buildTicket(userProfile, Constants.COOKIE_TICKET_EXPIRED_TIME_MS);
+        ticketService.putTicket(userProfile.id, ticket);
         CookieUtils.setCookie(Constants.COOKIE_TICKET, ticket, "/", true, httpRequest, httpResponse);
         CookieUtils.setCookie(Constants.COOKIE_TOKEN, RandomID.build(), "/", false, httpRequest, httpResponse);
         return true;
@@ -425,13 +427,13 @@ public class SecurityController {
             removeTicketResources(ticket);
             throw new NotAuthorizedException("验证ticket失败");
         }
-        Profile profile = jwtService.decodeProfile(ticket);
-        if (profile == null) {
+        UserProfile userProfile = jwtService.decodeProfile(ticket);
+        if (userProfile == null) {
             logger.error("decode profile failed from ticket");
             removeTicketResources(ticket);
             throw new NotAuthorizedException("非法ticket");
         }
-        String cachedTicket = ticketService.getTicket(profile.id);
+        String cachedTicket = ticketService.getTicket(userProfile.id);
         if (StringUtils.isEmpty(cachedTicket) || !ticket.equals(cachedTicket)) {
             logger.error("cached ticket and provided ticket are not consistent");
             removeTicketResources(ticket);
@@ -447,9 +449,9 @@ public class SecurityController {
      * @param ticket 票据
      */
     private void removeTicketResources(String ticket) {
-        Profile profile = jwtService.decodeProfile(ticket);
-        if (profile == null) return;
-        userService.removeUserProfile(profile.id);
+        UserProfile userProfile = jwtService.decodeProfile(ticket);
+        if (userProfile == null) return;
+        userService.removeUserProfile(userProfile.id);
     }
 
     /**
@@ -459,8 +461,8 @@ public class SecurityController {
      */
     private void removeTokenResources(String token) {
         tokenService.removeToken(token);
-        Profile profile = jwtService.decodeProfile(token);
-        if (profile == null) return;
-        ticketService.removeToken(profile.id, token);
+        UserProfile userProfile = jwtService.decodeProfile(token);
+        if (userProfile == null) return;
+        ticketService.removeToken(userProfile.id, token);
     }
 }
