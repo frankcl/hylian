@@ -5,7 +5,7 @@ import com.google.common.cache.CacheBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
-import xin.manong.hylian.common.util.SessionUtils;
+import xin.manong.hylian.client.util.SessionUtils;
 import xin.manong.hylian.model.Permission;
 import xin.manong.hylian.model.Role;
 import xin.manong.hylian.model.User;

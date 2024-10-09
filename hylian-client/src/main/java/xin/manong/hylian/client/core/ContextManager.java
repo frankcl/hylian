@@ -1,6 +1,6 @@
 package xin.manong.hylian.client.core;
 
-import xin.manong.hylian.common.util.SessionUtils;
+import xin.manong.hylian.client.util.SessionUtils;
 import xin.manong.hylian.model.Tenant;
 import xin.manong.hylian.model.User;
 import xin.manong.hylian.client.common.Constants;

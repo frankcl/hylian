@@ -19,7 +19,7 @@ import xin.manong.hylian.model.User;
 import xin.manong.hylian.server.service.TenantService;
 import xin.manong.hylian.server.service.request.TenantSearchRequest;
 import xin.manong.hylian.server.service.UserService;
-import xin.manong.hylian.server.util.Validator;
+import xin.manong.hylian.server.util.ModelValidator;
 
 import javax.annotation.Resource;
 import javax.ws.rs.BadRequestException;
@@ -105,7 +105,7 @@ public class TenantServiceImpl implements TenantService {
         if (searchRequest == null) searchRequest = new TenantSearchRequest();
         if (searchRequest.current == null || searchRequest.current < 1) searchRequest.current = Constants.DEFAULT_CURRENT;
         if (searchRequest.size == null || searchRequest.size <= 0) searchRequest.size = Constants.DEFAULT_PAGE_SIZE;
-        Validator.validateOrderBy(Tenant.class, searchRequest);
+        ModelValidator.validateOrderBy(Tenant.class, searchRequest);
         QueryWrapper<Tenant> query = new QueryWrapper<>();
         searchRequest.prepareOrderBy(query);
         if (!StringUtils.isEmpty(searchRequest.name)) query.like("name", searchRequest.name);

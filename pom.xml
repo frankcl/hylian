@@ -9,7 +9,6 @@
     <packaging>pom</packaging>
     <modules>
         <module>hylian-model</module>
-        <module>hylian-common</module>
         <module>hylian-client</module>
         <module>hylian-server</module>
     </modules>

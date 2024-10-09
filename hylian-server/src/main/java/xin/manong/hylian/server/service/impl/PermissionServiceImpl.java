@@ -17,7 +17,7 @@ import xin.manong.hylian.server.dao.mapper.PermissionMapper;
 import xin.manong.hylian.server.service.PermissionService;
 import xin.manong.hylian.server.service.RolePermissionService;
 import xin.manong.hylian.server.service.request.PermissionSearchRequest;
-import xin.manong.hylian.server.util.Validator;
+import xin.manong.hylian.server.util.ModelValidator;
 
 import javax.annotation.Resource;
 import javax.ws.rs.BadRequestException;
@@ -108,7 +108,7 @@ public class PermissionServiceImpl implements PermissionService {
         if (searchRequest == null) searchRequest = new PermissionSearchRequest();
         if (searchRequest.current == null || searchRequest.current < 1) searchRequest.current = Constants.DEFAULT_CURRENT;
         if (searchRequest.size == null || searchRequest.size <= 0) searchRequest.size = Constants.DEFAULT_PAGE_SIZE;
-        Validator.validateOrderBy(Permission.class, searchRequest);
+        ModelValidator.validateOrderBy(Permission.class, searchRequest);
         QueryWrapper<Permission> query = new QueryWrapper<>();
         searchRequest.prepareOrderBy(query);
         if (!StringUtils.isEmpty(searchRequest.resource)) query.like("resource", searchRequest.resource);

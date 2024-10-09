@@ -8,7 +8,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-import xin.manong.hylian.common.util.AppSecretUtils;
+import xin.manong.hylian.server.util.AppSecretUtils;
 import xin.manong.hylian.server.common.Constants;
 import xin.manong.hylian.server.service.CaptchaService;
 

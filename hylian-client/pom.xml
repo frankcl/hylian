@@ -62,7 +62,7 @@
         </dependency>
         <dependency>
             <groupId>xin.manong</groupId>
-            <artifactId>hylian-common</artifactId>
+            <artifactId>hylian-model</artifactId>
             <version>${hylian.version}</version>
         </dependency>
     </dependencies>

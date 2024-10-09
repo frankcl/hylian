@@ -16,7 +16,7 @@ import xin.manong.hylian.server.converter.Converter;
 import xin.manong.hylian.server.dao.mapper.UserRoleMapper;
 import xin.manong.hylian.server.service.UserRoleService;
 import xin.manong.hylian.server.service.request.UserRoleSearchRequest;
-import xin.manong.hylian.server.util.Validator;
+import xin.manong.hylian.server.util.ModelValidator;
 
 import javax.annotation.Resource;
 import javax.ws.rs.BadRequestException;
@@ -112,7 +112,7 @@ public class UserRoleServiceImpl implements UserRoleService {
         if (searchRequest == null) searchRequest = new UserRoleSearchRequest();
         if (searchRequest.current == null || searchRequest.current < 1) searchRequest.current = Constants.DEFAULT_CURRENT;
         if (searchRequest.size == null || searchRequest.size <= 0) searchRequest.size = Constants.DEFAULT_PAGE_SIZE;
-        Validator.validateOrderBy(UserRole.class, searchRequest);
+        ModelValidator.validateOrderBy(UserRole.class, searchRequest);
         QueryWrapper<UserRole> query = new QueryWrapper<>();
         searchRequest.prepareOrderBy(query);
         if (!StringUtils.isEmpty(searchRequest.userId)) query.eq("user_id", searchRequest.userId);

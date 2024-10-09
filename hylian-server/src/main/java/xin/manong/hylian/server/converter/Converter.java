@@ -4,8 +4,8 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import xin.manong.hylian.model.*;
-import xin.manong.hylian.server.request.*;
-import xin.manong.hylian.server.response.*;
+import xin.manong.hylian.server.controller.request.*;
+import xin.manong.hylian.server.controller.response.*;
 
 import java.util.ArrayList;
 import java.util.List;

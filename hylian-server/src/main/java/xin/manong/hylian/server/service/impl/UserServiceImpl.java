@@ -21,7 +21,7 @@ import xin.manong.hylian.server.converter.Converter;
 import xin.manong.hylian.server.dao.mapper.UserMapper;
 import xin.manong.hylian.model.Pager;
 import xin.manong.hylian.model.User;
-import xin.manong.hylian.server.util.Validator;
+import xin.manong.hylian.server.util.ModelValidator;
 import xin.manong.weapon.aliyun.oss.OSSClient;
 import xin.manong.weapon.aliyun.oss.OSSMeta;
 import xin.manong.weapon.base.util.FileUtil;
@@ -151,7 +151,7 @@ public class UserServiceImpl implements UserService {
         if (searchRequest == null) searchRequest = new UserSearchRequest();
         if (searchRequest.current == null || searchRequest.current < 1) searchRequest.current = Constants.DEFAULT_CURRENT;
         if (searchRequest.size == null || searchRequest.size <= 0) searchRequest.size = Constants.DEFAULT_PAGE_SIZE;
-        Validator.validateOrderBy(User.class, searchRequest);
+        ModelValidator.validateOrderBy(User.class, searchRequest);
         QueryWrapper<User> query = new QueryWrapper<>();
         searchRequest.prepareOrderBy(query);
         if (!StringUtils.isEmpty(searchRequest.username)) query.eq("username", searchRequest.username);

@@ -15,7 +15,7 @@ import xin.manong.hylian.server.dao.mapper.ActivityMapper;
 import xin.manong.hylian.model.Activity;
 import xin.manong.hylian.server.service.ActivityService;
 import xin.manong.hylian.server.service.request.ActivitySearchRequest;
-import xin.manong.hylian.server.util.Validator;
+import xin.manong.hylian.server.util.ModelValidator;
 
 import javax.annotation.Resource;
 import java.util.List;
@@ -93,7 +93,7 @@ public class ActivityServiceImpl implements ActivityService {
         if (searchRequest == null) searchRequest = new ActivitySearchRequest();
         if (searchRequest.current == null || searchRequest.current < 1) searchRequest.current = Constants.DEFAULT_CURRENT;
         if (searchRequest.size == null || searchRequest.size <= 0) searchRequest.size = Constants.DEFAULT_PAGE_SIZE;
-        Validator.validateOrderBy(Activity.class, searchRequest);
+        ModelValidator.validateOrderBy(Activity.class, searchRequest);
         QueryWrapper<Activity> query = new QueryWrapper<>();
         searchRequest.prepareOrderBy(query);
         if (StringUtils.isNotEmpty(searchRequest.appId)) query.eq("app_id", searchRequest.appId);

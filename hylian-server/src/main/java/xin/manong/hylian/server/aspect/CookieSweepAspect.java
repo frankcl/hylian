@@ -6,7 +6,7 @@ import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
-import xin.manong.hylian.common.util.CookieUtils;
+import xin.manong.hylian.server.util.CookieUtils;
 import xin.manong.hylian.server.common.Constants;
 
 import javax.servlet.http.HttpServletResponse;

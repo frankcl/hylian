@@ -2,7 +2,7 @@ package xin.manong.hylian.server.controller;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
-import xin.manong.hylian.common.util.SessionUtils;
+import xin.manong.hylian.client.util.SessionUtils;
 import xin.manong.hylian.server.service.CaptchaService;
 import xin.manong.weapon.spring.web.ws.aspect.EnableWebLogAspect;
 

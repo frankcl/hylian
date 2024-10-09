@@ -8,7 +8,7 @@ import xin.manong.hylian.client.common.Constants;
 import xin.manong.hylian.client.common.URLPattern;
 import xin.manong.hylian.client.core.HylianShield;
 import xin.manong.hylian.client.core.ContextManager;
-import xin.manong.hylian.common.util.HTTPUtils;
+import xin.manong.hylian.client.util.HTTPUtils;
 
 import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
