@@ -1,5 +1,6 @@
 package xin.manong.hylian.server.service;
 
+import xin.manong.hylian.model.Permission;
 import xin.manong.hylian.server.model.Pager;
 import xin.manong.hylian.model.RolePermission;
 import xin.manong.hylian.server.service.request.RolePermissionSearchRequest;
@@ -29,6 +30,14 @@ public interface RolePermissionService {
      * @return 关系列表
      */
     List<RolePermission> getByRoleId(String roleId);
+
+    /**
+     * 获取角色相关权限列表
+     *
+     * @param roleId 角色ID
+     * @return 权限列表
+     */
+    List<Permission> getPermissionsByRoleId(String roleId);
 
     /**
      * 批量更新

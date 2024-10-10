@@ -1,11 +1,13 @@
 package xin.manong.hylian.server.controller;
 
 import com.google.common.collect.Sets;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import xin.manong.hylian.model.App;
+import xin.manong.hylian.model.Permission;
 import xin.manong.hylian.server.model.Pager;
 import xin.manong.hylian.model.Role;
 import xin.manong.hylian.model.RolePermission;
@@ -210,6 +212,23 @@ public class RoleController {
         viewPager.records = new ArrayList<>();
         for (Role role : pager.records) viewPager.records.add(fillAndConvert(role));
         return viewPager;
+    }
+
+    /**
+     * 获取角色权限列表
+     *
+     * @param roleId 角色ID
+     * @return 权限列表
+     */
+    @GET
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("getRolePermissions")
+    @GetMapping("getRolePermissions")
+    @EnableWebLogAspect
+    public List<Permission> getRolePermissions(@QueryParam("role_id") String roleId) {
+        if (StringUtils.isEmpty(roleId)) throw new BadRequestException("角色ID为空");
+        return rolePermissionService.getPermissionsByRoleId(roleId);
     }
 
     /**

@@ -36,7 +36,7 @@ public class PermissionServiceImplTest {
             permission.id = "xxx";
             permission.name = "测试权限";
             permission.appId = "app_xxx";
-            permission.resource = "/**";
+            permission.path = "/**";
             Assert.assertTrue(permissionService.add(permission));
         }
         {
@@ -46,13 +46,13 @@ public class PermissionServiceImplTest {
             Assert.assertNotNull(permission.getUpdateTime());
             Assert.assertEquals("测试权限", permission.name);
             Assert.assertEquals("app_xxx", permission.appId);
-            Assert.assertEquals("/**", permission.resource);
+            Assert.assertEquals("/**", permission.path);
         }
         {
             Permission permission = new Permission();
             permission.id = "xxx";
             permission.name = "测试权限1";
-            permission.resource = "/*";
+            permission.path = "/*";
             Assert.assertTrue(permissionService.update(permission));
         }
         {
@@ -62,7 +62,7 @@ public class PermissionServiceImplTest {
             Assert.assertNotNull(permission.getUpdateTime());
             Assert.assertEquals("测试权限1", permission.name);
             Assert.assertEquals("app_xxx", permission.appId);
-            Assert.assertEquals("/*", permission.resource);
+            Assert.assertEquals("/*", permission.path);
         }
         {
             List<String> ids = new ArrayList<>();

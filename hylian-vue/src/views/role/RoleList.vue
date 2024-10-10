@@ -10,13 +10,16 @@ import { asyncDeleteRole, asyncSearchRoles } from '@/common/service'
 import { confirmAndRemove, fetchAllApps, fillSearchQuerySort, searchQueryToRequest } from '@/common/assortment'
 import AddRole from '@/views/role/AddRole'
 import EditRole from '@/views/role/EditRole'
+import RolePermissions from '@/views/role/RolePermissions'
 
 const roleId = ref()
+const appId = ref()
 const roles = ref([])
 const apps = ref([])
 const total = ref(0)
 const addDialog = ref(false)
 const editDialog = ref(false)
+const allocateDialog = ref(false)
 const query = reactive({
   current: 1,
   size: 20,
@@ -46,8 +49,19 @@ const openEditDialog = id => {
   editDialog.value = true
 }
 
+const openAllocateDialog = (role) => {
+  roleId.value = role.id
+  appId.value = role.app.id
+  allocateDialog.value = true
+}
+
 const closeEditDialog = async () => {
   editDialog.value = false
+  await search()
+}
+
+const closeAllocateDialog = async () => {
+  allocateDialog.value = false
   await search()
 }
 
@@ -87,6 +101,9 @@ onMounted(async () => apps.value = await fetchAllApps() )
   <el-dialog v-model="editDialog" align-center show-close>
     <EditRole :id="roleId" @close="closeEditDialog"></EditRole>
   </el-dialog>
+  <el-dialog v-model="allocateDialog" align-center show-close>
+    <RolePermissions :roleId="roleId" :appId="appId" @close="closeAllocateDialog"></RolePermissions>
+  </el-dialog>
   <el-table class="role-list" :data="roles" max-height="500" table-layout="auto"
             stripe @sort-change="event => fillSearchQuerySort(event, query)">
     <template #empty>没有角色数据</template>
@@ -110,6 +127,7 @@ onMounted(async () => apps.value = await fetchAllApps() )
       </template>
       <template #default="scope">
         <el-button @click="openEditDialog(scope.row.id)">编辑</el-button>
+        <el-button @click="openAllocateDialog(scope.row)">权限分配</el-button>
         <el-button @click="remove(scope.row.id)">删除</el-button>
       </template>
     </el-table-column>

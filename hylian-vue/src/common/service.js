@@ -57,6 +57,22 @@ export const asyncSearchRoles = async request => {
   })
 }
 
+export const asyncGetRolePermissions = async roleId => {
+  return await axios({
+    method: HTTP_GET,
+    url: '/api/role/getRolePermissions',
+    params: { role_id: roleId }
+  })
+}
+
+export const asyncBatchUpdateRolePermissions = async request => {
+  return await axios({
+    method: HTTP_POST,
+    url: '/api/role/batchUpdateRolePermission',
+    data: request
+  })
+}
+
 export const asyncGetPermission = async id => {
   return await axios({
     method: HTTP_GET,
@@ -208,6 +224,22 @@ export const asyncCurrentUser = async () => {
   return await axios({
     method: HTTP_GET,
     url: '/api/user/getCurrentUser'
+  })
+}
+
+export const asyncGetAppUserRoles = async request => {
+  return await axios({
+    method: HTTP_GET,
+    url: '/api/user/getAppUserRoles',
+    params: request
+  })
+}
+
+export const asyncBatchUpdateUserRoles = async request => {
+  return await axios({
+    method: HTTP_POST,
+    url: '/api/user/batchUpdateUserRole',
+    data: request
   })
 }
 

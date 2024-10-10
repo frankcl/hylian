@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
+import xin.manong.hylian.client.aspect.EnableACLAspect;
 import xin.manong.hylian.model.*;
 import xin.manong.hylian.server.common.Constants;
 import xin.manong.hylian.server.config.ServerConfig;
@@ -95,6 +96,7 @@ public class UserController {
     @Produces(MediaType.APPLICATION_JSON)
     @Path("add")
     @PutMapping("add")
+    @EnableACLAspect
     @EnableWebLogAspect
     public boolean add(@RequestBody UserRequest userRequest) {
         if (userRequest == null) throw new BadRequestException("用户信息为空");
@@ -121,6 +123,7 @@ public class UserController {
     @Produces(MediaType.APPLICATION_JSON)
     @Path("update")
     @PostMapping("update")
+    @EnableACLAspect
     @EnableWebLogAspect
     public boolean update(@RequestBody UserUpdateRequest userUpdateRequest) {
         if (userUpdateRequest == null) throw new BadRequestException("用户信息为空");
@@ -146,8 +149,11 @@ public class UserController {
     @Produces(MediaType.APPLICATION_JSON)
     @Path("delete")
     @DeleteMapping("delete")
+    @EnableACLAspect
     @EnableWebLogAspect
     public boolean delete(@QueryParam("id") @RequestParam("id") String id) {
+        User user = ContextManager.getUser();
+        if (user != null && user.id.equals(id)) throw new UnsupportedOperationException("不能删除自己");
         return userService.delete(id);
     }
 
@@ -162,6 +168,7 @@ public class UserController {
     @Produces(MediaType.APPLICATION_JSON)
     @Path("addUserRole")
     @PutMapping("addUserRole")
+    @EnableACLAspect
     @EnableWebLogAspect
     public boolean addUserRole(@RequestBody UserRoleRequest request) {
         if (request == null) throw new BadRequestException("用户角色关系为空");
@@ -181,6 +188,7 @@ public class UserController {
     @Produces(MediaType.APPLICATION_JSON)
     @Path("removeUserRole")
     @DeleteMapping("removeUserRole")
+    @EnableACLAspect
     @EnableWebLogAspect
     public boolean removeUserRole(@QueryParam("id") @RequestParam("id") Long id) {
         return userRoleService.delete(id);
@@ -197,6 +205,7 @@ public class UserController {
     @Produces(MediaType.APPLICATION_JSON)
     @Path("batchUpdateUserRole")
     @PostMapping("batchUpdateUserRole")
+    @EnableACLAspect
     @EnableWebLogAspect
     public boolean batchUpdateUserRole(@RequestBody BatchUserRoleRequest request) {
         if (request == null) throw new BadRequestException("批量更新请求为空");
@@ -208,6 +217,25 @@ public class UserController {
         List<UserRole> addUserRoles = new ArrayList<>(Sets.difference(currentUserRoles, prevUserRoles));
         userRoleService.batchUpdate(addUserRoles, removeUserRoles);
         return true;
+    }
+
+    /**
+     * 获取应用用户角色列表
+     *
+     * @param userId 用户ID
+     * @param appId 应用ID
+     * @return 角色列表
+     */
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("getAppUserRoles")
+    @GetMapping("getAppUserRoles")
+    @EnableWebLogAspect
+    public List<Role> getAppUserRoles(@QueryParam("user_id") @RequestParam("user_id") String userId,
+                                      @QueryParam("app_id") @RequestParam("app_id") String appId) {
+        if (StringUtils.isEmpty(appId)) throw new BadRequestException("应用ID为空");
+        if (StringUtils.isEmpty(userId)) throw new BadRequestException("用户ID为空");
+        return userRoleService.getRolesByAppUser(appId, userId);
     }
 
     /**

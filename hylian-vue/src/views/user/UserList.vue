@@ -10,10 +10,12 @@ import { asyncDeleteUser, asyncSearchUsers } from '@/common/service'
 import { confirmAndRemove, fetchAllTenants, fillSearchQuerySort, searchQueryToRequest } from '@/common/assortment'
 import AddUser from '@/views/user/AddUser'
 import EditUser from '@/views/user/EditUser'
+import UserRoles from '@/views/user/UserRoles'
 
 const formRef = useTemplateRef('formRef')
-const addDialogVisible = ref(false)
-const editDialogVisible = ref(false)
+const addDialog = ref(false)
+const editDialog = ref(false)
+const allocateDialog = ref(false)
 const userId = ref()
 const total = ref(0)
 const users = ref([])
@@ -48,16 +50,26 @@ const remove = async id => {
 
 const openEditDialog = id => {
   userId.value = id
-  editDialogVisible.value = true
+  editDialog.value = true
+}
+
+const openAllocateDialog = id => {
+  userId.value = id
+  allocateDialog.value = true
 }
 
 const closeEditDialog = async () => {
-  editDialogVisible.value = false
+  editDialog.value = false
+  await search()
+}
+
+const closeAllocateDialog = async () => {
+  allocateDialog.value = false
   await search()
 }
 
 const closeAddDialog = async () => {
-  addDialogVisible.value = false
+  addDialog.value = false
   await search()
 }
 
@@ -75,15 +87,18 @@ onMounted(async () => tenants.value = await fetchAllTenants())
     </el-col>
     <el-col :span="4">
       <el-row justify="end">
-        <el-button @click="addDialogVisible = true">添加用户</el-button>
+        <el-button @click="addDialog = true">添加用户</el-button>
       </el-row>
     </el-col>
   </el-row>
-  <el-dialog v-model="addDialogVisible" align-center show-close>
+  <el-dialog v-model="addDialog" align-center show-close>
     <AddUser @close="closeAddDialog"></AddUser>
   </el-dialog>
-  <el-dialog v-model="editDialogVisible" align-center show-close>
+  <el-dialog v-model="editDialog" align-center show-close>
     <EditUser :id="userId" @close="closeEditDialog"></EditUser>
+  </el-dialog>
+  <el-dialog v-model="allocateDialog" align-center show-close>
+    <UserRoles :id="userId" @close="closeAllocateDialog"></UserRoles>
   </el-dialog>
   <el-form :inline="true" :model="formData" ref="formRef" style="margin-top: 20px;">
     <el-form-item label="用户名" prop="username">
@@ -129,6 +144,7 @@ onMounted(async () => tenants.value = await fetchAllTenants())
     <el-table-column fixed="right" label="操作">
       <template #default="scope">
         <el-button @click="openEditDialog(scope.row.id)">编辑</el-button>
+        <el-button @click="openAllocateDialog(scope.row.id)">角色分配</el-button>
         <el-button @click="remove(scope.row.id)">删除</el-button>
       </template>
     </el-table-column>

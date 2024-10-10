@@ -53,13 +53,9 @@ public class ACLAspect {
             throw new NotAuthorizedException("用户尚未登录");
         }
         List<Permission> permissions = getUserPermissions(user);
-        if (permissions.isEmpty()) {
-            logger.error("permissions are not found for user[{}]", user.id);
-            throw new ForbiddenException("用户权限为空");
-        }
-        if (!permissionAllow(permissions)) {
+        if (permissions.isEmpty() || !permissionAllow(permissions)) {
             logger.error("permission are not allowed");
-            throw new ForbiddenException("无权访问");
+            throw new ForbiddenException("无权操作");
         }
         return joinPoint.proceed();
     }
@@ -75,7 +71,7 @@ public class ACLAspect {
                 currentRequestAttributes()).getRequest();
         String path = HTTPUtils.getRequestPath(httpRequest);
         for (Permission permission : permissions) {
-            if (PermissionUtils.match(permission.resource, path)) return true;
+            if (PermissionUtils.match(permission.path, path)) return true;
         }
         return false;
     }

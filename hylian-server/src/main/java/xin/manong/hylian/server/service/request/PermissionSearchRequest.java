@@ -17,9 +17,9 @@ public class PermissionSearchRequest extends SearchRequest {
     /**
      * 访问资源
      */
-    @JsonProperty("resource")
-    @QueryParam("resource")
-    public String resource;
+    @JsonProperty("path")
+    @QueryParam("path")
+    public String path;
     /**
      * 权限名称
      */

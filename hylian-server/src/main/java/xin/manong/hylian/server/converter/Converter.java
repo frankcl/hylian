@@ -197,7 +197,7 @@ public class Converter {
         if (permissionRequest == null) return null;
         Permission permission = new Permission();
         permission.name = permissionRequest.name;
-        permission.resource = permissionRequest.resource;
+        permission.path = permissionRequest.path;
         permission.appId = permissionRequest.appId;
         return permission;
     }
@@ -213,7 +213,7 @@ public class Converter {
         Permission permission = new Permission();
         permission.id = permissionRequest.id;
         permission.name = permissionRequest.name;
-        permission.resource = permissionRequest.resource;
+        permission.path = permissionRequest.path;
         permission.appId = permissionRequest.appId;
         return permission;
     }
@@ -291,7 +291,7 @@ public class Converter {
         ViewPermission viewPermission = new ViewPermission();
         viewPermission.id = permission.id;
         viewPermission.name = permission.name;
-        viewPermission.resource = permission.resource;
+        viewPermission.path = permission.path;
         viewPermission.createTime = permission.createTime;
         viewPermission.updateTime = permission.updateTime;
         viewPermission.app = app;

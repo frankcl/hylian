@@ -111,7 +111,7 @@ public class PermissionServiceImpl implements PermissionService {
         ModelValidator.validateOrderBy(Permission.class, searchRequest);
         QueryWrapper<Permission> query = new QueryWrapper<>();
         searchRequest.prepareOrderBy(query);
-        if (!StringUtils.isEmpty(searchRequest.resource)) query.like("resource", searchRequest.resource);
+        if (!StringUtils.isEmpty(searchRequest.path)) query.like("path", searchRequest.path);
         if (!StringUtils.isEmpty(searchRequest.name)) query.like("name", searchRequest.name);
         if (!StringUtils.isEmpty(searchRequest.appId)) query.eq("app_id", searchRequest.appId);
         IPage<Permission> page = permissionMapper.selectPage(new Page<>(searchRequest.current, searchRequest.size), query);
@@ -127,12 +127,13 @@ public class PermissionServiceImpl implements PermissionService {
         LambdaQueryWrapper<Permission> query = new LambdaQueryWrapper<>();
         query.eq(Permission::getAppId, permission.appId);
         query.and(wrapper -> {
-            wrapper.eq(Permission::getResource, permission.resource);
+            wrapper.eq(Permission::getPath, permission.path);
             wrapper.or().eq(Permission::getName, permission.name);
         });
+        if (StringUtils.isNotEmpty(permission.id)) query.ne(Permission::getId, permission.id);
         if (permissionMapper.selectCount(query) > 0) {
-            logger.error("permission has existed for the same name[{}] or resource[{}]",
-                    permission.name, permission.resource);
+            logger.error("permission has existed for the same name[{}] or path[{}]",
+                    permission.name, permission.path);
             throw new IllegalStateException("权限已存在");
         }
     }

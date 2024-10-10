@@ -7,13 +7,16 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import xin.manong.hylian.model.Permission;
 import xin.manong.hylian.server.model.Pager;
 import xin.manong.hylian.model.RolePermission;
 import xin.manong.hylian.server.common.Constants;
 import xin.manong.hylian.server.converter.Converter;
 import xin.manong.hylian.server.dao.mapper.RolePermissionMapper;
+import xin.manong.hylian.server.service.PermissionService;
 import xin.manong.hylian.server.service.RolePermissionService;
 import xin.manong.hylian.server.service.request.RolePermissionSearchRequest;
 import xin.manong.hylian.server.util.ModelValidator;
@@ -22,6 +25,7 @@ import javax.annotation.Resource;
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.InternalServerErrorException;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * 角色权限关系服务实现
@@ -36,6 +40,9 @@ public class RolePermissionServiceImpl implements RolePermissionService {
 
     @Resource
     protected RolePermissionMapper rolePermissionMapper;
+    @Lazy
+    @Resource
+    protected PermissionService permissionService;
 
     @Override
     public boolean add(RolePermission rolePermission) {
@@ -59,6 +66,13 @@ public class RolePermissionServiceImpl implements RolePermissionService {
         LambdaQueryWrapper<RolePermission> query = new LambdaQueryWrapper<>();
         query.eq(RolePermission::getRoleId, roleId);
         return rolePermissionMapper.selectList(query);
+    }
+
+    @Override
+    public List<Permission> getPermissionsByRoleId(String roleId) {
+        List<RolePermission> rolePermissions = getByRoleId(roleId);
+        List<String> permissionIds = rolePermissions.stream().map(r -> r.permissionId).collect(Collectors.toList());
+        return permissionService.batchGet(permissionIds);
     }
 
     @Override

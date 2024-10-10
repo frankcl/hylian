@@ -4,7 +4,7 @@ export const formRules = reactive({
   name: [
     { required: true, message: '请输入权限名称', trigger: 'change' }
   ],
-  resource: [
+  path: [
     { required: true, message: '请输入资源路径', trigger: 'change' },
   ],
   app_id: [

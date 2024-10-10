@@ -7,13 +7,16 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import xin.manong.hylian.model.Role;
 import xin.manong.hylian.server.model.Pager;
 import xin.manong.hylian.model.UserRole;
 import xin.manong.hylian.server.common.Constants;
 import xin.manong.hylian.server.converter.Converter;
 import xin.manong.hylian.server.dao.mapper.UserRoleMapper;
+import xin.manong.hylian.server.service.RoleService;
 import xin.manong.hylian.server.service.UserRoleService;
 import xin.manong.hylian.server.service.request.UserRoleSearchRequest;
 import xin.manong.hylian.server.util.ModelValidator;
@@ -22,6 +25,7 @@ import javax.annotation.Resource;
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.InternalServerErrorException;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * 用户角色服务实现
@@ -36,6 +40,9 @@ public class UserRoleServiceImpl implements UserRoleService {
 
     @Resource
     protected UserRoleMapper userRoleMapper;
+    @Lazy
+    @Resource
+    protected RoleService roleService;
 
     @Override
     public boolean add(UserRole userRole) {
@@ -46,6 +53,13 @@ public class UserRoleServiceImpl implements UserRoleService {
             throw new IllegalStateException("用户角色关系已存在");
         }
         return userRoleMapper.insert(userRole) > 0;
+    }
+
+    @Override
+    public List<Role> getRolesByAppUser(String appId, String userId) {
+        List<UserRole> userRoles = getByAppUser(appId, userId);
+        List<String> roleIds = userRoles.stream().map(r -> r.roleId).collect(Collectors.toList());
+        return roleService.batchGet(roleIds);
     }
 
     @Override

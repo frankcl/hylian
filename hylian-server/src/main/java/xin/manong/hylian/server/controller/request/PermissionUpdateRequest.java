@@ -43,13 +43,10 @@ public class PermissionUpdateRequest extends PermissionRequest {
             logger.error("permission id is empty");
             throw new BadRequestException("权限ID为空");
         }
-        if (StringUtils.isEmpty(name) && StringUtils.isEmpty(resource) && StringUtils.isEmpty(appId)) {
+        if (StringUtils.isEmpty(name) && StringUtils.isEmpty(path) && StringUtils.isEmpty(appId)) {
             logger.error("update permission info is empty");
             throw new BadRequestException("更新权限信息为空");
         }
-        if (!StringUtils.isEmpty(resource) && !PermissionUtils.validatePattern(resource)) {
-            logger.error("invalid resource[{}]", resource);
-            throw new BadRequestException("资源格式非法");
-        }
+        PermissionUtils.validate(path);
     }
 }

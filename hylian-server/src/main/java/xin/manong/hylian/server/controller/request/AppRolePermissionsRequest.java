@@ -30,8 +30,6 @@ public class AppRolePermissionsRequest implements Serializable {
 
     private static final Logger logger = LoggerFactory.getLogger(AppRolePermissionsRequest.class);
 
-    private static final int DEFAULT_SIZE = 100;
-
     /**
      * 角色ID列表
      */
@@ -51,12 +49,6 @@ public class AppRolePermissionsRequest implements Serializable {
     public String appSecret;
 
     /**
-     * 获取数量
-     */
-    @JsonProperty("size")
-    public Integer size;
-
-    /**
      * 检测有效性，无效请求抛出异常
      */
     public void check() {
@@ -72,6 +64,5 @@ public class AppRolePermissionsRequest implements Serializable {
             logger.error("app secret is empty");
             throw new BadRequestException("应用秘钥为空");
         }
-        if (size == null || size <= 0) size = DEFAULT_SIZE;
     }
 }

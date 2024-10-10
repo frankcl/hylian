@@ -13,7 +13,7 @@ const apps = ref([])
 const permissionForm = reactive({
   id: '',
   name: '',
-  resource: '',
+  path: '',
   app_id: '',
 })
 
@@ -28,7 +28,7 @@ watchEffect(async () => {
   const permission = await asyncGetPermission(props.id)
   permissionForm.id = permission.id
   permissionForm.name = permission.name
-  permissionForm.resource = permission.resource
+  permissionForm.path = permission.path
   permissionForm.app_id = permission.app_id
 })
 
@@ -51,8 +51,8 @@ onMounted(async () => apps.value = await fetchAllApps())
     <el-form-item label="权限名称" prop="name">
       <el-input v-model.trim="permissionForm.name" clearable></el-input>
     </el-form-item>
-    <el-form-item label="资源路径" prop="resource">
-      <el-input v-model.trim="permissionForm.resource" clearable></el-input>
+    <el-form-item label="资源路径" prop="path">
+      <el-input v-model.trim="permissionForm.path" clearable></el-input>
     </el-form-item>
     <el-form-item>
       <el-button @click="submit(formRef)">保存</el-button>

@@ -52,10 +52,10 @@ public class Permission extends BaseModel {
     /**
      * 访问资源
      */
-    @TableField(value = "resource")
-    @JSONField(name = "resource")
-    @JsonProperty("resource")
-    public String resource;
+    @TableField(value = "path")
+    @JSONField(name = "path")
+    @JsonProperty("path")
+    public String path;
 
     /**
      * 应用ID
@@ -78,9 +78,9 @@ public class Permission extends BaseModel {
             logger.error("permission name is empty");
             throw new BadRequestException("权限名称为空");
         }
-        if (StringUtils.isEmpty(resource)) {
-            logger.error("resource is empty");
-            throw new BadRequestException("访问资源为空");
+        if (StringUtils.isEmpty(path)) {
+            logger.error("path is empty");
+            throw new BadRequestException("资源路径为空");
         }
         if (StringUtils.isEmpty(appId)) {
             logger.error("app id is empty");

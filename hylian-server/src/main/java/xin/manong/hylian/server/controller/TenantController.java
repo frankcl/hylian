@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
+import xin.manong.hylian.client.aspect.EnableACLAspect;
 import xin.manong.hylian.server.model.Pager;
 import xin.manong.hylian.model.Tenant;
 import xin.manong.hylian.server.controller.response.ViewTenant;
@@ -68,6 +69,7 @@ public class TenantController {
     @Produces(MediaType.APPLICATION_JSON)
     @Path("add")
     @PutMapping("add")
+    @EnableACLAspect
     @EnableWebLogAspect
     public boolean add(@RequestBody TenantRequest tenantRequest) {
         if (tenantRequest == null) throw new BadRequestException("租户信息为空");
@@ -89,6 +91,7 @@ public class TenantController {
     @Produces(MediaType.APPLICATION_JSON)
     @Path("update")
     @PostMapping("update")
+    @EnableACLAspect
     @EnableWebLogAspect
     public boolean update(@RequestBody TenantUpdateRequest tenantUpdateRequest) {
         if (tenantUpdateRequest == null) throw new BadRequestException("租户信息为空");
@@ -107,6 +110,7 @@ public class TenantController {
     @Produces(MediaType.APPLICATION_JSON)
     @Path("delete")
     @DeleteMapping("delete")
+    @EnableACLAspect
     @EnableWebLogAspect
     public boolean delete(@QueryParam("id") @RequestParam("id") String id) {
         return tenantService.delete(id);

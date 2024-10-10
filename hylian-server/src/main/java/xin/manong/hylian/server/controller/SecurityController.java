@@ -20,7 +20,6 @@ import xin.manong.hylian.server.controller.request.RefreshTokenRequest;
 import xin.manong.hylian.server.controller.request.RemoveActivityRequest;
 import xin.manong.hylian.server.service.*;
 import xin.manong.hylian.server.service.request.RolePermissionSearchRequest;
-import xin.manong.hylian.server.service.request.UserRoleSearchRequest;
 import xin.manong.weapon.base.util.RandomID;
 import xin.manong.weapon.spring.web.ws.aspect.EnableWebLogAspect;
 
@@ -66,8 +65,6 @@ public class SecurityController {
     protected TenantService tenantService;
     @Resource
     protected ActivityService activityService;
-    @Resource
-    protected RoleService roleService;
     @Resource
     protected UserRoleService userRoleService;
     @Resource
@@ -268,15 +265,7 @@ public class SecurityController {
                                       @QueryParam("app_secret") @RequestParam("app_secret") String appSecret) {
         if (StringUtils.isEmpty(userId)) throw new BadRequestException("用户ID为空");
         appService.verifyApp(appId, appSecret);
-        UserRoleSearchRequest searchRequest = new UserRoleSearchRequest();
-        searchRequest.userId = userId;
-        searchRequest.appId = appId;
-        searchRequest.current = Constants.DEFAULT_CURRENT;
-        searchRequest.size = 100;
-        Pager<UserRole> pager = userRoleService.search(searchRequest);
-        if (pager == null || pager.records == null) return new ArrayList<>();
-        List<String> roleIds = pager.records.stream().map(r -> r.roleId).collect(Collectors.toList());
-        return roleService.batchGet(roleIds);
+        return userRoleService.getRolesByAppUser(appId, userId);
     }
 
     /**
@@ -298,7 +287,7 @@ public class SecurityController {
         RolePermissionSearchRequest searchRequest = new RolePermissionSearchRequest();
         searchRequest.roleIds = request.roleIds;
         searchRequest.current = Constants.DEFAULT_CURRENT;
-        searchRequest.size = request.size;
+        searchRequest.size = 100;
         Pager<RolePermission> pager = rolePermissionService.search(searchRequest);
         if (pager == null || pager.records == null) return new ArrayList<>();
         List<String> permissionIds = pager.records.stream().map(r -> r.permissionId).
@@ -331,6 +320,7 @@ public class SecurityController {
             throw new IllegalStateException("尚未登录");
         }
         removeTicketResources(ticket);
+        SessionUtils.removeResources(httpRequest);
         CookieUtils.removeCookie(Constants.COOKIE_TOKEN, "/", httpResponse);
         CookieUtils.removeCookie(Constants.COOKIE_TICKET, "/", httpResponse);
         UserProfile userProfile = jwtService.decodeProfile(ticket);

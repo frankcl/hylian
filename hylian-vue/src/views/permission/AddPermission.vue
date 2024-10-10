@@ -11,7 +11,7 @@ const formRef = useTemplateRef('formRef')
 const apps = ref([])
 const permissionForm = reactive({
   name: '',
-  resource: '',
+  path: '',
   app_id: ''
 })
 
@@ -40,8 +40,8 @@ onMounted(async () => apps.value = await fetchAllApps())
     <el-form-item label="权限名称" prop="name">
       <el-input v-model.trim="permissionForm.name" clearable></el-input>
     </el-form-item>
-    <el-form-item label="资源路径" prop="resource">
-      <el-input v-model.trim="permissionForm.resource" clearable></el-input>
+    <el-form-item label="资源路径" prop="path">
+      <el-input v-model.trim="permissionForm.path" clearable></el-input>
     </el-form-item>
     <el-form-item>
       <el-button @click="submit(formRef)">新增</el-button>

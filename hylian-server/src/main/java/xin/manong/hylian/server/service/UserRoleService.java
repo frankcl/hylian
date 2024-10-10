@@ -1,5 +1,6 @@
 package xin.manong.hylian.server.service;
 
+import xin.manong.hylian.model.Role;
 import xin.manong.hylian.server.model.Pager;
 import xin.manong.hylian.model.UserRole;
 import xin.manong.hylian.server.service.request.UserRoleSearchRequest;
@@ -21,6 +22,15 @@ public interface UserRoleService {
      * @return 成功返回true，否则返回false
      */
     boolean add(UserRole userRole);
+
+    /**
+     * 获取应用用户角色列表
+     *
+     * @param appId 应用ID
+     * @param userId 用户ID
+     * @return 角色列表
+     */
+    List<Role> getRolesByAppUser(String appId, String userId);
 
     /**
      * 获取应用用户所有关系

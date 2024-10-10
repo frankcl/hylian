@@ -92,7 +92,7 @@ onMounted(async () => apps.value = await fetchAllApps())
             stripe @sort-change="event => fillSearchQuerySort(event, query)">
     <template #empty>没有权限数据</template>
     <el-table-column prop="name" label="权限名称" />
-    <el-table-column prop="resource" label="资源路径" />
+    <el-table-column prop="path" label="资源路径" />
     <el-table-column prop="app.name" label="所属应用" />
     <el-table-column label="创建时间" prop="create_time" sortable="custom">
       <template #default="scope">

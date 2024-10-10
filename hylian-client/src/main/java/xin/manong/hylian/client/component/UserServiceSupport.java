@@ -112,7 +112,7 @@ public class UserServiceSupport {
         paramMap.put(Constants.PARAM_APP_SECRET, clientConfig.appSecret);
         paramMap.put(Constants.PARAM_USER_ID, user.id);
         HttpRequest httpRequest = HttpRequest.buildGetRequest(requestURL, paramMap);
-        List<Role> roles = HTTPExecutor.executeAndUnwrap(httpRequest, List.class, Role.class);
+        List<Role> roles = HTTPExecutor.executeAndUnwrapList(httpRequest, Role.class);
         return roles == null ? new ArrayList<>() : roles;
     }
 
@@ -133,7 +133,7 @@ public class UserServiceSupport {
         requestBody.put(Constants.PARAM_APP_ID, clientConfig.appId);
         requestBody.put(Constants.PARAM_APP_SECRET, clientConfig.appSecret);
         HttpRequest httpRequest = HttpRequest.buildPostRequest(requestURL, RequestFormat.JSON, requestBody);
-        List<Permission> permissions = HTTPExecutor.executeAndUnwrap(httpRequest, List.class, Permission.class);
+        List<Permission> permissions = HTTPExecutor.executeAndUnwrapList(httpRequest, Permission.class);
         return permissions == null ? new ArrayList<>() : permissions;
     }
 }

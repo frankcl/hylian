@@ -3,6 +3,8 @@ package xin.manong.hylian.client.util;
 import org.junit.Assert;
 import org.junit.Test;
 
+import javax.ws.rs.BadRequestException;
+
 /**
  * @author frankcl
  * @date 2023-10-13 17:39:27
@@ -10,14 +12,25 @@ import org.junit.Test;
 public class PermissionUtilsTest {
 
     @Test
-    public void testValidatePattern() {
-        Assert.assertTrue(PermissionUtils.validatePattern("/abc/123/*"));
-        Assert.assertTrue(PermissionUtils.validatePattern("/abc/123/**"));
-        Assert.assertTrue(PermissionUtils.validatePattern("/abc/123/"));
-        Assert.assertFalse(PermissionUtils.validatePattern("abc/123/"));
-        Assert.assertFalse(PermissionUtils.validatePattern("/abc/*/123/"));
-        Assert.assertFalse(PermissionUtils.validatePattern("/abc/*/123/*"));
-        Assert.assertFalse(PermissionUtils.validatePattern("/abc/*/123/**"));
+    public void testValidateSuccess() {
+        PermissionUtils.validate("/abc/123/*");
+        PermissionUtils.validate("/abc/123/**");
+        PermissionUtils.validate("/abc/123/");
+    }
+
+    @Test(expected = BadRequestException.class)
+    public void testValidateNotStartWithSlash() {
+        PermissionUtils.validate("abc/123/");
+    }
+
+    @Test(expected = BadRequestException.class)
+    public void testValidateNotValidStar() {
+        PermissionUtils.validate("/abc/*/123/");
+    }
+
+    @Test(expected = BadRequestException.class)
+    public void testValidateNotValidStarAnother() {
+        PermissionUtils.validate("/abc/*/123/**");
     }
 
     @Test

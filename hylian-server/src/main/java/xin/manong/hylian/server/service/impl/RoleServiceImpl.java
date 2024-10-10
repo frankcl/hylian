@@ -134,6 +134,7 @@ public class RoleServiceImpl implements RoleService {
     private void beforeAddUpdate(Role role) {
         LambdaQueryWrapper<Role> query = new LambdaQueryWrapper<>();
         query.eq(Role::getAppId, role.appId).eq(Role::getName, role.name);
+        if (StringUtils.isNotEmpty(role.id)) query.ne(Role::getId, role.id);
         if (roleMapper.selectCount(query) > 0) {
             logger.error("role has existed for the same name[{}]", role.name);
             throw new IllegalStateException("角色已存在");

@@ -2,7 +2,14 @@ import Cookies from 'js-cookie'
 import { ElMessageBox, ElNotification } from 'element-plus'
 import router from '@/router'
 import { useUserStore } from '@/store'
-import { asyncCurrentUser, asyncLogout, asyncSearchApps, asyncSearchTenants } from './service'
+import {
+  asyncCurrentUser,
+  asyncLogout,
+  asyncSearchApps,
+  asyncSearchPermissions,
+  asyncSearchRoles,
+  asyncSearchTenants
+} from './service'
 
 export const isJsonStr = str => {
   if (typeof str === 'string') {
@@ -36,7 +43,7 @@ export const fillSearchQuerySort = (event, query) => {
 }
 
 export const submitForm = async (formEl, formData, asyncFunc, successMsg, errorMsg) => {
-  if (!await formEl.validate(valid => valid)) return false
+  if (formEl && !await formEl.validate(valid => valid)) return false
   if (!await asyncFunc(formData)) {
     if (errorMsg) ElNotification.error(errorMsg)
     return false
@@ -81,6 +88,16 @@ export const fetchAllApps = async () => {
 
 export const fetchAllTenants = async () => {
   const pager = await asyncSearchTenants({ current: 1, size: 100 })
+  return pager ? pager.records : []
+}
+
+export const fetchAppRoles = async appId => {
+  const pager = await asyncSearchRoles({ app_id: appId, current: 1, size: 100 })
+  return pager ? pager.records : []
+}
+
+export const fetchAppPermissions = async appId => {
+  const pager = await asyncSearchPermissions({ app_id: appId, current: 1, size: 100 })
   return pager ? pager.records : []
 }
 

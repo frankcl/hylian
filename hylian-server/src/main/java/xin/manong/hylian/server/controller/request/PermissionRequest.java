@@ -39,8 +39,8 @@ public class PermissionRequest implements Serializable {
     /**
      * 访问资源
      */
-    @JsonProperty("resource")
-    public String resource;
+    @JsonProperty("path")
+    public String path;
 
     /**
      * 应用ID
@@ -56,7 +56,7 @@ public class PermissionRequest implements Serializable {
             logger.error("permission name is empty");
             throw new BadRequestException("权限名为空");
         }
-        if (StringUtils.isEmpty(resource)) {
+        if (StringUtils.isEmpty(path)) {
             logger.error("permission resource is empty");
             throw new BadRequestException("权限资源为空");
         }
@@ -64,9 +64,6 @@ public class PermissionRequest implements Serializable {
             logger.error("app id is empty");
             throw new BadRequestException("应用ID为空");
         }
-        if (!PermissionUtils.validatePattern(resource)) {
-            logger.error("invalid resource[{}]", resource);
-            throw new BadRequestException("资源格式非法");
-        }
+        PermissionUtils.validate(path);
     }
 }

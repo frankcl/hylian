@@ -1,5 +1,5 @@
 <script setup>
-import {onMounted, reactive, ref, useTemplateRef, watchEffect} from 'vue'
+import { onMounted, reactive, ref, useTemplateRef, watchEffect } from 'vue'
 import { ArrowRight } from '@element-plus/icons-vue'
 import {
   ElBreadcrumb, ElBreadcrumbItem, ElButton, ElCol, ElForm,

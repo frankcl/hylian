@@ -37,8 +37,8 @@ public class ViewPermission implements Serializable {
     /**
      * 资源路径
      */
-    @JsonProperty("resource")
-    public String resource;
+    @JsonProperty("path")
+    public String path;
     /**
      * 应用
      */

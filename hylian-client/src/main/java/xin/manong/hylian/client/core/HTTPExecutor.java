@@ -9,9 +9,8 @@ import xin.manong.weapon.base.http.HttpClient;
 import xin.manong.weapon.base.http.HttpRequest;
 import xin.manong.weapon.spring.web.WebResponse;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 /**
  * HTTP执行器
@@ -31,10 +30,9 @@ public class HTTPExecutor {
      * 执行HTTP请求
      *
      * @param httpRequest HTTP请求
-     * @param responseType 响应数据类型
      * @return 成功返回结果，否则返回null
      */
-    public static <T> WebResponse<T> execute(HttpRequest httpRequest, Class<T> responseType, Class<?> ... paramTypes) {
+    private static String execute(HttpRequest httpRequest) {
         try (Response httpResponse = httpClient.execute(httpRequest)) {
             if (httpResponse == null || !httpResponse.isSuccessful() || httpResponse.code() != HTTP_CODE_OK) {
                 logger.error("execute http request failed for url[{}], http code[{}]",
@@ -42,16 +40,70 @@ public class HTTPExecutor {
                 return null;
             }
             assert httpResponse.body() != null;
-            String body = httpResponse.body().string();
-            List<Class<?>> types = new ArrayList<>();
-            types.add(responseType);
-            if (paramTypes != null) Collections.addAll(types, paramTypes);
-            TypeReference<WebResponse<T>> typeReference = new TypeReference<WebResponse<T>>(
-                    types.toArray(new Class[0])) {};
-            return JSON.parseObject(body, typeReference);
+            return httpResponse.body().string();
         } catch (Exception e) {
-            logger.error("exception occurred for executing url[{}]", httpRequest.requestURL);
+            logger.error("exception occurred for url[{}]", httpRequest.requestURL);
             logger.error(e.getMessage(), e);
+            return null;
+        }
+    }
+
+    /**
+     * 执行HTTP请求，返回结构化结果
+     *
+     * @param httpRequest HTTP请求
+     * @param recordType 数据类型
+     * @return 成功返回结构化结果，否则返回null
+     */
+    public static <T> WebResponse<T> execute(HttpRequest httpRequest, Class<T> recordType) {
+        String body = execute(httpRequest);
+        if (body == null) return null;
+        try {
+            return JSON.parseObject(body, new TypeReference<WebResponse<T>>(recordType) {});
+        } catch (Exception e) {
+            logger.error("unexpected http response[{}] for {}", body, recordType.getName());
+            return null;
+        }
+    }
+
+    /**
+     * 执行HTTP请求，返回列表结构化结果
+     *
+     * @param httpRequest HTTP请求
+     * @param recordType 列表数据类型
+     * @return 成功返回列表结构化结果，否则返回null
+     * @param <T> 列表数据类型
+     */
+    public static <T> WebResponse<List<T>> executeList(HttpRequest httpRequest, Class<T> recordType) {
+        String body = execute(httpRequest);
+        if (body == null) return null;
+        try {
+            return JSON.parseObject(body, new TypeReference<WebResponse<List<T>>>(recordType) {});
+        } catch (Exception e) {
+            logger.error("unexpected http response[{}] for {} of List", body, recordType.getName());
+            return null;
+        }
+    }
+
+    /**
+     * 执行HTTP请求，返回Map结构化结果
+     *
+     * @param httpRequest HTTP请求
+     * @param keyType Map键类型
+     * @param valueType Map值类型
+     * @return 成功返回Map结构化结果，否则返回null
+     * @param <K> Map键类型
+     * @param <V> Map值类型
+     */
+    public static <K, V> WebResponse<Map<K, V>> executeMap(HttpRequest httpRequest,
+                                                           Class<K> keyType, Class<V> valueType) {
+        String body = execute(httpRequest);
+        if (body == null) return null;
+        try {
+            return JSON.parseObject(body, new TypeReference<WebResponse<Map<K, V>>>(keyType, valueType) {});
+        } catch (Exception e) {
+            logger.error("unexpected http response[{}] for {} and {} of Map",
+                    body, keyType.getName(), valueType.getName());
             return null;
         }
     }
@@ -61,14 +113,52 @@ public class HTTPExecutor {
      * 执行HTTP请求并解构结果
      *
      * @param httpRequest HTTP请求
-     * @param responseType 响应数据类型
+     * @param recordType 响应数据类型
      * @return 成功返回结果，否则返回null
      */
-    public static <T> T executeAndUnwrap(HttpRequest httpRequest, Class<T> responseType, Class<?> ... paramTypes) {
-        WebResponse<T> response = execute(httpRequest, responseType, paramTypes);
+    public static <T> T executeAndUnwrap(HttpRequest httpRequest, Class<T> recordType) {
+        WebResponse<T> response = execute(httpRequest, recordType);
         if (response == null) return null;
         if (!response.status) {
-            logger.error("http response failed for url[{}], message[{}]", httpRequest.requestURL, response.message);
+            logger.error("execute and unwrap failed for url[{}], message[{}]",
+                    httpRequest.requestURL, response.message);
+            return null;
+        }
+        return response.data;
+    }
+
+    /**
+     * 执行HTTP请求并解构列表结果
+     *
+     * @param httpRequest HTTP请求
+     * @param recordType 列表成员数据类型
+     * @return 成功返回结果，否则返回null
+     */
+    public static <T> List<T> executeAndUnwrapList(HttpRequest httpRequest, Class<T> recordType) {
+        WebResponse<List<T>> response = executeList(httpRequest, recordType);
+        if (response == null) return null;
+        if (!response.status) {
+            logger.error("execute and unwrap list failed for url[{}], message[{}]",
+                    httpRequest.requestURL, response.message);
+            return null;
+        }
+        return response.data;
+    }
+
+    /**
+     * 执行HTTP请求并解构Map结果
+     *
+     * @param httpRequest HTTP请求
+     * @param keyType Map键数据类型
+     * @param valueType Map值数据类型
+     * @return 成功返回结果，否则返回null
+     */
+    public static <K, V> Map<K, V> executeAndUnwrapMap(HttpRequest httpRequest, Class<K> keyType, Class<V> valueType) {
+        WebResponse<Map<K, V>> response = executeMap(httpRequest, keyType, valueType);
+        if (response == null) return null;
+        if (!response.status) {
+            logger.error("execute and unwrap map failed for url[{}], message[{}]",
+                    httpRequest.requestURL, response.message);
             return null;
         }
         return response.data;

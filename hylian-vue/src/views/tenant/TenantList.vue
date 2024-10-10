@@ -12,8 +12,8 @@ import AddTenant from '@/views/tenant/AddTenant'
 import EditTenant from '@/views/tenant/EditTenant'
 
 const formRef = useTemplateRef('formRef')
-const addDialogVisible = ref(false)
-const editDialogVisible = ref(false)
+const addDialog = ref(false)
+const editDialog = ref(false)
 const tenantId = ref()
 const total = ref(0)
 const tenants = ref([])
@@ -43,16 +43,16 @@ const remove = async id => {
 
 const openEditDialog = (id) => {
   tenantId.value = id
-  editDialogVisible.value = true
+  editDialog.value = true
 }
 
 const closeEditDialog = async () => {
-  editDialogVisible.value = false
+  editDialog.value = false
   await search()
 }
 
 const closeAddDialog = async () => {
-  addDialogVisible.value = false
+  addDialog.value = false
   await search()
 }
 
@@ -69,14 +69,14 @@ watch(query, () => search(), { immediate: true })
     </el-col>
     <el-col :span="4">
       <el-row justify="end">
-        <el-button @click="addDialogVisible = true">添加租户</el-button>
+        <el-button @click="addDialog = true">添加租户</el-button>
       </el-row>
     </el-col>
   </el-row>
-  <el-dialog v-model="addDialogVisible" align-center show-close>
+  <el-dialog v-model="addDialog" align-center show-close>
     <AddTenant @close="closeAddDialog"></AddTenant>
   </el-dialog>
-  <el-dialog v-model="editDialogVisible" align-center show-close>
+  <el-dialog v-model="editDialog" align-center show-close>
     <EditTenant :id="tenantId" @close="closeEditDialog"></EditTenant>
   </el-dialog>
   <el-form :inline="true" :model="formData" ref="formRef" style="margin-top: 20px;">

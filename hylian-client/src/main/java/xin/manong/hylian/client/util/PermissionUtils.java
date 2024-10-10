@@ -4,6 +4,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.ws.rs.BadRequestException;
+
 /**
  * 权限工具
  *
@@ -15,27 +17,16 @@ public class PermissionUtils {
     private static final Logger logger = LoggerFactory.getLogger(PermissionUtils.class);
 
     /**
-     * 校验模式合法性
+     * 校验资源路径合法性
      *
-     * @param pattern 模式
-     * @return 合法返回true，否则返回false
+     * @param pattern 资源路径
      */
-    public static boolean validatePattern(String pattern) {
-        if (StringUtils.isEmpty(pattern)) {
-            logger.error("pattern is empty");
-            return false;
-        }
-        if (!pattern.startsWith("/")) {
-            logger.error("pattern[{}] must starts with /", pattern);
-            return false;
-        }
+    public static void validate(String pattern) {
+        if (StringUtils.isEmpty(pattern)) throw new BadRequestException("资源路径为空");
+        if (!pattern.startsWith("/")) throw new BadRequestException("资源路径必须以 / 开始");
         if (pattern.endsWith("/*")) pattern = pattern.substring(0, pattern.length() - 2);
         if (pattern.endsWith("/**")) pattern = pattern.substring(0, pattern.length() - 3);
-        if (pattern.contains("*")) {
-            logger.error("invalid pattern[{}]", pattern);
-            return false;
-        }
-        return true;
+        if (pattern.contains("*")) throw new BadRequestException("非法资源路径，只能以 /* 或 /** 结尾");
     }
 
     /**
