@@ -69,4 +69,22 @@ public class ModelValidator {
             validateField(model, orderBy.field);
         }
     }
+
+    /**
+     * 验证转换列表字段
+     *
+     * @param fieldValue 字符串形式列表字段
+     * @param recordType 列表数据类型
+     * @return 列表数据
+     * @param <T> 列表数据类型
+     */
+    public static <T> List<T> validateListField(String fieldValue, Class<T> recordType) {
+        try {
+            if (StringUtils.isEmpty(fieldValue)) return null;
+            return objectMapper.readValue(fieldValue, new TypeReference<List<T>>() { });
+        } catch (Exception e) {
+            logger.error("invalid List field[{}] for record[{}]", fieldValue, recordType.getName());
+            throw new BadRequestException("列表字段非法");
+        }
+    }
 }

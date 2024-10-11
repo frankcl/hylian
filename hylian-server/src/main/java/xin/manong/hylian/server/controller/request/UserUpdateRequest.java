@@ -68,7 +68,8 @@ public class UserUpdateRequest implements Serializable {
             logger.error("user id is empty");
             throw new BadRequestException("用户ID为空");
         }
-        if (StringUtils.isEmpty(name) && StringUtils.isEmpty(tenantId) && StringUtils.isEmpty(avatar)) {
+        if (StringUtils.isEmpty(name) && StringUtils.isEmpty(tenantId) &&
+                StringUtils.isEmpty(avatar) && disabled == null) {
             logger.error("user info is empty");
             throw new BadRequestException("用户信息为空");
         }

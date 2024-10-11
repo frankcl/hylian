@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import javax.ws.rs.QueryParam;
+import java.util.List;
 
 /**
  * 用户搜索请求
@@ -14,6 +15,13 @@ import javax.ws.rs.QueryParam;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class UserSearchRequest extends SearchRequest {
 
+    public List<String> idList;
+    /**
+     * 用户ID列表
+     */
+    @JsonProperty("ids")
+    @QueryParam("ids")
+    public String ids;
     /**
      * 用户名
      */

@@ -121,7 +121,7 @@ public class UserServiceImpl implements UserService {
         if (user.password != null) user.password = DigestUtils.md5Hex(user.password);
         boolean result = userMapper.updateById(user) > 0;
         if (StringUtils.isNotEmpty(user.avatar) && result) deleteAvatar(prevUser);
-        if (result && !prevUser.disabled && user.disabled) removeUserProfile(user);
+        if (result && !prevUser.disabled && user.disabled != null && user.disabled) removeUserProfile(user);
         return result;
     }
 
@@ -154,9 +154,11 @@ public class UserServiceImpl implements UserService {
         ModelValidator.validateOrderBy(User.class, searchRequest);
         QueryWrapper<User> query = new QueryWrapper<>();
         searchRequest.prepareOrderBy(query);
+        searchRequest.idList = ModelValidator.validateListField(searchRequest.ids, String.class);
         if (!StringUtils.isEmpty(searchRequest.username)) query.eq("username", searchRequest.username);
         if (!StringUtils.isEmpty(searchRequest.tenantId)) query.eq("tenant_id", searchRequest.tenantId);
         if (!StringUtils.isEmpty(searchRequest.name)) query.like("name", searchRequest.name);
+        if (searchRequest.idList != null) query.in("id", searchRequest.idList);
         if (searchRequest.disabled != null) query.eq("disabled", searchRequest.disabled ? 1 : 0);
         IPage<User> page = userMapper.selectPage(new Page<>(searchRequest.current, searchRequest.size), query);
         return Converter.convert(page);

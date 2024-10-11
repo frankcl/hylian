@@ -153,8 +153,9 @@ export const asyncDeleteApp = async id => {
   })
 }
 
-export const asyncSearchApps = async request => {
+export const asyncSearchApps = async (request, cancelRequest = true) => {
   return await axios({
+    cancelRequest: cancelRequest,
     method: HTTP_GET,
     url: '/api/app/search',
     params: request
@@ -306,8 +307,9 @@ export const asyncDeleteTenant = async id => {
   })
 }
 
-export const asyncSearchTenants = async request => {
+export const asyncSearchTenants = async (request, cancelRequest = true) => {
   return await axios({
+    cancelRequest: cancelRequest,
     method: HTTP_GET,
     url: '/api/tenant/search',
     params: request

@@ -81,13 +81,13 @@ export const refreshUser = async () => {
   }
 }
 
-export const fetchAllApps = async () => {
-  const pager = await asyncSearchApps({ current: 1, size: 100 })
+export const fetchAllApps = async (cancelRequest = true) => {
+  const pager = await asyncSearchApps({ current: 1, size: 100 }, cancelRequest)
   return pager ? pager.records : []
 }
 
-export const fetchAllTenants = async () => {
-  const pager = await asyncSearchTenants({ current: 1, size: 100 })
+export const fetchAllTenants = async (cancelRequest = true) => {
+  const pager = await asyncSearchTenants({ current: 1, size: 100 }, cancelRequest)
   return pager ? pager.records : []
 }
 
@@ -101,7 +101,10 @@ export const fetchAppPermissions = async appId => {
   return pager ? pager.records : []
 }
 
-export const popConfirmBox = (title, message, thenFunc, catchFunc) => {
+export const popConfirmBox = (
+  title, message,
+  confirmFunc = undefined,
+  cancelFunc = undefined) => {
   return ElMessageBox.confirm(
     message,
     title,
@@ -109,7 +112,7 @@ export const popConfirmBox = (title, message, thenFunc, catchFunc) => {
       confirmButtonText: '确认',
       cancelButtonText: '取消'
     }
-  ).then(thenFunc).catch(catchFunc)
+  ).then(confirmFunc).catch(cancelFunc)
 }
 
 export const drawCaptcha = (captcha, userConfig = {}) => {
