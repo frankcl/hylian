@@ -6,11 +6,11 @@ import {
   ElBreadcrumb, ElBreadcrumbItem, ElButton, ElCol, ElForm, ElFormItem, ElIcon,
   ElPagination, ElRadioButton, ElRadioGroup, ElRow, ElSwitch, ElTable, ElTableColumn
 } from 'element-plus'
-import { asyncDeleteUser, asyncGetTenant, asyncSearchUsers, asyncUpdateUser } from '@/common/service'
+import { asyncDeleteUser, asyncSearchUsers, asyncUpdateUser } from '@/common/service'
 import { confirmAndRemove, fillSearchQuerySort, searchQueryToRequest, submitForm } from '@/common/assortment'
-import TenantSelector from '@/components/tenant/TenantSelector'
-import UserFinder from '@/components/user/UserFinder'
-import AddUser from '@/views/user/AddUser'
+import TenantSelect from '@/components/tenant/TenantSelect'
+import UserSearch from '@/components/user/UserSearch'
+import AddUserDialog from '@/views/user/AddUserDialog'
 import UserRoles from '@/views/user/UserRoles'
 
 const formRef = useTemplateRef('formRef')
@@ -30,7 +30,7 @@ const query = reactive({
   sort_order: null
 })
 
-const handleSearch = async () => {
+const search = async () => {
   const request = searchQueryToRequest(query)
   if (query.user_id) request.ids = JSON.stringify([query.user_id])
   if (query.tenant_id) request.tenant_id = query.tenant_id
@@ -40,21 +40,21 @@ const handleSearch = async () => {
   users.value = pager.records
 }
 
-const handleRemove = async id => {
+const remove = async id => {
   if (!await confirmAndRemove(id, asyncDeleteUser, '删除提示', '确定删除用户信息？',
     '删除用户成功', '删除用户失败')) return
-  await handleSearch()
+  await search()
 }
 
-const handleUpdateStatus = async (id, disabled) => {
+const updateDisabled = async (id, disabled) => {
   await submitForm(undefined, { id: id, disabled: disabled },
     asyncUpdateUser, '更新用户状态成功', '更新用户状态失败')
 }
 
-const handleUpdateTenant = async (row, tenant_id) => {
-  if (!await submitForm(undefined, { id: row.id, tenant_id: tenant_id },
+const updateTenant = async (row, tenant) => {
+  if (!await submitForm(undefined, { id: row.id, tenant_id: tenant.id },
     asyncUpdateUser, '更新租户成功', '更新租户失败')) return
-  row.tenant = await asyncGetTenant(tenant_id)
+  row.tenant = tenant
 }
 
 const handleSelect = (selection, row) => {
@@ -66,7 +66,7 @@ const handleSelectAll = selection => {
   rows.forEach(row => row.checked = selection.length !== 0)
 }
 
-watch(query, () => handleSearch(), { immediate: true })
+watch(query, () => search(), { immediate: true })
 </script>
 
 <template>
@@ -86,34 +86,35 @@ watch(query, () => handleSearch(), { immediate: true })
         </el-radio-group>
       </el-form-item>
       <el-form-item label="租户选择" prop="tenant_id">
-        <TenantSelector v-model="query.tenant_id" placeholder="全部"></TenantSelector>
+        <tenant-select v-model="query.tenant_id" placeholder="全部"></tenant-select>
       </el-form-item>
       <el-form-item label="用户搜索" prop="user_id">
         <el-col :span="14">
-          <UserFinder v-model="query.user_id" placeholder="根据用户名称搜索"></UserFinder>
+          <user-search v-model="query.user_id" placeholder="根据用户名称搜索"></user-search>
         </el-col>
         <el-col :span="1"></el-col>
-        <el-col :span="9"><a @click="formRef.resetFields(); handleSearch()">清除所有筛选条件</a></el-col>
+        <el-col :span="9"><a @click="formRef.resetFields(); search()">清除所有筛选条件</a></el-col>
       </el-form-item>
     </el-form>
   </div>
   <el-table ref="tableRef" class="user-list" :data="users" max-height="850" table-layout="auto"
-            stripe @select="handleSelect" @select-all="handleSelectAll" @sort-change="event => fillSearchQuerySort(event, query)">
+            stripe @select="handleSelect" @select-all="handleSelectAll"
+            @sort-change="event => fillSearchQuerySort(event, query)">
     <template #empty>没有用户数据</template>
     <el-table-column type="selection" width="55" fixed="left" />
     <el-table-column prop="username" width="150" label="用户名" show-overflow-tooltip />
-    <el-table-column prop="name" width="150" label="姓名" show-overflow-tooltip />
+    <el-table-column prop="name" width="150" label="用户名称" show-overflow-tooltip />
     <el-table-column prop="tenant.name" width="180" label="租户" show-overflow-tooltip>
       <template #default="scope">
-        <TenantSelector v-if="scope.row.checked" v-model="scope.row.tenant.id"
-                        :clearable="false" @change="v => handleUpdateTenant(scope.row, v)"></TenantSelector>
+        <tenant-select v-if="scope.row.checked" v-model="scope.row.tenant.id"
+                        :clearable="false" @change="tenant => updateTenant(scope.row, tenant)"></tenant-select>
         <span v-else>{{ scope.row.tenant.name }}</span>
       </template>
     </el-table-column>
     <el-table-column prop="disabled" width="150" label="状态">
       <template #default="scope">
         <el-switch v-if="scope.row.checked" v-model="scope.row.disabled"
-                   @change="v => handleUpdateStatus(scope.row.id, v)"
+                   @change="v => updateDisabled(scope.row.id, v)"
                    style="--el-switch-on-color: #ff4949; --el-switch-off-color: #409eff"
                    inline-prompt size="large" active-text="禁用" inactive-text="启用" />
         <div v-else>
@@ -140,7 +141,7 @@ watch(query, () => handleSearch(), { immediate: true })
       </template>
       <template #default="scope">
         <a @click="userId = scope.row.id; openAllocateDialog = true">角色分配</a>&nbsp;
-        <a @click="handleRemove(scope.row.id)">删除</a>
+        <a @click="remove(scope.row.id)">删除</a>
       </template>
     </el-table-column>
   </el-table>
@@ -148,9 +149,9 @@ watch(query, () => handleSearch(), { immediate: true })
     <el-pagination layout="prev, pager, next" :total="total" background
                    v-model:page-size="query.size" v-model:current-page="query.current"/>
   </el-row>
-  <AddUser v-model="openAddDialog" @close="openAddDialog = false; handleSearch()"></AddUser>
+  <add-user-dialog v-model="openAddDialog" @close="openAddDialog = false; search()"></add-user-dialog>
   <UserRoles v-model="openAllocateDialog" :id="userId"
-             @close="openAllocateDialog = false; handleSearch()"></UserRoles>
+             @close="openAllocateDialog = false; search()"></UserRoles>
 </template>
 
 <style scoped>

@@ -1,4 +1,3 @@
-import { popConfirmBox } from '@/common/assortment'
 
 export const baseRules = {
   username: [
@@ -18,10 +17,4 @@ export const baseRules = {
     { required: true, message: '请输入新密码', trigger: 'change' },
     { min: 8, message: '密码至少8位', trigger: 'change' }
   ],
-}
-
-export const disableUser = async (value, userForm) => {
-  if (!value) return
-  await popConfirmBox('禁用提示', '禁用后用户不可用，是否确认禁用？',
-    undefined, () => userForm.disabled = false)
 }

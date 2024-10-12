@@ -14,7 +14,6 @@ import xin.manong.hylian.model.*;
 import xin.manong.hylian.server.common.Constants;
 import xin.manong.hylian.server.config.ServerConfig;
 import xin.manong.hylian.server.controller.request.*;
-import xin.manong.hylian.server.controller.response.UploadResponse;
 import xin.manong.hylian.server.controller.response.ViewTenant;
 import xin.manong.hylian.server.controller.response.ViewUser;
 import xin.manong.hylian.server.converter.Converter;
@@ -317,15 +316,15 @@ public class UserController {
      *
      * @param fileDetail 文件信息
      * @param fileInputStream 文件流
-     * @return 成功返回上传文件oss信息，否则抛出异常
+     * @return 成功返回上传文件地址，否则抛出异常
      */
     @POST
     @Path("uploadAvatar")
     @PostMapping("uploadAvatar")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Produces(MediaType.APPLICATION_JSON)
-    public UploadResponse uploadAvatar(@FormDataParam("file") FormDataContentDisposition fileDetail,
-                                       @FormDataParam("file") final InputStream fileInputStream) {
+    public String uploadAvatar(@FormDataParam("file") FormDataContentDisposition fileDetail,
+                               @FormDataParam("file") final InputStream fileInputStream) {
         String suffix = FileUtil.getFileSuffix(fileDetail.getFileName());
         String ossKey = String.format("%s%s%s", serverConfig.ossBaseDirectory,
                 Constants.TEMP_AVATAR_DIR, RandomID.build());
@@ -334,11 +333,7 @@ public class UserController {
             logger.error("upload avatar failed");
             throw new IllegalStateException("上传头像失败");
         }
-        UploadResponse response = new UploadResponse();
-        OSSMeta ossMeta = new OSSMeta(serverConfig.ossRegion, serverConfig.ossBucket, ossKey);
-        response.ossURL = OSSClient.buildURL(ossMeta);
-        response.signedURL = ossClient.sign(serverConfig.ossBucket, ossKey);
-        return response;
+        return ossClient.sign(serverConfig.ossBucket, ossKey);
     }
 
     /**

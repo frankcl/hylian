@@ -10,10 +10,14 @@ const props = defineProps({
 const emits = defineEmits(['change'])
 const model = defineModel()
 const tenants = ref([])
+const tenantMap = new Map()
 
-const handleChange = value => emits('change', value)
+const handleChange = id => emits('change', tenantMap.get(id))
 
-onMounted(async() => tenants.value = await fetchAllTenants(false))
+onMounted(async() => {
+  tenants.value = await fetchAllTenants(false)
+  tenants.value.forEach(tenant => tenantMap.set(tenant.id, tenant))
+})
 </script>
 
 <template>
