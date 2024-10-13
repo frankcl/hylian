@@ -8,7 +8,7 @@ import {
   asyncSearchApps,
   asyncSearchPermissions,
   asyncSearchRoles,
-  asyncSearchTenants
+  asyncSearchTenants, asyncSearchUsers
 } from './service'
 
 export const isJsonStr = str => {
@@ -52,14 +52,14 @@ export const submitForm = async (formEl, formData, asyncFunc, successMsg, errorM
   return true
 }
 
-export const confirmAndRemove = async (id, asyncFunc, title, message, successMsg, errorMsg) => {
+export const removeAfterConfirm = async (id, asyncFunc, title, message, successMsg, errorMsg) => {
   let success = false
   await popConfirmBox(title, message, async () => {
     if (!await asyncFunc(id)) {
-      ElNotification.error(errorMsg)
+      if (errorMsg) ElNotification.error(errorMsg)
       return success = false
     }
-    ElNotification.success(successMsg)
+    if (successMsg) ElNotification.success(successMsg)
     return success = true
   })
   return success
@@ -88,6 +88,11 @@ export const fetchAllApps = async (cancelRequest = true) => {
 
 export const fetchAllTenants = async (cancelRequest = true) => {
   const pager = await asyncSearchTenants({ current: 1, size: 100 }, cancelRequest)
+  return pager ? pager.records : []
+}
+
+export const fetchAllUsers = async (cancelRequest = true) => {
+  const pager = await asyncSearchUsers({ current: 1, size: 100 }, cancelRequest)
   return pager ? pager.records : []
 }
 

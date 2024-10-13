@@ -13,49 +13,41 @@ import javax.ws.rs.BadRequestException;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import java.io.Serializable;
+import java.util.List;
 
 /**
- * 应用信息请求
+ * 批量应用用户请求
  *
  * @author frankcl
- * @date 2023-09-05 13:51:00
+ * @date 2024-09-05 13:51:00
  */
 @Getter
 @Setter
 @Accessors(chain = true)
 @XmlAccessorType(XmlAccessType.FIELD)
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class AppRequest implements Serializable {
+public class BatchAppUserRequest implements Serializable {
 
-    private static final Logger logger = LoggerFactory.getLogger(AppRequest.class);
+    private static final Logger logger = LoggerFactory.getLogger(BatchAppUserRequest.class);
 
     /**
-     * 应用名
+     * 用户ID列表
      */
-    @JsonProperty("name")
-    public String name;
+    @JsonProperty("user_ids")
+    public List<String> userIds;
     /**
-     * 应用秘钥
+     * 应用ID
      */
-    @JsonProperty("secret")
-    public String secret;
-    /**
-     * 应用描述
-     */
-    @JsonProperty("description")
-    public String description;
+    @JsonProperty("app_id")
+    public String appId;
 
     /**
      * 检测有效性，无效请求抛出异常
      */
     public void check() {
-        if (StringUtils.isEmpty(name)) {
-            logger.error("app name is empty");
-            throw new BadRequestException("应用名为空");
-        }
-        if (StringUtils.isEmpty(secret)) {
-            logger.error("app secret is empty");
-            throw new BadRequestException("应用秘钥为空");
+        if (StringUtils.isEmpty(appId)) {
+            logger.error("app id is empty");
+            throw new BadRequestException("应用ID为空");
         }
     }
 }

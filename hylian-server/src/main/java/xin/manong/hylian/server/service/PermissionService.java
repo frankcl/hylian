@@ -55,6 +55,13 @@ public interface PermissionService {
     boolean delete(String id);
 
     /**
+     * 删除应用所有权限
+     *
+     * @param appId 应用ID
+     */
+    void deleteByApp(String appId);
+
+    /**
      * 搜索权限信息
      *
      * @param searchRequest 搜索请求

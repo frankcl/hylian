@@ -4,6 +4,8 @@ import xin.manong.hylian.server.model.Pager;
 import xin.manong.hylian.model.User;
 import xin.manong.hylian.server.service.request.UserSearchRequest;
 
+import java.util.List;
+
 /**
  * 用户信息服务接口定义
  *
@@ -19,6 +21,14 @@ public interface UserService {
      * @return 成功返回用户信息，否则返回null
      */
     User get(String id);
+
+    /**
+     * 批量获取用户
+     *
+     * @param ids 用户ID列表
+     * @return 用户列表
+     */
+    List<User> batchGet(List<String> ids);
 
     /**
      * 根据用户名获取用户信息

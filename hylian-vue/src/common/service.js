@@ -162,6 +162,23 @@ export const asyncSearchApps = async (request, cancelRequest = true) => {
   })
 }
 
+export const asyncGetAppUsers = async (appId, cancelRequest = true) => {
+  return await axios({
+    cancelRequest: cancelRequest,
+    method: HTTP_GET,
+    url: '/api/app/getAppUsers',
+    params: { app_id: appId }
+  })
+}
+
+export const asyncBatchUpdateAppUsers = async request => {
+  return await axios({
+    method: HTTP_POST,
+    url: '/api/app/batchUpdateAppUser',
+    data: request
+  })
+}
+
 export const asyncRandomSecret = async () => {
   return await axios({
     method: HTTP_GET,
@@ -205,8 +222,9 @@ export const asyncDeleteUser = async id => {
   })
 }
 
-export const asyncSearchUsers = async request => {
+export const asyncSearchUsers = async (request, cancelRequest = true) => {
   return await axios({
+    cancelRequest: cancelRequest,
     method: HTTP_GET,
     url: '/api/user/search',
     params: request

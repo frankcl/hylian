@@ -83,8 +83,8 @@ public class UserRoleServiceImpl implements UserRoleService {
         for (UserRole userRole : addUserRoles) {
             if (!add(userRole)) throw new InternalServerErrorException("添加用户角色关系失败");
         }
-        for (Long roleId : removeUserRoles) {
-            if (!delete(roleId)) throw new InternalServerErrorException("删除用户角色关系失败");
+        for (Long id : removeUserRoles) {
+            if (!delete(id)) throw new InternalServerErrorException("删除用户角色关系失败");
         }
     }
 

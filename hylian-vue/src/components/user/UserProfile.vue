@@ -16,15 +16,15 @@ const userStore = useUserStore()
       <el-avatar shape="circle" :size="60" fit="cover" style="margin-bottom: 20px;"
                  :icon="UserFilled" :src="userStore.avatar"></el-avatar>
       <el-row>
-        <el-col class="flex-column" :span="9">用户名:</el-col>
+        <el-col :span="9">用户名:</el-col>
         <el-col :span="15">{{ userStore.username }}</el-col>
       </el-row>
       <el-row>
-        <el-col class="flex-column" :span="9">名称:</el-col>
+        <el-col :span="9">名称:</el-col>
         <el-col :span="15">{{ userStore.name }}</el-col>
       </el-row>
       <el-row>
-        <el-col class="flex-column" :span="9">租户:</el-col>
+        <el-col :span="9">租户:</el-col>
         <el-col :span="15" v-if="userStore.tenant">{{ userStore.tenant.name }}</el-col>
       </el-row>
     </template>
@@ -32,9 +32,5 @@ const userStore = useUserStore()
 </template>
 
 <style scoped>
-.flex-column {
-  display: flex;
-  justify-content: right;
-  padding-right: 5px;
-}
+
 </style>

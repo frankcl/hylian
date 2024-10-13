@@ -6,18 +6,28 @@ import {
   ElBreadcrumb, ElBreadcrumbItem, ElButton, ElCol, ElForm, ElFormItem, ElIcon,
   ElPagination, ElRadioButton, ElRadioGroup, ElRow, ElSwitch, ElTable, ElTableColumn
 } from 'element-plus'
-import { asyncDeleteUser, asyncSearchUsers, asyncUpdateUser } from '@/common/service'
-import { confirmAndRemove, fillSearchQuerySort, searchQueryToRequest, submitForm } from '@/common/assortment'
+import {
+  asyncDeleteUser,
+  asyncSearchUsers,
+  asyncUpdateUser
+} from '@/common/service'
+import {
+  fillSearchQuerySort,
+  removeAfterConfirm,
+  searchQueryToRequest,
+  submitForm
+} from '@/common/assortment'
 import TenantSelect from '@/components/tenant/TenantSelect'
 import UserSearch from '@/components/user/UserSearch'
-import AddUserDialog from '@/views/user/AddUserDialog'
-import UserRoles from '@/views/user/UserRoles'
+import AddUser from '@/views/user/AddUser'
+import AllocateRole from '@/views/user/AllocateRole'
 
 const formRef = useTemplateRef('formRef')
 const tableRef = useTemplateRef('tableRef')
 const openAddDialog = ref(false)
 const openAllocateDialog = ref(false)
 const userId = ref()
+const username = ref()
 const total = ref(0)
 const users = ref([])
 const query = reactive({
@@ -38,32 +48,51 @@ const search = async () => {
   const pager = await asyncSearchUsers(request)
   total.value = pager.total
   users.value = pager.records
+  users.value.forEach(user => user.prev = { disabled: user.disabled, tenant: JSON.parse(JSON.stringify(user.tenant))})
 }
 
 const remove = async id => {
-  if (!await confirmAndRemove(id, asyncDeleteUser, '删除提示', '确定删除用户信息？',
+  if (!await removeAfterConfirm(id, asyncDeleteUser, '删除提示', '确定删除用户信息？',
     '删除用户成功', '删除用户失败')) return
   await search()
 }
 
-const updateDisabled = async (id, disabled) => {
-  await submitForm(undefined, { id: id, disabled: disabled },
-    asyncUpdateUser, '更新用户状态成功', '更新用户状态失败')
+const updateDisabled = async (row, disabled) => {
+  if (!await submitForm(undefined, { id: row.id, disabled: disabled },
+    asyncUpdateUser, '更新用户状态成功', '更新用户状态失败')) {
+    row.disabled = row.prev.disabled
+    return
+  }
+  row.prev.disabled = row.disabled
 }
 
 const updateTenant = async (row, tenant) => {
   if (!await submitForm(undefined, { id: row.id, tenant_id: tenant.id },
-    asyncUpdateUser, '更新租户成功', '更新租户失败')) return
+    asyncUpdateUser, '更新租户成功', '更新租户失败')) {
+    row.tenant.id = row.prev.tenant.id
+    return
+  }
   row.tenant = tenant
+  row.prev.tenant = JSON.parse(JSON.stringify(row.tenant))
 }
 
 const handleSelect = (selection, row) => {
   row.checked = selection.indexOf(row) !== -1
+  if (!row.checked) {
+    row.disabled = row.prev.disabled
+    row.tenant.id = row.prev.tenant.id
+  }
 }
 
 const handleSelectAll = selection => {
   const rows = selection.length === 0 ? tableRef.value.data : selection
-  rows.forEach(row => row.checked = selection.length !== 0)
+  rows.forEach(row => {
+    row.checked = selection.length !== 0
+    if (!row.checked) {
+      row.disabled = row.prev.disabled
+      row.tenant.id = row.prev.tenant.id
+    }
+  })
 }
 
 watch(query, () => search(), { immediate: true })
@@ -97,7 +126,7 @@ watch(query, () => search(), { immediate: true })
       </el-form-item>
     </el-form>
   </div>
-  <el-table ref="tableRef" class="user-list" :data="users" max-height="850" table-layout="auto"
+  <el-table ref="tableRef" :data="users" max-height="850" table-layout="auto"
             stripe @select="handleSelect" @select-all="handleSelectAll"
             @sort-change="event => fillSearchQuerySort(event, query)">
     <template #empty>没有用户数据</template>
@@ -114,7 +143,7 @@ watch(query, () => search(), { immediate: true })
     <el-table-column prop="disabled" width="150" label="状态">
       <template #default="scope">
         <el-switch v-if="scope.row.checked" v-model="scope.row.disabled"
-                   @change="v => updateDisabled(scope.row.id, v)"
+                   @change="v => updateDisabled(scope.row, v)"
                    style="--el-switch-on-color: #ff4949; --el-switch-off-color: #409eff"
                    inline-prompt size="large" active-text="禁用" inactive-text="启用" />
         <div v-else>
@@ -140,7 +169,8 @@ watch(query, () => search(), { immediate: true })
         <el-button @click="openAddDialog = true">新增用户</el-button>
       </template>
       <template #default="scope">
-        <a @click="userId = scope.row.id; openAllocateDialog = true">角色分配</a>&nbsp;
+        <RouterLink :to="{ name: 'ActivityList', query: { userId: scope.row.id } }">活跃记录</RouterLink>&nbsp;
+        <a @click="userId = scope.row.id; username = scope.row.username; openAllocateDialog = true">角色分配</a>&nbsp;
         <a @click="remove(scope.row.id)">删除</a>
       </template>
     </el-table-column>
@@ -149,9 +179,9 @@ watch(query, () => search(), { immediate: true })
     <el-pagination layout="prev, pager, next" :total="total" background
                    v-model:page-size="query.size" v-model:current-page="query.current"/>
   </el-row>
-  <add-user-dialog v-model="openAddDialog" @close="openAddDialog = false; search()"></add-user-dialog>
-  <UserRoles v-model="openAllocateDialog" :id="userId"
-             @close="openAllocateDialog = false; search()"></UserRoles>
+  <add-user v-model="openAddDialog" @close="openAddDialog = false; search()"></add-user>
+  <allocate-role v-model="openAllocateDialog" :id="userId" :username="username"
+                 @close="openAllocateDialog = false; search()"></allocate-role>
 </template>
 
 <style scoped>

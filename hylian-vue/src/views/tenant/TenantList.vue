@@ -6,9 +6,18 @@ import {
   ElBreadcrumb, ElBreadcrumbItem, ElButton, ElForm,
   ElFormItem, ElIcon, ElInput, ElPagination, ElPopover, ElRow, ElTable, ElTableColumn
 } from 'element-plus'
-import { asyncDeleteTenant, asyncSearchTenants, asyncUpdateTenant } from '@/common/service'
-import { confirmAndRemove, fillSearchQuerySort, searchQueryToRequest, submitForm } from '@/common/assortment'
-import AddTenantDialog from '@/views/tenant/AddTenantDialog'
+import {
+  asyncDeleteTenant,
+  asyncSearchTenants,
+  asyncUpdateTenant
+} from '@/common/service'
+import {
+  fillSearchQuerySort,
+  removeAfterConfirm,
+  searchQueryToRequest,
+  submitForm
+} from '@/common/assortment'
+import AddTenant from '@/views/tenant/AddTenant'
 
 const tableRef = useTemplateRef('tableRef')
 const openAddDialog = ref(false)
@@ -28,36 +37,42 @@ const search = async () => {
   const pager = await asyncSearchTenants(request)
   total.value = pager.total
   tenants.value = pager.records
+  tenants.value.forEach(tenant => tenant.prev = { name: tenant.name })
 }
 
 const update = async row => {
-  if (row.changed) {
-    if (!await submitForm(undefined, { id: row.id, name: row.name },
-      asyncUpdateTenant, '更新租户名成功', '更新租户名失败')) return
-    row.changed = false
+  if (!await submitForm(undefined, { id: row.id, name: row.name },
+    asyncUpdateTenant, '更新租户名成功', '更新租户名失败')) {
+    row.name = row.prev.name
+    return
   }
+  row.prev.name = row.name
 }
 
 const remove = async id => {
-  if (!await confirmAndRemove(id, asyncDeleteTenant, '删除提示', '确定删除租户信息？',
+  if (!await removeAfterConfirm(id, asyncDeleteTenant, '删除提示', '确定删除租户信息？',
     '删除租户成功', '删除租户失败')) return
   await search()
 }
 
 const handleSelect = (selection, row) => {
   row.checked = selection.indexOf(row) !== -1
+  if (!row.checked) row.name = row.prev.name
 }
 
 const handleSelectAll = selection => {
   const rows = selection.length === 0 ? tableRef.value.data : selection
-  rows.forEach(row => row.checked = selection.length !== 0)
+  rows.forEach(row => {
+    row.checked = selection.length !== 0
+    if (!row.checked) row.name = row.prev.name
+  })
 }
 
 watch(query, () => search(), { immediate: true })
 </script>
 
 <template>
-  <add-tenant-dialog v-model="openAddDialog" @close="openAddDialog = false; search()"></add-tenant-dialog>
+  <add-tenant v-model="openAddDialog" @close="openAddDialog = false; search()"></add-tenant>
   <el-row align="middle">
     <el-breadcrumb :separator-icon="ArrowRight">
       <el-breadcrumb-item>账号管理</el-breadcrumb-item>
@@ -78,9 +93,9 @@ watch(query, () => search(), { immediate: true })
     <el-table-column type="selection" width="55" fixed="left" />
     <el-table-column prop="name" label="租户名" show-overflow-tooltip>
       <template #default="scope">
-        <el-input v-if="scope.row.checked" v-model="scope.row.name" @input="scope.row.changed = true">
+        <el-input v-if="scope.row.checked" v-model="scope.row.name">
           <template #append>
-            <el-popover v-if="scope.row.changed" content="租户名变更，点击保存">
+            <el-popover v-if="scope.row.name !== scope.row.prev.name" content="租户名变更，点击保存">
               <template #reference>
                 <el-button @click="update(scope.row)">
                   <el-icon color="#ff0000"><warning></warning></el-icon>

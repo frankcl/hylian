@@ -140,6 +140,7 @@ public class Converter {
         App app = new App();
         app.name = appRequest.name;
         app.secret = appRequest.secret;
+        app.description = appRequest.description;
         return app;
     }
 
@@ -155,6 +156,7 @@ public class Converter {
         app.id = appRequest.id;
         app.name = appRequest.name;
         app.secret = appRequest.secret;
+        app.description = appRequest.description;
         return app;
     }
 
@@ -350,5 +352,23 @@ public class Converter {
             userRoles.add(userRole);
         }
         return userRoles;
+    }
+
+    /**
+     * 转换批量更新请求为关系列表
+     *
+     * @param request 批量更新请求
+     * @return 关系列表
+     */
+    public static List<AppUser> convert(BatchAppUserRequest request) {
+        List<AppUser> appUsers = new ArrayList<>();
+        if (request.userIds == null) return appUsers;
+        for (String userId : request.userIds) {
+            AppUser appUser = new AppUser();
+            appUser.appId = request.appId;
+            appUser.userId = userId;
+            appUsers.add(appUser);
+        }
+        return appUsers;
     }
 }

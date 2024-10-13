@@ -11,7 +11,7 @@ const apps = ref([])
 const search = async query => {
   loading.value = true
   try {
-    const pager = await asyncSearchApps({name: query})
+    const pager = await asyncSearchApps({ name: query })
     apps.value = pager.records
   } finally {
     loading.value = false

@@ -113,6 +113,18 @@ public class RoleServiceImpl implements RoleService {
     }
 
     @Override
+    public void deleteByApp(String appId) {
+        if (StringUtils.isEmpty(appId)) {
+            logger.error("app id is empty");
+            throw new BadRequestException("应用ID为空");
+        }
+        LambdaQueryWrapper<Role> query = new LambdaQueryWrapper<>();
+        query.eq(Role::getAppId, appId);
+        int n = roleMapper.delete(query);
+        logger.info("delete role num[{}] for app[{}]", n, appId);
+    }
+
+    @Override
     public Pager<Role> search(RoleSearchRequest searchRequest) {
         if (searchRequest == null) searchRequest = new RoleSearchRequest();
         if (searchRequest.current == null || searchRequest.current < 1) searchRequest.current = Constants.DEFAULT_CURRENT;

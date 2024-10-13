@@ -8,8 +8,8 @@ import {
 import { useUserStore } from '@/store'
 import { logout } from '@/common/assortment'
 import UserProfile from '@/components/user/UserProfile'
-import PasswordDialog from '@/views/user/PasswordDialog'
-import EditUserDialog from '@/views/user/EditUserDialog'
+import UpdatePassword from '@/views/user/UpdatePassword'
+import EditUser from '@/views/user/EditUser'
 
 const userStore = useUserStore()
 const openEditDialog = ref(false)
@@ -25,10 +25,8 @@ const handleCommand = command => {
 <template>
   <el-container class="workbench-container">
     <el-header class="workbench-header">
-      <password-dialog v-model="openPasswordDialog"
-                       @close="openPasswordDialog = false"></password-dialog>
-      <edit-user-dialog v-model="openEditDialog" :id="userStore.id"
-                        @close="openEditDialog = false"></edit-user-dialog>
+      <update-password v-model="openPasswordDialog" @close="openPasswordDialog = false"></update-password>
+      <edit-user v-model="openEditDialog" :id="userStore.id" @close="openEditDialog = false"></edit-user>
       <el-row style="margin-top: 5px" align="middle" justify="end">
         <user-profile></user-profile>&nbsp;&nbsp;
         <el-dropdown trigger="click" @command="handleCommand">

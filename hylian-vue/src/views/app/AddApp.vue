@@ -1,17 +1,35 @@
 <script setup>
 import { reactive, useTemplateRef } from 'vue'
 import { ArrowRight, Refresh } from '@element-plus/icons-vue'
-import { ElBreadcrumb, ElBreadcrumbItem, ElButton, ElCol, ElForm, ElFormItem, ElIcon, ElInput } from 'element-plus'
-import { asyncAddApp } from '@/common/service'
+import {
+  ElBreadcrumb, ElBreadcrumbItem, ElButton, ElCol,
+  ElDialog, ElForm, ElFormItem, ElIcon, ElInput, ElRow
+} from 'element-plus'
+import {
+  asyncAddApp,
+  asyncRandomSecret
+} from '@/common/service'
 import { submitForm } from '@/common/assortment'
-import { formRules, refreshAppSecret } from '@/views/app/common'
 
+const model = defineModel()
 const emits = defineEmits(['close'])
 const formRef = useTemplateRef('formRef')
 const appForm = reactive({
-  name: '',
-  secret: ''
+  name: null,
+  secret: null,
+  description: null
 })
+const formRules = reactive({
+  name: [
+    { required: true, message: '请输入应用名', trigger: 'change' }
+  ],
+  secret: [
+    { required: true, message: '请输入应用秘钥', trigger: 'change' },
+    { min: 8, message: '应用秘钥至少8位', trigger: 'change' }
+  ]
+})
+
+const refreshAppSecret = async appForm => appForm.secret = await asyncRandomSecret()
 
 const submit = async formEl => {
   if (!await submitForm(formEl, appForm, asyncAddApp,
@@ -21,29 +39,40 @@ const submit = async formEl => {
 </script>
 
 <template>
-  <el-breadcrumb :separator-icon="ArrowRight">
-    <el-breadcrumb-item>应用管理</el-breadcrumb-item>
-    <el-breadcrumb-item>应用</el-breadcrumb-item>
-    <el-breadcrumb-item>新增</el-breadcrumb-item>
-  </el-breadcrumb>
-  <el-form ref="formRef" :model="appForm" :rules="formRules" style="margin-top: 20px;"
-           label-width="auto" label-position="right">
-    <el-form-item label="应用名" prop="name">
-      <el-input v-model.trim="appForm.name" clearable></el-input>
-    </el-form-item>
-    <el-form-item label="应用秘钥" prop="secret">
-      <el-col :span="22">
-        <el-input v-model.trim="appForm.secret" clearable></el-input>
-      </el-col>
-      <el-col :offset="1" :span="1">
-        <el-icon @click="refreshAppSecret(appForm)"><Refresh /></el-icon>
-      </el-col>
-    </el-form-item>
-    <el-form-item>
-      <el-button @click="submit(formRef)">新增</el-button>
-      <el-button @click="formRef.resetFields()">重置</el-button>
-    </el-form-item>
-  </el-form>
+  <el-dialog v-model="model" @close="emits('close')" align-center show-close>
+    <el-row>
+      <el-breadcrumb :separator-icon="ArrowRight">
+        <el-breadcrumb-item>应用管理</el-breadcrumb-item>
+        <el-breadcrumb-item>新增应用</el-breadcrumb-item>
+      </el-breadcrumb>
+    </el-row>
+    <el-form ref="formRef" :model="appForm" :rules="formRules"
+             label-width="auto" label-position="right">
+      <el-form-item label="应用名" prop="name">
+        <el-input v-model.trim="appForm.name" clearable></el-input>
+      </el-form-item>
+      <el-form-item label="应用秘钥" prop="secret">
+        <el-col :span="18">
+          <el-input v-model.trim="appForm.secret" clearable></el-input>
+        </el-col>
+        <el-col :span="6">
+          <el-row justify="end">
+            <el-button @click="refreshAppSecret(appForm)">
+              自动生成秘钥&nbsp;
+              <el-icon><Refresh /></el-icon>
+            </el-button>
+          </el-row>
+        </el-col>
+      </el-form-item>
+      <el-form-item label="应用描述" prop="description">
+        <el-input v-model="appForm.description" type="textarea" rows="5" placeholder="请输入应用描述"></el-input>
+      </el-form-item>
+      <el-form-item>
+        <el-button @click="submit(formRef)">新增</el-button>
+        <el-button @click="formRef.resetFields()">重置</el-button>
+      </el-form-item>
+    </el-form>
+  </el-dialog>
 </template>
 
 <style scoped>

@@ -32,8 +32,8 @@ import javax.ws.rs.BadRequestException;
 import javax.ws.rs.InternalServerErrorException;
 import javax.ws.rs.NotFoundException;
 import java.io.InputStream;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
+import java.util.concurrent.CountDownLatch;
 
 /**
  * 用户服务实现
@@ -60,6 +60,9 @@ public class UserServiceImpl implements UserService {
     protected UserRoleService userRoleService;
     @Lazy
     @Resource
+    protected AppUserService appUserService;
+    @Lazy
+    @Resource
     protected ActivityService activityService;
     @Lazy
     @Resource
@@ -75,6 +78,29 @@ public class UserServiceImpl implements UserService {
             throw new BadRequestException("用户ID为空");
         }
         return userMapper.selectById(id);
+    }
+
+    @Override
+    public List<User> batchGet(List<String> ids) {
+        if (ids == null || ids.isEmpty()) return new ArrayList<>();
+        List<User> users = Collections.synchronizedList(new ArrayList<>());
+        CountDownLatch countDownLatch = new CountDownLatch(ids.size());
+        ids.stream().parallel().forEach(id -> {
+            try {
+                User user = userMapper.selectById(id);
+                if (user != null) users.add(user);
+            } catch (Exception e) {
+                logger.warn(e.getMessage(), e);
+            } finally {
+                countDownLatch.countDown();
+            }
+        });
+        try {
+            countDownLatch.await();
+        } catch (Exception e) {
+            logger.warn(e.getMessage(), e);
+        }
+        return new ArrayList<>(users);
     }
 
     @Override
@@ -140,6 +166,7 @@ public class UserServiceImpl implements UserService {
         boolean result = userMapper.deleteById(id) > 0;
         if (result) {
             userRoleService.deleteByUser(id);
+            appUserService.deleteByUser(id);
             deleteAvatar(user);
             removeUserProfile(user);
         }

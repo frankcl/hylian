@@ -81,8 +81,8 @@ public class RolePermissionServiceImpl implements RolePermissionService {
         for (RolePermission rolePermission : addRolePermissions) {
             if (!add(rolePermission)) throw new InternalServerErrorException("添加角色权限关系失败");
         }
-        for (Long roleId : removeRolePermissions) {
-            if (!delete(roleId)) throw new InternalServerErrorException("删除角色权限关系失败");
+        for (Long id : removeRolePermissions) {
+            if (!delete(id)) throw new InternalServerErrorException("删除角色权限关系失败");
         }
     }
 

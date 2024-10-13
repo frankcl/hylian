@@ -47,6 +47,6 @@ public class PermissionUpdateRequest extends PermissionRequest {
             logger.error("update permission info is empty");
             throw new BadRequestException("更新权限信息为空");
         }
-        PermissionUtils.validate(path);
+        if (path != null) PermissionUtils.validate(path);
     }
 }

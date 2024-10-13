@@ -1,10 +1,16 @@
 package xin.manong.hylian.server.controller;
 
+import com.google.common.collect.Sets;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
+import xin.manong.hylian.model.AppUser;
+import xin.manong.hylian.model.User;
+import xin.manong.hylian.server.controller.request.BatchAppUserRequest;
+import xin.manong.hylian.server.controller.response.ViewUser;
+import xin.manong.hylian.server.service.AppUserService;
 import xin.manong.hylian.server.util.AppSecretUtils;
 import xin.manong.hylian.model.App;
 import xin.manong.hylian.server.model.Pager;
@@ -19,6 +25,11 @@ import xin.manong.weapon.spring.web.ws.aspect.EnableWebLogAspect;
 import javax.annotation.Resource;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * 应用控制器
@@ -38,6 +49,8 @@ public class AppController {
 
     @Resource
     protected AppService appService;
+    @Resource
+    protected AppUserService appUserService;
 
     /**
      * 获取应用信息
@@ -61,6 +74,25 @@ public class AppController {
             throw new NotFoundException("应用不存在");
         }
         return app;
+    }
+
+    /**
+     * 获取应用所有用户
+     *
+     * @param appId 应用ID
+     * @return 用户列表
+     */
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("getAppUsers")
+    @GetMapping("getAppUsers")
+    @EnableWebLogAspect
+    public List<ViewUser> getAppUsers(@QueryParam("app_id") @RequestParam("app_id") String appId) {
+        if (StringUtils.isEmpty(appId)) throw new BadRequestException("应用ID为空");
+        List<User> users = appUserService.getUsersByApp(appId);
+        List<ViewUser> viewUsers = new ArrayList<>();
+        users.forEach(user -> viewUsers.add(Converter.convert(user, null)));
+        return viewUsers;
     }
 
     /**
@@ -130,6 +162,33 @@ public class AppController {
     @EnableWebLogAspect
     public boolean delete(@QueryParam("id") @RequestParam("id") String id) {
         return appService.delete(id);
+    }
+
+    /**
+     * 批量更新应用用户关系
+     * 1. 删除请求中不存在关系
+     * 2. 添加请求中关系
+     *
+     * @param request 请求
+     * @return 成功返回true，否则返回false
+     */
+    @POST
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("batchUpdateAppUser")
+    @PostMapping("batchUpdateAppUser")
+    @EnableWebLogAspect
+    public boolean batchUpdateAppUser(@RequestBody BatchAppUserRequest request) {
+        if (request == null) throw new BadRequestException("批量更新请求为空");
+        request.check();
+        Set<AppUser> prevAppUsers = new HashSet<>(appUserService.getByAppId(request.appId));
+        Set<AppUser> currentAppUsers = new HashSet<>(Converter.convert(request));
+        List<Long> removeAppUsers = new ArrayList<>(Sets.difference(
+                prevAppUsers, currentAppUsers)).stream().map(r -> r.id).collect(Collectors.toList());
+        List<AppUser> addAppUsers = new ArrayList<>(Sets.difference(
+                currentAppUsers, prevAppUsers));
+        appUserService.batchUpdate(addAppUsers, removeAppUsers);
+        return true;
     }
 
     /**

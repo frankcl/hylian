@@ -7,13 +7,18 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import xin.manong.hylian.server.common.Constants;
 import xin.manong.hylian.server.converter.Converter;
 import xin.manong.hylian.server.dao.mapper.AppMapper;
 import xin.manong.hylian.server.model.Pager;
 import xin.manong.hylian.model.App;
 import xin.manong.hylian.server.service.AppService;
+import xin.manong.hylian.server.service.AppUserService;
+import xin.manong.hylian.server.service.PermissionService;
+import xin.manong.hylian.server.service.RoleService;
 import xin.manong.hylian.server.service.request.AppSearchRequest;
 import xin.manong.hylian.server.util.ModelValidator;
 
@@ -35,6 +40,15 @@ public class AppServiceImpl implements AppService {
 
     @Resource
     protected AppMapper appMapper;
+    @Lazy
+    @Resource
+    protected RoleService roleService;
+    @Lazy
+    @Resource
+    protected PermissionService permissionService;
+    @Lazy
+    @Resource
+    protected AppUserService appUserService;
 
     @Override
     public App get(String id) {
@@ -76,12 +90,19 @@ public class AppServiceImpl implements AppService {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public boolean delete(String id) {
         if (StringUtils.isEmpty(id)) {
             logger.error("app id is empty when deleting");
             throw new BadRequestException("应用ID为空");
         }
-        return appMapper.deleteById(id) > 0;
+        boolean result = appMapper.deleteById(id) > 0;
+        if (result) {
+            permissionService.deleteByApp(id);
+            roleService.deleteByApp(id);
+            appUserService.deleteByApp(id);
+        }
+        return result;
     }
 
     @Override

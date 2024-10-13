@@ -31,20 +31,37 @@ public class App extends BaseModel {
 
     private static final Logger logger = LoggerFactory.getLogger(App.class);
 
+    /**
+     * 应用ID
+     */
     @TableId(value = "id")
     @JSONField(name = "id")
     @JsonProperty("id")
     public String id;
 
+    /**
+     * 应用名
+     */
     @TableField("`name`")
     @JSONField(name = "name")
     @JsonProperty("name")
     public String name;
 
+    /**
+     * 应用秘钥
+     */
     @TableField("secret")
     @JSONField(name = "secret")
     @JsonProperty("secret")
     public String secret;
+
+    /**
+     * 应用描述
+     */
+    @TableField("description")
+    @JSONField(name = "description")
+    @JsonProperty("description")
+    public String description;
 
     /**
      * 检测有效性

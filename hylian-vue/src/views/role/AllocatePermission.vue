@@ -1,11 +1,12 @@
 <script setup>
 import { ref, watch } from 'vue'
 import { ArrowRight } from '@element-plus/icons-vue'
-import { ElBreadcrumb, ElBreadcrumbItem, ElButton, ElRow, ElTransfer } from 'element-plus'
+import { ElBreadcrumb, ElBreadcrumbItem, ElButton, ElDialog, ElRow, ElTransfer } from 'element-plus'
 import { asyncBatchUpdateRolePermissions, asyncGetRolePermissions } from '@/common/service'
 import { fetchAppPermissions, submitForm } from '@/common/assortment'
 
-const props = defineProps(['roleId', 'appId'])
+const model = defineModel()
+const props = defineProps(['roleId', 'roleName', 'appId'])
 const emits = defineEmits(['close'])
 const appPermissions = ref([])
 const permissions = ref([])
@@ -20,7 +21,7 @@ const save = async () => {
   }
   permissions.value.forEach(id => request.permission_ids.push(id))
   if (!await submitForm(undefined, request, asyncBatchUpdateRolePermissions,
-    '修改角色权限成功', '修改角色权限失败')) return
+    '分配角色权限成功', '分配角色权限失败')) return
   emits('close')
 }
 
@@ -37,21 +38,22 @@ watch(() => [props.appId, props.roleId], async() => {
 </script>
 
 <template>
-  <el-breadcrumb :separator-icon="ArrowRight">
-    <el-breadcrumb-item>授权管理</el-breadcrumb-item>
-    <el-breadcrumb-item>角色列表</el-breadcrumb-item>
-    <el-breadcrumb-item>权限分配</el-breadcrumb-item>
-  </el-breadcrumb>
-  <el-transfer style="margin-top: 20px;" v-model="permissions" :data="appPermissions" filterable
-               filter-placeholder="根据权限名搜索" :filter-method="search" :titles="['未分配权限', '已分配权限']"
-               :button-texts="['撤销', '选取']">
-    <template #left-footer>&nbsp;</template>
-    <template #right-footer>
-      <el-row justify="center" align="middle" style="height: 100%">
-        <el-button @click="save">保存</el-button>
-      </el-row>
-    </template>
-  </el-transfer>
+  <el-dialog v-model="model" @close="emits('close')" align-center show-close>
+    <el-row>
+      <el-breadcrumb :separator-icon="ArrowRight">
+        <el-breadcrumb-item>授权管理</el-breadcrumb-item>
+        <el-breadcrumb-item>权限分配（当前角色：{{ roleName }}）</el-breadcrumb-item>
+      </el-breadcrumb>
+    </el-row>
+    <el-row justify="start">
+      <el-transfer v-model="permissions" :data="appPermissions" filterable filter-placeholder="根据权限名搜索"
+                   :filter-method="search" :titles="['未分配权限', '已分配权限']"
+                   :button-texts="['撤销', '选取']"></el-transfer>
+    </el-row>
+    <el-row align="middle">
+      <el-button @click="save">保存</el-button>
+    </el-row>
+  </el-dialog>
 </template>
 
 <style scoped>

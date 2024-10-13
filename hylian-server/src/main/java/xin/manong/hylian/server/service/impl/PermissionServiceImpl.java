@@ -104,6 +104,18 @@ public class PermissionServiceImpl implements PermissionService {
     }
 
     @Override
+    public void deleteByApp(String appId) {
+        if (StringUtils.isEmpty(appId)) {
+            logger.error("app id is empty");
+            throw new BadRequestException("应用ID为空");
+        }
+        LambdaQueryWrapper<Permission> query = new LambdaQueryWrapper<>();
+        query.eq(Permission::getAppId, appId);
+        int n = permissionMapper.delete(query);
+        logger.info("delete permission num[{}] for app[{}]", n, appId);
+    }
+
+    @Override
     public Pager<Permission> search(PermissionSearchRequest searchRequest) {
         if (searchRequest == null) searchRequest = new PermissionSearchRequest();
         if (searchRequest.current == null || searchRequest.current < 1) searchRequest.current = Constants.DEFAULT_CURRENT;

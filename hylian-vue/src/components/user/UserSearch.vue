@@ -11,7 +11,7 @@ const users = ref([])
 const search = async query => {
   loading.value = true
   try {
-    const pager = await asyncSearchUsers({name: query})
+    const pager = await asyncSearchUsers({ name: query })
     users.value = pager.records
   } finally {
     loading.value = false

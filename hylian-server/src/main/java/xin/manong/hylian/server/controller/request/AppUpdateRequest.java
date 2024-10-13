@@ -42,7 +42,7 @@ public class AppUpdateRequest extends AppRequest {
             logger.error("app id is empty");
             throw new BadRequestException("应用ID为空");
         }
-        if (StringUtils.isEmpty(name) && StringUtils.isEmpty(secret)) {
+        if (StringUtils.isEmpty(name) && StringUtils.isEmpty(secret) && StringUtils.isEmpty(description)) {
             logger.error("update app info is empty");
             throw new BadRequestException("修改应用信息为空");
         }

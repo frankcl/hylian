@@ -2,14 +2,14 @@
 import { reactive, useTemplateRef, watchEffect } from 'vue'
 import { ArrowRight } from '@element-plus/icons-vue'
 import {
-  ElBreadcrumb, ElBreadcrumbItem, ElButton, ElCol, ElDialog, ElForm,
-  ElFormItem, ElInput, ElOption, ElRow, ElSelect, ElSwitch,
+  ElBreadcrumb, ElBreadcrumbItem, ElButton, ElCol,
+  ElDialog, ElForm, ElFormItem, ElInput, ElRow,
 } from 'element-plus'
 import { asyncGetUser, asyncUpdateUser } from '@/common/service'
 import { submitForm } from '@/common/assortment'
 import AvatarUpload from '@/components/user/AvatarUpload'
+import TenantSelect from '@/components/tenant/TenantSelect'
 import { baseRules } from '@/views/user/common'
-import TenantSelect from "@/components/tenant/TenantSelect.vue";
 
 const props = defineProps(['id'])
 const emits = defineEmits(['close'])

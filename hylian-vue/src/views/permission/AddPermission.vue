@@ -1,18 +1,29 @@
 <script setup>
-import { onMounted, reactive, ref, useTemplateRef } from 'vue'
+import { reactive, useTemplateRef } from 'vue'
 import { ArrowRight } from '@element-plus/icons-vue'
-import { ElBreadcrumb, ElBreadcrumbItem, ElButton, ElForm, ElFormItem, ElInput, ElOption, ElSelect } from 'element-plus'
+import { ElBreadcrumb, ElBreadcrumbItem, ElButton, ElDialog, ElForm, ElFormItem, ElInput, ElRow } from 'element-plus'
 import { asyncAddPermission } from '@/common/service'
-import { fetchAllApps, submitForm } from '@/common/assortment'
-import { formRules } from '@/views/permission/common'
+import { submitForm } from '@/common/assortment'
+import AppSelect from '@/components/app/AppSelect'
 
+const model = defineModel()
 const emits = defineEmits(['close'])
 const formRef = useTemplateRef('formRef')
-const apps = ref([])
 const permissionForm = reactive({
   name: '',
   path: '',
   app_id: ''
+})
+const formRules = reactive({
+  name: [
+    { required: true, message: '请输入权限名称', trigger: 'change' }
+  ],
+  path: [
+    { required: true, message: '请输入资源路径', trigger: 'change' },
+  ],
+  app_id: [
+    { required: true, message: '请选择应用', trigger: 'change' },
+  ]
 })
 
 const submit = async formEl => {
@@ -20,34 +31,33 @@ const submit = async formEl => {
     '新增权限成功', '新增权限失败')) return
   emits('close')
 }
-
-onMounted(async () => apps.value = await fetchAllApps())
 </script>
 
 <template>
-  <el-breadcrumb :separator-icon="ArrowRight">
-    <el-breadcrumb-item>授权管理</el-breadcrumb-item>
-    <el-breadcrumb-item>权限</el-breadcrumb-item>
-    <el-breadcrumb-item>新增</el-breadcrumb-item>
-  </el-breadcrumb>
-  <el-form ref="formRef" :model="permissionForm" :rules="formRules" style="margin-top: 20px;"
-           label-width="auto" label-position="right">
-    <el-form-item label="所属应用" prop="app_id">
-      <el-select v-model="permissionForm.app_id" filterable placeholder="请选择应用">
-        <el-option v-for="app in apps" :key="app.id" :label="app.name" :value="app.id"></el-option>
-      </el-select>
-    </el-form-item>
-    <el-form-item label="权限名称" prop="name">
-      <el-input v-model.trim="permissionForm.name" clearable></el-input>
-    </el-form-item>
-    <el-form-item label="资源路径" prop="path">
-      <el-input v-model.trim="permissionForm.path" clearable></el-input>
-    </el-form-item>
-    <el-form-item>
-      <el-button @click="submit(formRef)">新增</el-button>
-      <el-button @click="formRef.resetFields()">重置</el-button>
-    </el-form-item>
-  </el-form>
+  <el-dialog v-model="model" @close="emits('close')" align-center show-close>
+    <el-row>
+      <el-breadcrumb :separator-icon="ArrowRight">
+        <el-breadcrumb-item>授权管理</el-breadcrumb-item>
+        <el-breadcrumb-item>新增权限</el-breadcrumb-item>
+      </el-breadcrumb>
+    </el-row>
+    <el-form ref="formRef" :model="permissionForm" :rules="formRules"
+             label-width="auto" label-position="right">
+      <el-form-item label="所属应用" prop="app_id">
+        <app-select v-model="permissionForm.app_id" placeholder="请选择" :clearable="false"></app-select>
+      </el-form-item>
+      <el-form-item label="权限名称" prop="name">
+        <el-input v-model.trim="permissionForm.name" clearable></el-input>
+      </el-form-item>
+      <el-form-item label="资源路径" prop="path">
+        <el-input v-model.trim="permissionForm.path" clearable></el-input>
+      </el-form-item>
+      <el-form-item>
+        <el-button @click="submit(formRef)">新增</el-button>
+        <el-button @click="formRef.resetFields()">重置</el-button>
+      </el-form-item>
+    </el-form>
+  </el-dialog>
 </template>
 
 <style scoped>
