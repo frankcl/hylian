@@ -1,7 +1,7 @@
 <script setup>
 import { format } from 'date-fns'
 import { reactive, ref, useTemplateRef, watch } from 'vue'
-import {ArrowRight, Check, CopyDocument, DocumentCopy, Timer, Warning} from '@element-plus/icons-vue'
+import { ArrowRight, Check, CopyDocument, DocumentCopy, Hide, Timer, View, Warning } from '@element-plus/icons-vue'
 import {
   ElBreadcrumb, ElBreadcrumbItem, ElButton, ElForm, ElFormItem,
   ElIcon, ElInput, ElPagination, ElPopover, ElRow, ElTable, ElTableColumn
@@ -129,7 +129,7 @@ watch(query, () => search(), { immediate: true })
         {{ scope.row.id }}
       </template>
     </el-table-column>
-    <el-table-column prop="name" label="应用名" width="180" show-overflow-tooltip>
+    <el-table-column prop="name" label="应用名" width="120" show-overflow-tooltip>
       <template #default="scope">
         <el-input v-if="scope.row.checked" v-model="scope.row.name">
           <template #append>
@@ -146,6 +146,22 @@ watch(query, () => search(), { immediate: true })
           </template>
         </el-input>
         <span v-else>{{ scope.row.name }}</span>
+      </template>
+    </el-table-column>
+    <el-table-column prop="secret" label="应用秘钥" width="110" show-overflow-tooltip>
+      <template #default="scope">
+        <span v-if="scope.row.view">
+          {{ scope.row.secret }}
+          <el-icon style="cursor: pointer" @click="scope.row.view = false">
+            <hide></hide>
+          </el-icon>
+        </span>
+        <span v-else>
+          ********
+          <el-icon style="cursor: pointer" @click="scope.row.view = true">
+            <View></View>
+          </el-icon>
+        </span>
       </template>
     </el-table-column>
     <el-table-column prop="description" label="应用描述" show-overflow-tooltip>

@@ -29,6 +29,7 @@ const query = reactive({
   current: 1,
   size: 20,
   name: null,
+  path: null,
   app_id: null,
   sort_field: null,
   sort_order: null
@@ -37,6 +38,7 @@ const query = reactive({
 const search = async () => {
   const request = searchQueryToRequest(query)
   if (query.name) request.name = query.name
+  if (query.path) request.path = query.path
   if (query.app_id) request.app_id = query.app_id
   const pager = await asyncSearchPermissions(request)
   total.value = pager.total
@@ -111,16 +113,26 @@ watch(query, () => search(), { immediate: true })
     </el-breadcrumb>
   </el-row>
   <div class="square-block">
-    <el-form :model="query" ref="formRef" label-width="auto" style="max-width: 400px">
+    <el-form :model="query" ref="formRef" label-width="auto" style="max-width: 600px">
       <el-form-item label="应用选择" prop="app_id">
         <app-select v-model="query.app_id" placeholder="全部"></app-select>
       </el-form-item>
-      <el-form-item label="权限搜索" prop="name">
-        <el-col :span="14">
-          <el-input v-model="query.name" clearable placeholder="根据权限名搜索" />
+      <el-form-item label="权限搜索">
+        <el-col :span="7">
+          <el-form-item prop="name">
+            <el-input v-model="query.name" clearable placeholder="根据权限名搜索" />
+          </el-form-item>
+        </el-col>
+        <el-col :span="1">
+          <el-row align="middle" justify="center">-</el-row>
+        </el-col>
+        <el-col :span="7">
+          <el-form-item prop="path">
+            <el-input v-model="query.path" clearable placeholder="根据资源路径搜索" />
+          </el-form-item>
         </el-col>
         <el-col :span="1"></el-col>
-        <el-col :span="9"><a @click="formRef.resetFields(); search()">清除所有筛选条件</a></el-col>
+        <el-col :span="8"><a @click="formRef.resetFields(); search()">清除所有筛选条件</a></el-col>
       </el-form-item>
     </el-form>
   </div>
