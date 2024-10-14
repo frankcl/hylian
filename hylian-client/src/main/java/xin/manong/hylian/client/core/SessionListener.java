@@ -43,7 +43,7 @@ public class SessionListener implements HttpSessionListener {
         session.setAttribute(SessionConstants.LOCK, lock);
         SessionManager.put(session);
         session.setMaxInactiveInterval(MAX_SESSION_IDLE_TIME_SECONDS);
-        logger.info("create session[{}] success", session.getId());
+        logger.debug("create session[{}] success", session.getId());
     }
 
     @Override
@@ -52,7 +52,7 @@ public class SessionListener implements HttpSessionListener {
         if (session == null) return;
         removeActivity(session.getId());
         SessionManager.remove(session);
-        logger.info("destroy session[{}] success", session.getId());
+        logger.debug("destroy session[{}] success", session.getId());
     }
 
     /**
@@ -61,6 +61,7 @@ public class SessionListener implements HttpSessionListener {
      * @param sessionId 会话ID
      */
     private void removeActivity(String sessionId) {
+        if (!SessionManager.isTokenSession(sessionId)) return;
         String requestURL = String.format("%s%s", hylianClientConfig.serverURL, Constants.SERVER_PATH_REMOVE_ACTIVITY);
         Map<String, Object> body = new HashMap<>();
         body.put(Constants.PARAM_SESSION_ID, sessionId);

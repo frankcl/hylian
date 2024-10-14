@@ -33,6 +33,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -128,13 +129,18 @@ public class SecurityController {
         String token = tokenService.buildToken(userProfile, Constants.CACHE_TOKEN_EXPIRED_TIME_MS);
         tokenService.putToken(token, ticket);
         ticketService.addToken(userProfile.id, token);
-        if (!activityService.isCheckin(request.appId, request.sessionId)) {
-            Activity activity = new Activity().setAppId(request.appId).setUserId(userProfile.userId).
-                    setTicketId(userProfile.id).setSessionId(request.sessionId);
-            if (!activityService.add(activity)) {
-                logger.warn("add activity failed for app[{}] and user[{}]",
-                        activity.appId, activity.userId);
-            }
+        Activity prevActivity = activityService.get(request.appId, userProfile.id);
+        Activity activity = new Activity();
+        activity.userId = userProfile.userId;
+        activity.ticketId = userProfile.id;
+        activity.sessionId = request.sessionId;
+        activity.appId = request.appId;
+        if (prevActivity != null) activity.id = prevActivity.id;
+        Function<Activity, Boolean> function = prevActivity == null ?
+                record -> activityService.add(record) : record -> activityService.update(record);
+        if (!function.apply(activity)) {
+            String operation = prevActivity == null ? "add" : "update";
+            logger.warn("{} activity failed for app[{}] and user[{}]", operation , request.appId, userProfile.userId);
         }
         return token;
     }

@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.servlet.http.HttpSession;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -18,6 +19,7 @@ public class SessionManager {
     private static final Logger logger = LoggerFactory.getLogger(SessionManager.class);
 
     private static final Map<String, HttpSession> sessionMap = new ConcurrentHashMap<>();
+    private static final Set<String> tokenSessions = ConcurrentHashMap.newKeySet();
 
     /**
      * 添加session
@@ -27,7 +29,28 @@ public class SessionManager {
     public static void put(HttpSession httpSession) {
         if (httpSession == null) return;
         sessionMap.put(httpSession.getId(), httpSession);
-        logger.info("put session[{}] success", httpSession.getId());
+        logger.debug("put session[{}] success", httpSession.getId());
+    }
+
+    /**
+     * 添加token会话
+     *
+     * @param httpSession HTTP会话
+     */
+    public static void putTokenSession(HttpSession httpSession) {
+        if (httpSession == null) return;
+        tokenSessions.add(httpSession.getId());
+        logger.debug("put token session[{}] success", httpSession.getId());
+    }
+
+    /**
+     * 判断是否为token会话
+     *
+     * @param sessionId 会话ID
+     * @return token会话返回true，否则返回false
+     */
+    public static boolean isTokenSession(String sessionId) {
+        return tokenSessions.contains(sessionId);
     }
 
     /**
@@ -36,9 +59,11 @@ public class SessionManager {
      * @param httpSession HTTP会话
      */
     public static void remove(HttpSession httpSession) {
-        if (httpSession == null || !sessionMap.containsKey(httpSession.getId())) return;
-        sessionMap.remove(httpSession.getId());
-        logger.info("remove session[{}] success", httpSession.getId());
+        if (httpSession == null) return;
+        String sessionId = httpSession.getId();
+        sessionMap.remove(sessionId);
+        tokenSessions.remove(sessionId);
+        logger.debug("remove session[{}] success", httpSession.getId());
     }
 
     /**
@@ -53,6 +78,6 @@ public class SessionManager {
             return;
         }
         httpSession.invalidate();
-        logger.info("session[{}] is invalidated", httpSession.getId());
+        logger.debug("session[{}] is invalidated", httpSession.getId());
     }
 }

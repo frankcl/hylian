@@ -18,6 +18,8 @@ import xin.manong.hylian.server.service.request.ActivitySearchRequest;
 import xin.manong.hylian.server.util.ModelValidator;
 
 import javax.annotation.Resource;
+import javax.ws.rs.BadRequestException;
+import javax.ws.rs.NotFoundException;
 import java.util.List;
 
 /**
@@ -46,6 +48,13 @@ public class ActivityServiceImpl implements ActivityService {
     }
 
     @Override
+    public boolean update(Activity activity) {
+        Activity prevActivity = activityMapper.selectById(activity.id);
+        if (prevActivity == null) throw new NotFoundException("活动记录不存在");
+        return activityMapper.updateById(activity) > 0;
+    }
+
+    @Override
     public int removeExpires(Long maxUpdateTime) {
         LambdaQueryWrapper<Activity> query = new LambdaQueryWrapper<>();
         query.lt(Activity::getUpdateTime, maxUpdateTime);
@@ -67,18 +76,12 @@ public class ActivityServiceImpl implements ActivityService {
     }
 
     @Override
-    public boolean isCheckin(String appId, String sessionId) {
-        if (StringUtils.isEmpty(appId)) {
-            logger.error("app id is empty");
-            throw new RuntimeException("应用ID为空");
-        }
-        if (StringUtils.isEmpty(sessionId)) {
-            logger.error("session id is empty");
-            throw new RuntimeException("会话ID为空");
-        }
+    public Activity get(String appId, String ticketId) {
+        if (StringUtils.isEmpty(appId)) throw new BadRequestException("应用ID为空");
+        if (StringUtils.isEmpty(ticketId)) throw new BadRequestException("票据ID为空");
         LambdaQueryWrapper<Activity> query = new LambdaQueryWrapper<>();
-        query.eq(Activity::getAppId, appId).eq(Activity::getSessionId, sessionId);
-        return activityMapper.selectCount(query) > 0;
+        query.eq(Activity::getAppId, appId).eq(Activity::getTicketId, ticketId);
+        return activityMapper.selectOne(query);
     }
 
     @Override

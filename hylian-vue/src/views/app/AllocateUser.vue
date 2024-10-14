@@ -52,7 +52,7 @@ watch(() => props.appId, async() => {
     </el-row>
     <el-row justify="start">
       <el-transfer v-model="appUsers" :data="users" filterable
-                   filter-placeholder="根据用户名称搜索" :filter-method="search" :titles="['未分配用户', '应用管理员']"
+                   filter-placeholder="根据用户名称搜索" :filter-method="search" :titles="['普通用户', '应用管理员']"
                    :button-texts="['撤销', '选取']"></el-transfer>
     </el-row>
     <el-row align="middle">

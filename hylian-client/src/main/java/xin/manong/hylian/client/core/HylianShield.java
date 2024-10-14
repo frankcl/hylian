@@ -96,6 +96,7 @@ public class HylianShield {
                 return false;
             }
             logger.info("acquire token success");
+            SessionManager.putTokenSession(httpRequest.getSession());
             SessionUtils.setToken(httpRequest, token);
             httpResponse.sendRedirect(requestURL);
             return false;

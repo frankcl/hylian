@@ -73,6 +73,12 @@ watch(query, () => search(), { immediate: true })
         {{ format(new Date(scope.row['create_time']), 'yyyy-MM-dd HH:mm:ss') }}
       </template>
     </el-table-column>
+    <el-table-column label="更新时间" prop="update_time" sortable="custom" width="200" show-overflow-tooltip>
+      <template #default="scope">
+        <el-icon><timer /></el-icon>
+        {{ format(new Date(scope.row['update_time']), 'yyyy-MM-dd HH:mm:ss') }}
+      </template>
+    </el-table-column>
   </el-table>
   <el-row justify="center" align="middle">
     <el-pagination background layout="prev, pager, next" :total="total"

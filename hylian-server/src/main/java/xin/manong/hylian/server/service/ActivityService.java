@@ -18,8 +18,17 @@ public interface ActivityService {
      * 添加活动记录
      *
      * @param activity 活动记录
+     * @return 成功返回true，否则返回false
      */
     boolean add(Activity activity);
+
+    /**
+     * 更新活动记录
+     *
+     * @param activity 活动记录
+     * @return 成功返回true，否则返回false
+     */
+    boolean update(Activity activity);
 
     /**
      * 清除过期活动记录
@@ -46,13 +55,13 @@ public interface ActivityService {
     boolean remove(String sessionId, String appId);
 
     /**
-     * 检测会话是否登入
+     * 获取应用活动记录
      *
      * @param appId 应用ID
-     * @param sessionId 会话ID
-     * @return 已登入返回true，否则返回false
+     * @param ticketId 票据ID
+     * @return 如果存在返回活动记录，否则返回null
      */
-    boolean isCheckin(String appId, String sessionId);
+    Activity get(String appId, String ticketId);
 
     /**
      * 获取ticket相关活动记录
