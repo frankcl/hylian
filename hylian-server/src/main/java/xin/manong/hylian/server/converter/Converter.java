@@ -252,6 +252,7 @@ public class Converter {
         viewUser.avatar = user.avatar;
         viewUser.createTime = user.createTime;
         viewUser.updateTime = user.updateTime;
+        viewUser.superAdmin = user.superAdmin;
         viewUser.disabled = user.disabled == null || user.disabled;
         viewUser.tenant = tenant;
         if (tenant != null) {

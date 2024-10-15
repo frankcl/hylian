@@ -12,7 +12,10 @@ const model = defineModel()
 const apps = ref([])
 const appMap = new Map()
 
-const handleChange = id => emits('change', appMap.get(id))
+const handleChange = id => {
+  const app = appMap.get(id)
+  emits('change', JSON.parse(JSON.stringify(app)))
+}
 
 onMounted(async() => {
   apps.value = await fetchAllApps(false)

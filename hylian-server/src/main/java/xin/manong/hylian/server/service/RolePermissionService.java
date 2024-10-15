@@ -16,6 +16,14 @@ import java.util.List;
 public interface RolePermissionService {
 
     /**
+     * 获取角色权限关系
+     *
+     * @param id 关系ID
+     * @return 成功返回关系，否则返回null
+     */
+    RolePermission get(Long id);
+
+    /**
      * 添加角色权限关系
      *
      * @param rolePermission 角色权限关系

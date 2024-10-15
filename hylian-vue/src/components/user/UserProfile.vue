@@ -27,6 +27,13 @@ const userStore = useUserStore()
         <el-col :span="9">租户:</el-col>
         <el-col :span="15" v-if="userStore.tenant">{{ userStore.tenant.name }}</el-col>
       </el-row>
+      <el-row>
+        <el-col :span="9">角色:</el-col>
+        <el-col :span="15">
+          <span v-if="userStore.superAdmin">超级管理员</span>
+          <span v-else>普通用户</span>
+        </el-col>
+      </el-row>
     </template>
   </el-popover>
 </template>

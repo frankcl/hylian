@@ -6,6 +6,7 @@ import {
   ElBreadcrumb, ElBreadcrumbItem, ElButton, ElForm,
   ElFormItem, ElIcon, ElInput, ElPagination, ElPopover, ElRow, ElTable, ElTableColumn
 } from 'element-plus'
+import { useUserStore } from '@/store'
 import {
   asyncDeleteTenant,
   asyncSearchTenants,
@@ -19,6 +20,7 @@ import {
 } from '@/common/assortment'
 import AddTenant from '@/views/tenant/AddTenant'
 
+const userStore = useUserStore()
 const tableRef = useTemplateRef('tableRef')
 const openAddDialog = ref(false)
 const total = ref(0)
@@ -90,7 +92,7 @@ watch(query, () => search(), { immediate: true })
             stripe @select="handleSelect" @select-all="handleSelectAll"
             @sort-change="event => fillSearchQuerySort(event, query)">
     <template #empty>没有租户数据</template>
-    <el-table-column type="selection" width="55" fixed="left" />
+    <el-table-column v-if="userStore.superAdmin" type="selection" width="55" fixed="left" />
     <el-table-column prop="name" label="租户名" show-overflow-tooltip>
       <template #default="scope">
         <el-input v-if="scope.row.checked" v-model="scope.row.name">
@@ -124,10 +126,10 @@ watch(query, () => search(), { immediate: true })
     </el-table-column>
     <el-table-column fixed="right" width="120">
       <template #header>
-        <el-button @click="openAddDialog = true">新增租户</el-button>
+        <el-button v-if="userStore.superAdmin" @click="openAddDialog = true">新增租户</el-button>
       </template>
       <template #default="scope">
-        <a @click="remove(scope.row.id)">删除</a>
+        <a v-if="userStore.superAdmin" @click="remove(scope.row.id)">删除</a>
       </template>
     </el-table-column>
   </el-table>

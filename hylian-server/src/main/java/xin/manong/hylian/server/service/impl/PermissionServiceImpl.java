@@ -126,6 +126,7 @@ public class PermissionServiceImpl implements PermissionService {
         if (!StringUtils.isEmpty(searchRequest.path)) query.like("path", searchRequest.path);
         if (!StringUtils.isEmpty(searchRequest.name)) query.like("name", searchRequest.name);
         if (!StringUtils.isEmpty(searchRequest.appId)) query.eq("app_id", searchRequest.appId);
+        if (searchRequest.appIds != null) query.in("app_id", searchRequest.appIds);
         IPage<Permission> page = permissionMapper.selectPage(new Page<>(searchRequest.current, searchRequest.size), query);
         return Converter.convert(page);
     }

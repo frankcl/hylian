@@ -3,7 +3,10 @@ import { ref } from 'vue'
 import { ElOption, ElSelect } from 'element-plus'
 import { asyncSearchApps } from '@/common/service'
 
-const props = defineProps(['placeholder'])
+const props = defineProps({
+  'placeholder': { default: '根据应用名称搜索' },
+  'ignoreCheck': { default: false }
+})
 const model = defineModel()
 const loading = ref(false)
 const apps = ref([])
@@ -11,7 +14,7 @@ const apps = ref([])
 const search = async query => {
   loading.value = true
   try {
-    const pager = await asyncSearchApps({ name: query })
+    const pager = await asyncSearchApps({ name: query, ignore_check: props.ignoreCheck })
     apps.value = pager.records
   } finally {
     loading.value = false

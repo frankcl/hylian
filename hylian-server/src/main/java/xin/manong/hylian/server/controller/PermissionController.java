@@ -4,7 +4,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
+import xin.manong.hylian.client.core.ContextManager;
 import xin.manong.hylian.model.App;
+import xin.manong.hylian.model.User;
+import xin.manong.hylian.server.aspect.EnableAppFollowAspect;
 import xin.manong.hylian.server.model.Pager;
 import xin.manong.hylian.model.Permission;
 import xin.manong.hylian.server.converter.Converter;
@@ -14,6 +17,7 @@ import xin.manong.hylian.server.controller.response.ViewPermission;
 import xin.manong.hylian.server.service.AppService;
 import xin.manong.hylian.server.service.PermissionService;
 import xin.manong.hylian.server.service.request.PermissionSearchRequest;
+import xin.manong.hylian.server.util.PermissionValidator;
 import xin.manong.weapon.base.util.RandomID;
 import xin.manong.weapon.spring.web.ws.aspect.EnableWebLogAspect;
 
@@ -91,9 +95,11 @@ public class PermissionController {
     @Path("add")
     @PutMapping("add")
     @EnableWebLogAspect
+    @EnableAppFollowAspect
     public boolean add(@RequestBody PermissionRequest permissionRequest) {
         if (permissionRequest == null) throw new BadRequestException("权限信息为空");
         permissionRequest.check();
+        PermissionValidator.validateAppPermission(permissionRequest.appId);
         Permission permission = Converter.convert(permissionRequest);
         permission.id = RandomID.build();
         permission.check();
@@ -112,11 +118,18 @@ public class PermissionController {
     @Path("update")
     @PostMapping("update")
     @EnableWebLogAspect
+    @EnableAppFollowAspect
     public boolean update(@RequestBody PermissionUpdateRequest permissionUpdateRequest) {
         if (permissionUpdateRequest == null) throw new BadRequestException("权限信息为空");
         permissionUpdateRequest.check();
-        Permission permission = Converter.convert(permissionUpdateRequest);
-        return permissionService.update(permission);
+        if (permissionUpdateRequest.appId != null) {
+            PermissionValidator.validateAppPermission(permissionUpdateRequest.appId);
+        }
+        Permission permission = permissionService.get(permissionUpdateRequest.id);
+        if (permission == null) throw new NotFoundException("权限不存在");
+        PermissionValidator.validateAppPermission(permission.appId);
+        Permission updatePermission = Converter.convert(permissionUpdateRequest);
+        return permissionService.update(updatePermission);
     }
 
     /**
@@ -130,7 +143,11 @@ public class PermissionController {
     @Path("delete")
     @DeleteMapping("delete")
     @EnableWebLogAspect
+    @EnableAppFollowAspect
     public boolean delete(@QueryParam("id") @RequestParam("id") String id) {
+        Permission permission = permissionService.get(id);
+        if (permission == null) throw new NotFoundException("权限不存在");
+        PermissionValidator.validateAppPermission(permission.appId);
         return permissionService.delete(id);
     }
 
@@ -146,7 +163,11 @@ public class PermissionController {
     @Path("search")
     @GetMapping("search")
     @EnableWebLogAspect
+    @EnableAppFollowAspect
     public Pager<ViewPermission> search(@BeanParam PermissionSearchRequest searchRequest) {
+        User currentUser = ContextManager.getUser();
+        assert currentUser != null;
+        searchRequest.appIds = currentUser.superAdmin ? null : ContextManager.getFollowApps();
         Pager<Permission> pager = permissionService.search(searchRequest);
         Pager<ViewPermission> viewPager = new Pager<>();
         viewPager.current = pager.current;

@@ -1,11 +1,12 @@
 <script setup>
 import { format } from 'date-fns'
 import { reactive, ref, useTemplateRef, watch } from 'vue'
-import { ArrowRight, Check, CopyDocument, DocumentCopy, Hide, Timer, View, Warning } from '@element-plus/icons-vue'
+import { ArrowRight, Check, CopyDocument, DocumentCopy, Timer, Warning } from '@element-plus/icons-vue'
 import {
-  ElBreadcrumb, ElBreadcrumbItem, ElButton, ElForm, ElFormItem,
-  ElIcon, ElInput, ElPagination, ElPopover, ElRow, ElTable, ElTableColumn
+  ElBreadcrumb, ElBreadcrumbItem, ElButton, ElForm, ElFormItem, ElIcon, ElInput,
+  ElMessage, ElPagination, ElPopover, ElRow, ElTable, ElTableColumn
 } from 'element-plus'
+import { useUserStore } from '@/store'
 import {
   asyncDeleteApp,
   asyncSearchApps,
@@ -21,10 +22,11 @@ import {
 import AddApp from '@/views/app/AddApp'
 import AllocateUser from '@/views/app/AllocateUser'
 
+const userStore = useUserStore()
 const tableRef = useTemplateRef('tableRef')
 const apps = ref([])
 const total = ref(0)
-const copyApp = ref()
+const copyContent = ref()
 const openAddDialog = ref(false)
 const openAllocateDialog = ref(false)
 const app = reactive({})
@@ -42,7 +44,7 @@ const search = async () => {
   const pager = await asyncSearchApps(request)
   total.value = pager.total
   apps.value = pager.records
-  apps.value.forEach(app => app.prev = { name: app.name, description: app.description })
+  apps.value.forEach(app => app.prev = { name: app.name, secret: app.secret, description: app.description })
 }
 
 const remove = async id => {
@@ -66,6 +68,15 @@ const updateName = async row => {
   row.prev.name = row.name
 }
 
+const updateSecret = async row => {
+  if (!await submitForm(undefined, { id: row.id, secret: row.secret },
+    asyncUpdateApp, '更新应用秘钥成功', '更新应用秘钥失败')) {
+    row.secret = row.prev.secret
+    return
+  }
+  row.prev.secret = row.secret
+}
+
 const updateDescription = async row => {
   if (!await submitForm(undefined, { id: row.id, description: row.description },
     asyncUpdateApp, '更新应用描述成功', '更新应用描述失败')) {
@@ -75,10 +86,17 @@ const updateDescription = async row => {
   row.prev.description = row.description
 }
 
+const copyValue = (field, value, id) => {
+  copyToClipboard(value)
+  copyContent.value = `${field}#${id}`
+  ElMessage.success('复制成功')
+}
+
 const handleSelect = (selection, row) => {
   row.checked = selection.indexOf(row) !== -1
   if (!row.checked) {
     row.name = row.prev.name
+    row.secret = row.prev.secret
     row.description = row.prev.description
   }
 }
@@ -89,6 +107,7 @@ const handleSelectAll = selection => {
     row.checked = selection.length !== 0
     if (!row.checked) {
       row.name = row.prev.name
+      row.secret = row.prev.secret
       row.description = row.prev.description
     }
   })
@@ -116,12 +135,12 @@ watch(query, () => search(), { immediate: true })
             @sort-change="event => fillSearchQuerySort(event, query)">
     <template #empty>没有应用数据</template>
     <el-table-column type="selection" width="55" fixed="left" />
-    <el-table-column prop="id" label="应用ID" width="200" show-overflow-tooltip>
+    <el-table-column prop="id" label="应用ID" width="120" show-overflow-tooltip>
       <template #default="scope">
-        <el-icon v-if="copyApp === scope.row.id"><document-copy></document-copy></el-icon>
+        <el-icon v-if="copyContent === `name#${scope.row.id}`"><document-copy></document-copy></el-icon>
         <el-popover v-else content="点击复制">
           <template #reference>
-            <el-icon @click="copyToClipboard(scope.row.id); copyApp = scope.row.id">
+            <el-icon @click="copyValue('name', scope.row.name, scope.row.id)">
               <copy-document></copy-document>
             </el-icon>
           </template>
@@ -148,20 +167,35 @@ watch(query, () => search(), { immediate: true })
         <span v-else>{{ scope.row.name }}</span>
       </template>
     </el-table-column>
-    <el-table-column prop="secret" label="应用秘钥" width="110" show-overflow-tooltip>
+    <el-table-column prop="secret" label="应用秘钥" width="160" show-overflow-tooltip>
       <template #default="scope">
-        <span v-if="scope.row.view">
-          {{ scope.row.secret }}
-          <el-icon style="cursor: pointer" @click="scope.row.view = false">
-            <hide></hide>
-          </el-icon>
-        </span>
-        <span v-else>
-          ********
-          <el-icon style="cursor: pointer" @click="scope.row.view = true">
-            <View></View>
-          </el-icon>
-        </span>
+        <el-input v-if="scope.row.checked" v-model="scope.row.secret">
+          <template #append>
+            <el-popover v-if="scope.row.secret !== scope.row.prev.secret" content="秘钥变更，点击保存">
+              <template #reference>
+                <el-button @click="updateSecret(scope.row)">
+                  <el-icon color="#ff0000"><warning></warning></el-icon>
+                </el-button>
+              </template>
+            </el-popover>
+            <el-button v-else>
+              <el-icon color="#409eff"><check></check></el-icon>
+            </el-button>
+          </template>
+        </el-input>
+        <el-form v-else>
+          <span>
+            <el-icon v-if="copyContent === `secret#${scope.row.id}`"><document-copy></document-copy></el-icon>
+            <el-popover v-else content="点击复制">
+              <template #reference>
+                <el-icon @click="copyValue('secret', scope.row.secret, scope.row.id)">
+                  <copy-document></copy-document>
+                </el-icon>
+              </template>
+            </el-popover>
+            ********
+          </span>
+        </el-form>
       </template>
     </el-table-column>
     <el-table-column prop="description" label="应用描述" show-overflow-tooltip>
@@ -196,7 +230,7 @@ watch(query, () => search(), { immediate: true })
     </el-table-column>
     <el-table-column width="180" fixed="right">
       <template #header>
-        <el-button @click="openAddDialog = true">增加应用</el-button>
+        <el-button v-if="userStore.superAdmin" @click="openAddDialog = true">增加应用</el-button>
       </template>
       <template #default="scope">
         <RouterLink :to="{ name: 'ActivityList', query: { appId: scope.row.id } }">活跃记录</RouterLink>&nbsp;

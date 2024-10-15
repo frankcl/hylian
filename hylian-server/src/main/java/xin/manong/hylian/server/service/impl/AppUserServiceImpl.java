@@ -56,10 +56,27 @@ public class AppUserServiceImpl implements AppUserService {
     }
 
     @Override
+    public AppUser getAppUser(String appId, String userId) {
+        if (StringUtils.isEmpty(appId)) throw new BadRequestException("应用ID为空");
+        if (StringUtils.isEmpty(userId)) throw new BadRequestException("用户ID为空");
+        LambdaQueryWrapper<AppUser> query = new LambdaQueryWrapper<>();
+        query.eq(AppUser::getAppId, appId).eq(AppUser::getUserId, userId);
+        return appUserMapper.selectOne(query);
+    }
+
+    @Override
     public List<AppUser> getByAppId(String appId) {
         if (StringUtils.isEmpty(appId)) throw new BadRequestException("应用ID为空");
         LambdaQueryWrapper<AppUser> query = new LambdaQueryWrapper<>();
         query.eq(AppUser::getAppId, appId);
+        return appUserMapper.selectList(query);
+    }
+
+    @Override
+    public List<AppUser> getByUserId(String userId) {
+        if (StringUtils.isEmpty(userId)) throw new BadRequestException("用户ID为空");
+        LambdaQueryWrapper<AppUser> query = new LambdaQueryWrapper<>();
+        query.eq(AppUser::getUserId, userId);
         return appUserMapper.selectList(query);
     }
 

@@ -6,8 +6,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
+import xin.manong.hylian.client.core.ContextManager;
 import xin.manong.hylian.model.AppUser;
 import xin.manong.hylian.model.User;
+import xin.manong.hylian.server.aspect.EnableAppFollowAspect;
 import xin.manong.hylian.server.controller.request.BatchAppUserRequest;
 import xin.manong.hylian.server.controller.response.ViewUser;
 import xin.manong.hylian.server.service.AppUserService;
@@ -19,6 +21,7 @@ import xin.manong.hylian.server.controller.request.AppRequest;
 import xin.manong.hylian.server.controller.request.AppUpdateRequest;
 import xin.manong.hylian.server.service.AppService;
 import xin.manong.hylian.server.service.request.AppSearchRequest;
+import xin.manong.hylian.server.util.PermissionValidator;
 import xin.manong.weapon.base.util.RandomID;
 import xin.manong.weapon.spring.web.ws.aspect.EnableWebLogAspect;
 
@@ -108,6 +111,9 @@ public class AppController {
     @PutMapping("add")
     @EnableWebLogAspect
     public boolean add(@RequestBody AppRequest appRequest) {
+        User currentUser = ContextManager.getUser();
+        assert currentUser != null;
+        if (!currentUser.superAdmin) throw new ForbiddenException("无权操作");
         if (appRequest == null) throw new BadRequestException("应用信息为空");
         appRequest.check();
         App app = Converter.convert(appRequest);
@@ -128,9 +134,11 @@ public class AppController {
     @Path("update")
     @PostMapping("update")
     @EnableWebLogAspect
+    @EnableAppFollowAspect
     public boolean update(@RequestBody AppUpdateRequest appRequest) {
         if (appRequest == null) throw new BadRequestException("应用信息为空");
         appRequest.check();
+        PermissionValidator.validateAppPermission(appRequest.id);
         App app = Converter.convert(appRequest);
         return appService.update(app);
     }
@@ -160,7 +168,9 @@ public class AppController {
     @Path("delete")
     @DeleteMapping("delete")
     @EnableWebLogAspect
+    @EnableAppFollowAspect
     public boolean delete(@QueryParam("id") @RequestParam("id") String id) {
+        PermissionValidator.validateAppPermission(id);
         return appService.delete(id);
     }
 
@@ -178,9 +188,11 @@ public class AppController {
     @Path("batchUpdateAppUser")
     @PostMapping("batchUpdateAppUser")
     @EnableWebLogAspect
+    @EnableAppFollowAspect
     public boolean batchUpdateAppUser(@RequestBody BatchAppUserRequest request) {
         if (request == null) throw new BadRequestException("批量更新请求为空");
         request.check();
+        PermissionValidator.validateAppPermission(request.appId);
         Set<AppUser> prevAppUsers = new HashSet<>(appUserService.getByAppId(request.appId));
         Set<AppUser> currentAppUsers = new HashSet<>(Converter.convert(request));
         List<Long> removeAppUsers = new ArrayList<>(Sets.difference(
@@ -203,7 +215,12 @@ public class AppController {
     @Path("search")
     @GetMapping("search")
     @EnableWebLogAspect
+    @EnableAppFollowAspect
     public Pager<App> search(@BeanParam AppSearchRequest searchRequest) {
+        User currentUser = ContextManager.getUser();
+        assert currentUser != null;
+        searchRequest.appIds = currentUser.superAdmin || searchRequest.ignoreCheck ?
+                null : ContextManager.getFollowApps();
         return appService.search(searchRequest);
     }
 }

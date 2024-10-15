@@ -114,6 +114,7 @@ public class AppServiceImpl implements AppService {
         QueryWrapper<App> query = new QueryWrapper<>();
         searchRequest.prepareOrderBy(query);
         if (!StringUtils.isEmpty(searchRequest.name)) query.like("name", searchRequest.name);
+        if (searchRequest.appIds != null) query.in("id", searchRequest.appIds);
         IPage<App> page = appMapper.selectPage(new Page<>(searchRequest.current, searchRequest.size), query);
         return Converter.convert(page);
     }

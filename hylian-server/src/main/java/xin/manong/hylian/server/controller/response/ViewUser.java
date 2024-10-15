@@ -68,6 +68,12 @@ public class ViewUser implements Serializable {
     public boolean disabled = true;
 
     /**
+     * 超级管理员
+     */
+    @JsonProperty("super_admin")
+    public boolean superAdmin = false;
+
+    /**
      * 创建时间
      */
     @JsonProperty("create_time")

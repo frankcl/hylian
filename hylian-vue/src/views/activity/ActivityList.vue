@@ -50,7 +50,7 @@ watch(query, () => search(), { immediate: true })
   <div class="square-block">
     <el-form :model="query" ref="formRef" label-width="auto" style="max-width: 400px">
       <el-form-item label="所属应用" prop="app_id">
-        <app-search v-model="query.app_id"></app-search>
+        <app-search :ignore-check="true" v-model="query.app_id"></app-search>
       </el-form-item>
       <el-form-item label="所属用户" prop="user_id">
         <el-col :span="14">

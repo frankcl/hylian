@@ -6,6 +6,7 @@ import {
   ElBreadcrumb, ElBreadcrumbItem, ElButton, ElCol, ElForm, ElFormItem, ElIcon,
   ElPagination, ElRadioButton, ElRadioGroup, ElRow, ElSwitch, ElTable, ElTableColumn
 } from 'element-plus'
+import { useUserStore } from '@/store'
 import {
   asyncDeleteUser,
   asyncSearchUsers,
@@ -22,6 +23,7 @@ import UserSearch from '@/components/user/UserSearch'
 import AddUser from '@/views/user/AddUser'
 import AllocateRole from '@/views/user/AllocateRole'
 
+const userStore = useUserStore()
 const formRef = useTemplateRef('formRef')
 const tableRef = useTemplateRef('tableRef')
 const openAddDialog = ref(false)
@@ -130,7 +132,7 @@ watch(query, () => search(), { immediate: true })
             stripe @select="handleSelect" @select-all="handleSelectAll"
             @sort-change="event => fillSearchQuerySort(event, query)">
     <template #empty>没有用户数据</template>
-    <el-table-column type="selection" width="55" fixed="left" />
+    <el-table-column v-if="userStore.superAdmin" type="selection" width="55" fixed="left" />
     <el-table-column prop="username" width="150" label="用户名" show-overflow-tooltip />
     <el-table-column prop="name" width="150" label="用户名称" show-overflow-tooltip />
     <el-table-column prop="tenant.name" width="180" label="租户" show-overflow-tooltip>
@@ -166,12 +168,12 @@ watch(query, () => search(), { immediate: true })
     </el-table-column>
     <el-table-column label="操作" fixed="right">
       <template #header>
-        <el-button @click="openAddDialog = true">新增用户</el-button>
+        <el-button v-if="userStore.superAdmin" @click="openAddDialog = true">新增用户</el-button>
       </template>
       <template #default="scope">
         <RouterLink :to="{ name: 'ActivityList', query: { userId: scope.row.id } }">活跃记录</RouterLink>&nbsp;
         <a @click="userId = scope.row.id; username = scope.row.username; openAllocateDialog = true">角色分配</a>&nbsp;
-        <a @click="remove(scope.row.id)">删除</a>
+        <a v-if="userStore.superAdmin" @click="remove(scope.row.id)">删除</a>
       </template>
     </el-table-column>
   </el-table>

@@ -12,7 +12,10 @@ const model = defineModel()
 const tenants = ref([])
 const tenantMap = new Map()
 
-const handleChange = id => emits('change', tenantMap.get(id))
+const handleChange = id => {
+  const tenant = tenantMap.get(id)
+  emits('change', JSON.parse(JSON.stringify(tenant)))
+}
 
 onMounted(async() => {
   tenants.value = await fetchAllTenants(false)

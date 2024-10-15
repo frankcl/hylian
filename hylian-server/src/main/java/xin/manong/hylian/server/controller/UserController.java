@@ -11,6 +11,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import xin.manong.hylian.client.aspect.EnableACLAspect;
 import xin.manong.hylian.model.*;
+import xin.manong.hylian.server.aspect.EnableAppFollowAspect;
 import xin.manong.hylian.server.common.Constants;
 import xin.manong.hylian.server.config.ServerConfig;
 import xin.manong.hylian.server.controller.request.*;
@@ -23,6 +24,7 @@ import xin.manong.hylian.server.service.UserRoleService;
 import xin.manong.hylian.server.service.UserService;
 import xin.manong.hylian.server.service.request.UserSearchRequest;
 import xin.manong.hylian.client.core.ContextManager;
+import xin.manong.hylian.server.util.PermissionValidator;
 import xin.manong.weapon.aliyun.oss.OSSClient;
 import xin.manong.weapon.aliyun.oss.OSSMeta;
 import xin.manong.weapon.base.util.FileUtil;
@@ -98,6 +100,9 @@ public class UserController {
     @EnableACLAspect
     @EnableWebLogAspect
     public boolean add(@RequestBody UserRequest userRequest) {
+        User currentUser = ContextManager.getUser();
+        assert currentUser != null;
+        if (!currentUser.superAdmin) throw new ForbiddenException("无权操作");
         if (userRequest == null) throw new BadRequestException("用户信息为空");
         userRequest.check();
         User user = Converter.convert(userRequest);
@@ -122,11 +127,15 @@ public class UserController {
     @Produces(MediaType.APPLICATION_JSON)
     @Path("update")
     @PostMapping("update")
-    @EnableACLAspect
     @EnableWebLogAspect
     public boolean update(@RequestBody UserUpdateRequest userUpdateRequest) {
         if (userUpdateRequest == null) throw new BadRequestException("用户信息为空");
         userUpdateRequest.check();
+        User currentUser = ContextManager.getUser();
+        assert currentUser != null;
+        if (!currentUser.id.equals(userUpdateRequest.id) && !currentUser.superAdmin) {
+            throw new ForbiddenException("无权操作");
+        }
         User user = Converter.convert(userUpdateRequest);
         if (!StringUtils.isEmpty(user.tenantId)) {
             Tenant tenant = tenantService.get(user.tenantId);
@@ -151,8 +160,10 @@ public class UserController {
     @EnableACLAspect
     @EnableWebLogAspect
     public boolean delete(@QueryParam("id") @RequestParam("id") String id) {
-        User user = ContextManager.getUser();
-        if (user != null && user.id.equals(id)) throw new UnsupportedOperationException("不能删除自己");
+        User currentUser = ContextManager.getUser();
+        assert currentUser != null;
+        if (currentUser.id.equals(id)) throw new ForbiddenException("无法删除自己");
+        if (!currentUser.superAdmin) throw new ForbiddenException("无权操作");
         return userService.delete(id);
     }
 
@@ -206,9 +217,11 @@ public class UserController {
     @PostMapping("batchUpdateUserRole")
     @EnableACLAspect
     @EnableWebLogAspect
+    @EnableAppFollowAspect
     public boolean batchUpdateUserRole(@RequestBody BatchUserRoleRequest request) {
         if (request == null) throw new BadRequestException("批量更新请求为空");
         request.check();
+        PermissionValidator.validateAppPermission(request.appId);
         Set<UserRole> prevUserRoles = new HashSet<>(userRoleService.getByAppUser(request.appId, request.userId));
         Set<UserRole> currentUserRoles = new HashSet<>(Converter.convert(request));
         List<Long> removeUserRoles = Sets.difference(prevUserRoles, currentUserRoles).
@@ -296,15 +309,12 @@ public class UserController {
     public boolean changePassword(@RequestBody PasswordChangeRequest request) {
         if (request == null) throw new BadRequestException("修改密码请求为空");
         request.check();
+        User currentUser = ContextManager.getUser();
+        assert currentUser != null;
+        if (!currentUser.id.equals(request.id) && !currentUser.superAdmin) throw new ForbiddenException("无权操作");
         User user = userService.get(request.id);
-        if (user == null) {
-            logger.error("user is not found for id[{}]", request.id);
-            throw new NotFoundException("用户不存在");
-        }
-        if (!user.password.equals(DigestUtils.md5Hex(request.password))) {
-            logger.error("password is not correct");
-            throw new RuntimeException("用户密码不正确");
-        }
+        if (user == null) throw new NotFoundException("用户不存在");
+        if (!user.password.equals(DigestUtils.md5Hex(request.password))) throw new RuntimeException("用户密码不正确");
         User updateUser = new User();
         updateUser.id = user.id;
         updateUser.password = request.newPassword.trim();

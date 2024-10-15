@@ -102,6 +102,7 @@ public class ActivityServiceImpl implements ActivityService {
         if (StringUtils.isNotEmpty(searchRequest.appId)) query.eq("app_id", searchRequest.appId);
         if (StringUtils.isNotEmpty(searchRequest.userId)) query.eq("user_id", searchRequest.userId);
         if (StringUtils.isNotEmpty(searchRequest.sessionId)) query.eq("session_id", searchRequest.sessionId);
+        if (searchRequest.appIds != null) query.in("app_id", searchRequest.appIds);
         IPage<Activity> page = activityMapper.selectPage(new Page<>(searchRequest.current, searchRequest.size), query);
         return Converter.convert(page);
     }

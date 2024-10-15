@@ -45,6 +45,12 @@ public class RolePermissionServiceImpl implements RolePermissionService {
     protected PermissionService permissionService;
 
     @Override
+    public RolePermission get(Long id) {
+        if (id == null) throw new BadRequestException("id is null");
+        return rolePermissionMapper.selectById(id);
+    }
+
+    @Override
     public boolean add(RolePermission rolePermission) {
         LambdaQueryWrapper<RolePermission> query = new LambdaQueryWrapper<>();
         query.eq(RolePermission::getRoleId, rolePermission.roleId).

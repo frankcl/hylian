@@ -63,6 +63,8 @@ public class SecurityController {
     @Resource
     protected UserService userService;
     @Resource
+    protected AppUserService appUserService;
+    @Resource
     protected TenantService tenantService;
     @Resource
     protected ActivityService activityService;
@@ -170,6 +172,7 @@ public class SecurityController {
             logger.error("user[{}] is not found", userProfile.userId);
             throw new NotAuthorizedException("用户不存在");
         }
+        if (appUserService.getAppUser(appId, user.id) != null) user.superAdmin = true;
         return user;
     }
 

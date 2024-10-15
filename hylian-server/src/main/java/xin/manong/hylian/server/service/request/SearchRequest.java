@@ -35,8 +35,15 @@ public class SearchRequest implements Serializable {
     @JsonProperty("order_by")
     @QueryParam("order_by")
     public String orderBy;
+    /**
+     * 忽略应用归属检测
+     */
+    @JsonProperty("ignore_check")
+    @QueryParam("ignore_check")
+    public boolean ignoreCheck = false;
 
     public List<OrderByRequest> orderByRequests;
+    public List<String> appIds;
 
     /**
      * 构建排序条件

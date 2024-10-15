@@ -9,6 +9,7 @@ export const useUserStore = defineStore(
     const name = ref()
     const avatar = ref()
     const tenant = ref()
+    const superAdmin = ref()
     const roles = ref()
 
     const injected = computed(() => username.value !== undefined)
@@ -19,6 +20,7 @@ export const useUserStore = defineStore(
       username.value = user.username
       name.value = user.name
       avatar.value = user.avatar
+      superAdmin.value = user.super_admin
       tenant.value = user.tenant
       roles.value = user.roles
     }
@@ -28,11 +30,12 @@ export const useUserStore = defineStore(
       username.value = undefined
       name.value = undefined
       avatar.value = undefined
+      superAdmin.value = undefined
       tenant.value = undefined
       roles.value = undefined
     }
 
-    return { id, username, name, avatar, tenant, roles, injected, inject, clear }
+    return { id, username, name, avatar, superAdmin, tenant, roles, injected, inject, clear }
   },
   {
     persist: {

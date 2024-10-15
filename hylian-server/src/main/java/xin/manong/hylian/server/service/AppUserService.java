@@ -24,12 +24,29 @@ public interface AppUserService {
     boolean add(AppUser appUser);
 
     /**
+     * 获取指定应用用户关系
+     *
+     * @param appId 应用ID
+     * @param userId 用户ID
+     * @return 成功返回关系，否则返回null
+     */
+    AppUser getAppUser(String appId, String userId);
+
+    /**
      * 获取应用所有关系
      *
      * @param appId 应用ID
      * @return 关系列表
      */
     List<AppUser> getByAppId(String appId);
+
+    /**
+     * 获取用户所有关系
+     *
+     * @param userId 用户ID
+     * @return 关系列表
+     */
+    List<AppUser> getByUserId(String userId);
 
     /**
      * 获取应用所有用户

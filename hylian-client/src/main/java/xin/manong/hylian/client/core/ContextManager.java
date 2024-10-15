@@ -7,6 +7,8 @@ import xin.manong.hylian.client.common.Constants;
 import xin.manong.weapon.base.common.Context;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * 线程上下文管理器
@@ -38,6 +40,41 @@ public class ContextManager {
         Context context = THREAD_LOCAL_CONTEXT.get();
         if (context == null) return null;
         return (Tenant) context.get(Constants.CURRENT_TENANT);
+    }
+
+    /**
+     * 获取关注应用列表
+     *
+     * @return 成功返回关注应用列表，否则返回空列表
+     */
+    @SuppressWarnings("unchecked")
+    public static List<String> getFollowApps() {
+        Context context = THREAD_LOCAL_CONTEXT.get();
+        if (context == null) return new ArrayList<>();
+        return (List<String>) context.get(Constants.CURRENT_FOLLOW_APPS);
+    }
+
+    /**
+     * 设置关注应用列表
+     *
+     * @param followApps 关注应用列表
+     */
+    public static void setFollowApps(List<String> followApps) {
+        Context context = THREAD_LOCAL_CONTEXT.get();
+        if (context == null) {
+            context = new Context();
+            THREAD_LOCAL_CONTEXT.set(context);
+        }
+        context.put(Constants.CURRENT_FOLLOW_APPS, followApps);
+    }
+
+    /**
+     * 移除关注应用列表
+     */
+    public static void removeFollowApps() {
+        Context context = THREAD_LOCAL_CONTEXT.get();
+        if (context == null) return;
+        context.remove(Constants.CURRENT_FOLLOW_APPS);
     }
 
     /**

@@ -5,6 +5,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import xin.manong.hylian.client.aspect.EnableACLAspect;
+import xin.manong.hylian.client.core.ContextManager;
+import xin.manong.hylian.model.User;
 import xin.manong.hylian.server.model.Pager;
 import xin.manong.hylian.model.Tenant;
 import xin.manong.hylian.server.controller.response.ViewTenant;
@@ -72,6 +74,9 @@ public class TenantController {
     @EnableACLAspect
     @EnableWebLogAspect
     public boolean add(@RequestBody TenantRequest tenantRequest) {
+        User currentUser = ContextManager.getUser();
+        assert currentUser != null;
+        if (!currentUser.superAdmin) throw new ForbiddenException("无权操作");
         if (tenantRequest == null) throw new BadRequestException("租户信息为空");
         tenantRequest.check();
         Tenant tenant = Converter.convert(tenantRequest);
@@ -94,7 +99,10 @@ public class TenantController {
     @EnableACLAspect
     @EnableWebLogAspect
     public boolean update(@RequestBody TenantUpdateRequest tenantUpdateRequest) {
-        if (tenantUpdateRequest == null) throw new BadRequestException("租户信息为空");
+        User currentUser = ContextManager.getUser();
+        assert currentUser != null;
+        if (!currentUser.superAdmin) throw new ForbiddenException("无权操作");
+        if (tenantUpdateRequest == null) throw new BadRequestException("更新租户信息为空");
         tenantUpdateRequest.check();
         Tenant tenant = Converter.convert(tenantUpdateRequest);
         return tenantService.update(tenant);
@@ -113,6 +121,9 @@ public class TenantController {
     @EnableACLAspect
     @EnableWebLogAspect
     public boolean delete(@QueryParam("id") @RequestParam("id") String id) {
+        User currentUser = ContextManager.getUser();
+        assert currentUser != null;
+        if (!currentUser.superAdmin) throw new ForbiddenException("无权操作");
         return tenantService.delete(id);
     }
 

@@ -88,6 +88,14 @@ public class User extends BaseModel {
     public Boolean disabled;
 
     /**
+     * 是否为超级管理员
+     */
+    @JSONField(name = "super_admin")
+    @JsonProperty("super_admin")
+    @TableField(exist = false)
+    public boolean superAdmin;
+
+    /**
      * 检测用户有效性
      * 无效抛出异常
      */

@@ -134,6 +134,7 @@ public class RoleServiceImpl implements RoleService {
         searchRequest.prepareOrderBy(query);
         if (!StringUtils.isEmpty(searchRequest.name)) query.like("name", searchRequest.name);
         if (!StringUtils.isEmpty(searchRequest.appId)) query.eq("app_id", searchRequest.appId);
+        if (searchRequest.appIds != null) query.in("app_id", searchRequest.appIds);
         IPage<Role> page = roleMapper.selectPage(new Page<>(searchRequest.current, searchRequest.size), query);
         return Converter.convert(page);
     }

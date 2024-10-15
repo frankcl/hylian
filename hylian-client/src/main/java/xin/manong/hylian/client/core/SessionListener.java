@@ -69,7 +69,12 @@ public class SessionListener implements HttpSessionListener {
         body.put(Constants.PARAM_APP_SECRET, hylianClientConfig.appSecret);
         HttpRequest httpRequest = HttpRequest.buildPostRequest(requestURL, RequestFormat.JSON, body);
         Boolean success = HTTPExecutor.executeAndUnwrap(httpRequest, Boolean.class);
-        if (success != null && success) return;
-        logger.warn("remove app login failed for session[{}] and app[{}]", sessionId, hylianClientConfig.appId);
+        if (success != null && success) {
+            logger.info("unregister activity success for app[{}] and session[{}]",
+                    hylianClientConfig.appId, sessionId);
+            return;
+        }
+        logger.warn("unregister activity failed for app[{}] and session[{}]",
+                hylianClientConfig.appId, sessionId);
     }
 }

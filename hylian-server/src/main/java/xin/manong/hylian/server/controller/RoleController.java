@@ -6,11 +6,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
-import xin.manong.hylian.model.App;
-import xin.manong.hylian.model.Permission;
+import xin.manong.hylian.client.core.ContextManager;
+import xin.manong.hylian.model.*;
+import xin.manong.hylian.server.aspect.EnableAppFollowAspect;
 import xin.manong.hylian.server.model.Pager;
-import xin.manong.hylian.model.Role;
-import xin.manong.hylian.model.RolePermission;
 import xin.manong.hylian.server.converter.Converter;
 import xin.manong.hylian.server.controller.request.BatchRolePermissionRequest;
 import xin.manong.hylian.server.controller.request.RolePermissionRequest;
@@ -21,6 +20,7 @@ import xin.manong.hylian.server.service.AppService;
 import xin.manong.hylian.server.service.RolePermissionService;
 import xin.manong.hylian.server.service.RoleService;
 import xin.manong.hylian.server.service.request.RoleSearchRequest;
+import xin.manong.hylian.server.util.PermissionValidator;
 import xin.manong.weapon.base.util.RandomID;
 import xin.manong.weapon.spring.web.ws.aspect.EnableWebLogAspect;
 
@@ -86,9 +86,11 @@ public class RoleController {
     @Path("add")
     @PutMapping("add")
     @EnableWebLogAspect
+    @EnableAppFollowAspect
     public boolean add(@RequestBody RoleRequest roleRequest) {
         if (roleRequest == null) throw new BadRequestException("角色信息为空");
         roleRequest.check();
+        PermissionValidator.validateAppPermission(roleRequest.appId);
         Role role = Converter.convert(roleRequest);
         role.id = RandomID.build();
         role.check();
@@ -107,11 +109,16 @@ public class RoleController {
     @Path("update")
     @PostMapping("update")
     @EnableWebLogAspect
+    @EnableAppFollowAspect
     public boolean update(@RequestBody RoleUpdateRequest roleUpdateRequest) {
         if (roleUpdateRequest == null) throw new BadRequestException("角色信息为空");
         roleUpdateRequest.check();
-        Role role = Converter.convert(roleUpdateRequest);
-        return roleService.update(role);
+        if (roleUpdateRequest.appId != null) PermissionValidator.validateAppPermission(roleUpdateRequest.appId);
+        Role role = roleService.get(roleUpdateRequest.id);
+        if (role == null) throw new NotFoundException("角色不存在");
+        PermissionValidator.validateAppPermission(role.appId);
+        Role updateRole = Converter.convert(roleUpdateRequest);
+        return roleService.update(updateRole);
     }
 
     /**
@@ -126,9 +133,13 @@ public class RoleController {
     @Path("addRolePermission")
     @PutMapping("addRolePermission")
     @EnableWebLogAspect
+    @EnableAppFollowAspect
     public boolean addRolePermission(@RequestBody RolePermissionRequest request) {
         if (request == null) throw new BadRequestException("角色权限关系为空");
         request.check();
+        Role role = roleService.get(request.roleId);
+        if (role == null) throw new NotFoundException("角色不存在");
+        PermissionValidator.validateAppPermission(role.appId);
         RolePermission rolePermission = Converter.convert(request);
         rolePermission.check();
         return rolePermissionService.add(rolePermission);
@@ -145,7 +156,13 @@ public class RoleController {
     @Path("removeRolePermission")
     @DeleteMapping("removeRolePermission")
     @EnableWebLogAspect
+    @EnableAppFollowAspect
     public boolean removeRolePermission(@QueryParam("id") @RequestParam("id") Long id) {
+        RolePermission rolePermission = rolePermissionService.get(id);
+        if (rolePermission == null) throw new NotFoundException("角色权限关系不存在");
+        Role role = roleService.get(rolePermission.roleId);
+        if (role == null) throw new NotFoundException("角色不存在");
+        PermissionValidator.validateAppPermission(role.appId);
         return rolePermissionService.delete(id);
     }
 
@@ -163,9 +180,13 @@ public class RoleController {
     @Path("batchUpdateRolePermission")
     @PostMapping("batchUpdateRolePermission")
     @EnableWebLogAspect
+    @EnableAppFollowAspect
     public boolean batchUpdateRolePermission(@RequestBody BatchRolePermissionRequest request) {
         if (request == null) throw new BadRequestException("批量更新请求为空");
         request.check();
+        Role role = roleService.get(request.roleId);
+        if (role == null) throw new NotFoundException("角色不存在");
+        PermissionValidator.validateAppPermission(role.appId);
         Set<RolePermission> prevRolePermissions = new HashSet<>(rolePermissionService.getByRoleId(request.roleId));
         Set<RolePermission> currentRolePermissions = new HashSet<>(Converter.convert(request));
         List<Long> removeRolePermissions = new ArrayList<>(Sets.difference(
@@ -187,7 +208,11 @@ public class RoleController {
     @Path("delete")
     @DeleteMapping("delete")
     @EnableWebLogAspect
+    @EnableAppFollowAspect
     public boolean delete(@QueryParam("id") @RequestParam("id") String id) {
+        Role role = roleService.get(id);
+        if (role == null) throw new NotFoundException("角色不存在");
+        PermissionValidator.validateAppPermission(role.appId);
         return roleService.delete(id);
     }
 
@@ -203,7 +228,11 @@ public class RoleController {
     @Path("search")
     @GetMapping("search")
     @EnableWebLogAspect
+    @EnableAppFollowAspect
     public Pager<ViewRole> search(@BeanParam RoleSearchRequest searchRequest) {
+        User currentUser = ContextManager.getUser();
+        assert currentUser != null;
+        searchRequest.appIds = currentUser.superAdmin ? null : ContextManager.getFollowApps();
         Pager<Role> pager = roleService.search(searchRequest);
         Pager<ViewRole> viewPager = new Pager<>();
         viewPager.current = pager.size;
