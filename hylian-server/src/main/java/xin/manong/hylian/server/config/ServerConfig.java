@@ -26,6 +26,7 @@ public class ServerConfig implements InitializingBean {
     public String ossRegion = "cn-hangzhou";
     public String ossBucket = "hylian";
     public String ossBaseDirectory = "test/";
+    public String defaultTenant;
     public JWTConfig jwtConfig;
 
     @Bean(name = "webAspectLogger")

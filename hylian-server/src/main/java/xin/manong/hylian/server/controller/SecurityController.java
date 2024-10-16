@@ -7,17 +7,15 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import xin.manong.hylian.model.*;
+import xin.manong.hylian.server.config.ServerConfig;
+import xin.manong.hylian.server.controller.request.*;
+import xin.manong.hylian.server.converter.Converter;
 import xin.manong.hylian.server.model.Pager;
 import xin.manong.hylian.server.model.UserProfile;
 import xin.manong.hylian.server.util.CookieUtils;
 import xin.manong.hylian.client.util.SessionUtils;
 import xin.manong.hylian.server.service.request.UserSearchRequest;
 import xin.manong.hylian.server.common.Constants;
-import xin.manong.hylian.server.controller.request.AcquireTokenRequest;
-import xin.manong.hylian.server.controller.request.AppRolePermissionsRequest;
-import xin.manong.hylian.server.controller.request.LoginRequest;
-import xin.manong.hylian.server.controller.request.RefreshTokenRequest;
-import xin.manong.hylian.server.controller.request.RemoveActivityRequest;
 import xin.manong.hylian.server.service.*;
 import xin.manong.hylian.server.service.request.RolePermissionSearchRequest;
 import xin.manong.weapon.base.util.RandomID;
@@ -76,6 +74,8 @@ public class SecurityController {
     protected PermissionService permissionService;
     @Resource
     protected CaptchaService captchaService;
+    @Resource
+    private ServerConfig serverConfig;
 
     /**
      * 申请安全code
@@ -196,9 +196,11 @@ public class SecurityController {
         appService.verifyApp(appId, appSecret);
         if (!verifyToken(token)) return null;
         UserProfile userProfile = jwtService.decodeProfile(token);
-        Tenant tenant = tenantService.get(userProfile.tenantId);
+        User user = userService.get(userProfile.userId);
+        if (user == null) throw new NotAuthorizedException("用户不存在");
+        Tenant tenant = tenantService.get(user.tenantId);
         if (tenant == null) {
-            logger.error("tenant[{}] is not found", userProfile.tenantId);
+            logger.error("tenant[{}] is not found", user.tenantId);
             throw new NotAuthorizedException("租户不存在");
         }
         return tenant;
@@ -359,12 +361,7 @@ public class SecurityController {
             return true;
         }
         request.check();
-        String sessionId = SessionUtils.getSessionID(httpRequest);
-        String captcha = captchaService.get(sessionId);
-        if (captcha == null || !captcha.equalsIgnoreCase(request.captcha)) {
-            logger.error("captcha is incorrect");
-            throw new BadRequestException("验证码不正确");
-        }
+        verifyCaptcha(request.captcha, httpRequest);
         UserSearchRequest searchRequest = new UserSearchRequest();
         searchRequest.username = request.username.trim();
         searchRequest.current = 1;
@@ -384,12 +381,45 @@ public class SecurityController {
             throw new IllegalStateException("用户处于禁用状态");
         }
         UserProfile userProfile = new UserProfile();
-        userProfile.setId(RandomID.build()).setUserId(user.id).setTenantId(user.tenantId);
+        userProfile.setId(RandomID.build()).setUserId(user.id);
         ticket = ticketService.buildTicket(userProfile, Constants.COOKIE_TICKET_EXPIRED_TIME_MS);
         ticketService.putTicket(userProfile.id, ticket);
         CookieUtils.setCookie(Constants.COOKIE_TICKET, ticket, "/", true, httpRequest, httpResponse);
         CookieUtils.setCookie(Constants.COOKIE_TOKEN, RandomID.build(), "/", false, httpRequest, httpResponse);
         return true;
+    }
+
+    @POST
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("register")
+    @PostMapping("register")
+    @EnableWebLogAspect
+    public boolean register(@RequestBody RegisterRequest request,
+                            @Context HttpServletRequest httpRequest) {
+        if (request == null) throw new BadRequestException("注册请求为空");
+        request.check();
+        verifyCaptcha(request.captcha, httpRequest);
+        User user = Converter.convert(request);
+        user.id = RandomID.build();
+        user.tenantId = serverConfig.defaultTenant;
+        user.check();
+        return userService.add(user);
+    }
+
+    /**
+     * 验证验证码
+     *
+     * @param captcha 验证码
+     * @param httpRequest HTTP请求
+     */
+    private void verifyCaptcha(String captcha, HttpServletRequest httpRequest) {
+        String sessionId = SessionUtils.getSessionID(httpRequest);
+        String currentCaptcha = captchaService.get(sessionId);
+        if (currentCaptcha == null || !currentCaptcha.equalsIgnoreCase(captcha)) {
+            logger.error("captcha is incorrect");
+            throw new BadRequestException("验证码不正确");
+        }
     }
 
     /**

@@ -239,6 +239,14 @@ export const asyncChangePassword = async request => {
   })
 }
 
+export const asyncRegister = async request => {
+  return await axios({
+    method: HTTP_POST,
+    url: '/api/security/register',
+    data: request
+  })
+}
+
 export const asyncCurrentUser = async () => {
   return await axios({
     method: HTTP_GET,

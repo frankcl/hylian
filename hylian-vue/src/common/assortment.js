@@ -73,10 +73,10 @@ export const logout = async () => {
   await router.push('/')
 }
 
-export const refreshUser = async () => {
+export const refreshUser = async (force = false) => {
   if (isLogin()) {
     const userStore = useUserStore()
-    if (userStore.injected) return
+    if (!force && userStore.injected) return
     userStore.inject(await asyncCurrentUser())
   }
 }

@@ -96,6 +96,30 @@ public class SessionUtils {
     }
 
     /**
+     * 是否需要刷新用户
+     *
+     * @param httpRequest HTTP请求
+     * @return 需要刷新返回true，否则返回false
+     */
+    public static boolean isRefreshUser(HttpServletRequest httpRequest) {
+        if (httpRequest == null) return false;
+        Boolean refreshUser = (Boolean) httpRequest.getSession().getAttribute(SessionConstants.REFRESH_USER);
+        return refreshUser != null && refreshUser;
+    }
+
+    /**
+     * 是否需要刷新租户
+     *
+     * @param httpRequest HTTP请求
+     * @return 需要刷新返回true，否则返回false
+     */
+    public static boolean isRefreshTenant(HttpServletRequest httpRequest) {
+        if (httpRequest == null) return false;
+        Boolean refreshTenant = (Boolean) httpRequest.getSession().getAttribute(SessionConstants.REFRESH_TENANT);
+        return refreshTenant != null && refreshTenant;
+    }
+
+    /**
      * 从session中获取锁
      *
      * @param httpRequest HTTP请求
@@ -104,6 +128,28 @@ public class SessionUtils {
     public static ReentrantLock getLock(HttpServletRequest httpRequest) {
         if (httpRequest == null) return null;
         return (ReentrantLock) httpRequest.getSession().getAttribute(SessionConstants.LOCK);
+    }
+
+    /**
+     * 设置用户刷新标志
+     *
+     * @param httpRequest HTTP请求
+     */
+    public static void setRefreshUser(HttpServletRequest httpRequest) {
+        if (httpRequest == null) return;
+        HttpSession session = httpRequest.getSession();
+        session.setAttribute(SessionConstants.REFRESH_USER, true);
+    }
+
+    /**
+     * 设置租户刷新标志
+     *
+     * @param httpRequest HTTP请求
+     */
+    public static void setRefreshTenant(HttpServletRequest httpRequest) {
+        if (httpRequest == null) return;
+        HttpSession session = httpRequest.getSession();
+        session.setAttribute(SessionConstants.REFRESH_TENANT, true);
     }
 
     /**
@@ -164,6 +210,28 @@ public class SessionUtils {
     }
 
     /**
+     * 移除用户刷新标志
+     *
+     * @param httpRequest HTTP请求
+     */
+    public static void removeRefreshUser(HttpServletRequest httpRequest) {
+        if (httpRequest == null) return;
+        HttpSession httpSession = httpRequest.getSession();
+        httpSession.removeAttribute(SessionConstants.REFRESH_USER);
+    }
+
+    /**
+     * 移除租户刷新标志
+     *
+     * @param httpRequest HTTP请求
+     */
+    public static void removeRefreshTenant(HttpServletRequest httpRequest) {
+        if (httpRequest == null) return;
+        HttpSession httpSession = httpRequest.getSession();
+        httpSession.removeAttribute(SessionConstants.REFRESH_TENANT);
+    }
+
+    /**
      * 移除session资源
      *
      * @param httpRequest HTTP请求
@@ -171,6 +239,8 @@ public class SessionUtils {
     public static void removeResources(HttpServletRequest httpRequest) {
         if (httpRequest == null) return;
         HttpSession httpSession = httpRequest.getSession();
+        httpSession.removeAttribute(SessionConstants.REFRESH_USER);
+        httpSession.removeAttribute(SessionConstants.REFRESH_TENANT);
         httpSession.removeAttribute(SessionConstants.TOKEN);
         httpSession.removeAttribute(SessionConstants.TOKEN_REFRESH_TIME);
         httpSession.removeAttribute(SessionConstants.USER);

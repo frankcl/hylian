@@ -142,6 +142,7 @@ public class UserServiceImpl implements UserService {
             logger.error("user is not found for id[{}]", user.id);
             throw new NotFoundException("用户不存在");
         }
+        avatarNeedUpdate(user, prevUser);
         saveAvatar(user);
         user.username = null;
         if (user.password != null) user.password = DigestUtils.md5Hex(user.password);
@@ -255,5 +256,19 @@ public class UserServiceImpl implements UserService {
             throw new InternalServerErrorException("转存头像失败");
         }
         user.avatar = OSSClient.buildURL(new OSSMeta(serverConfig.ossRegion, serverConfig.ossBucket, ossKey));
+    }
+
+    /**
+     * 如果更新头像和现存头像一致则不更新
+     *
+     * @param user 更新信息
+     * @param prevUser 当前信息
+     */
+    private void avatarNeedUpdate(User user, User prevUser) {
+        if (StringUtils.isEmpty(prevUser.avatar) || StringUtils.isEmpty(user.avatar)) return;
+        OSSMeta prevMeta = OSSClient.parseURL(prevUser.avatar);
+        if (prevMeta == null) return;
+        OSSMeta meta = OSSClient.parseURL(user.avatar);
+        if (meta != null && meta.equals(prevMeta)) user.avatar = null;
     }
 }

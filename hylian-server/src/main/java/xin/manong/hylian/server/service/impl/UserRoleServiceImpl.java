@@ -45,6 +45,12 @@ public class UserRoleServiceImpl implements UserRoleService {
     protected RoleService roleService;
 
     @Override
+    public UserRole get(Long id) {
+        if (id == null) throw new BadRequestException("关系ID为空");
+        return userRoleMapper.selectById(id);
+    }
+
+    @Override
     public boolean add(UserRole userRole) {
         LambdaQueryWrapper<UserRole> query = new LambdaQueryWrapper<>();
         query.eq(UserRole::getUserId, userRole.userId).eq(UserRole::getRoleId, userRole.roleId);
@@ -64,14 +70,8 @@ public class UserRoleServiceImpl implements UserRoleService {
 
     @Override
     public List<UserRole> getByAppUser(String appId, String userId) {
-        if (StringUtils.isEmpty(appId)) {
-            logger.error("app id is empty for getByAppUser");
-            throw new BadRequestException("应用ID为空");
-        }
-        if (StringUtils.isEmpty(userId)) {
-            logger.error("user id is empty for getByAppUser");
-            throw new BadRequestException("用户ID为空");
-        }
+        if (StringUtils.isEmpty(appId)) throw new BadRequestException("应用ID为空");
+        if (StringUtils.isEmpty(userId)) throw new BadRequestException("用户ID为空");
         LambdaQueryWrapper<UserRole> query = new LambdaQueryWrapper<>();
         query.eq(UserRole::getAppId, appId).eq(UserRole::getUserId, userId);
         return userRoleMapper.selectList(query);
@@ -90,19 +90,13 @@ public class UserRoleServiceImpl implements UserRoleService {
 
     @Override
     public boolean delete(Long id) {
-        if (id == null) {
-            logger.error("user role id is null");
-            throw new BadRequestException("用户角色关系ID为空");
-        }
+        if (id == null) throw new BadRequestException("用户角色关系ID为空");
         return userRoleMapper.deleteById(id) > 0;
     }
 
     @Override
     public void deleteByUser(String userId) {
-        if (StringUtils.isEmpty(userId)) {
-            logger.error("user id is empty");
-            throw new BadRequestException("用户ID为空");
-        }
+        if (StringUtils.isEmpty(userId)) throw new BadRequestException("用户ID为空");
         LambdaQueryWrapper<UserRole> query = new LambdaQueryWrapper<>();
         query.eq(UserRole::getUserId, userId);
         int n = userRoleMapper.delete(query);
@@ -111,10 +105,7 @@ public class UserRoleServiceImpl implements UserRoleService {
 
     @Override
     public void deleteByRole(String roleId) {
-        if (StringUtils.isEmpty(roleId)) {
-            logger.error("role id is empty");
-            throw new BadRequestException("角色ID为空");
-        }
+        if (StringUtils.isEmpty(roleId)) throw new BadRequestException("角色ID为空");
         LambdaQueryWrapper<UserRole> query = new LambdaQueryWrapper<>();
         query.eq(UserRole::getRoleId, roleId);
         int n = userRoleMapper.delete(query);

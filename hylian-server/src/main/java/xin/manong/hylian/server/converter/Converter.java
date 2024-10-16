@@ -39,6 +39,22 @@ public class Converter {
     }
 
     /**
+     * 转换注册信息为用户信息
+     *
+     * @param request 注册信息
+     * @return 用户信息
+     */
+    public static User convert(RegisterRequest request) {
+        if (request == null) return null;
+        User user = new User();
+        user.username = request.username;
+        user.password = request.password;
+        user.name = request.name;
+        user.disabled = true;
+        return user;
+    }
+
+    /**
      * 转换用户请求为用户对象
      *
      * @param userRequest 用户请求

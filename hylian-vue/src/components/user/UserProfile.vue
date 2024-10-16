@@ -2,12 +2,13 @@
 import { UserFilled } from '@element-plus/icons-vue'
 import { ElAvatar, ElCol, ElPopover, ElRow } from 'element-plus'
 import { useUserStore } from '@/store'
+import { refreshUser } from '@/common/assortment'
 
 const userStore = useUserStore()
 </script>
 
 <template>
-  <el-popover :width="180" popper-style="box-shadow: rgb(14 18 22 / 35%) 0px 10px 38px -10px, rgb(14 18 22 / 20%) 0px 10px 20px -15px; padding: 20px;">
+  <el-popover :width="180" popper-class="user-profile-popper" @show="refreshUser(true)">
     <template #reference>
       <el-avatar shape="circle" :size="30" fit="cover"
                  :icon="UserFilled" :src="userStore.avatar"></el-avatar>
@@ -39,5 +40,8 @@ const userStore = useUserStore()
 </template>
 
 <style scoped>
-
+.user-profile-popper {
+  box-shadow: rgb(14 18 22 / 35%) 0 10px 38px -10px, rgb(14 18 22 / 20%) 0 10px 20px -15px;
+  padding: 20px;
+}
 </style>

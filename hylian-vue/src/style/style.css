@@ -61,6 +61,12 @@ h1 {
   margin-bottom: 0;
 }
 
+.captcha {
+  display: flex;
+  align-items: center;
+  margin-left: 20px;
+}
+
 button {
   border-radius: 8px;
   border: 1px solid transparent;

@@ -202,13 +202,15 @@ public class HylianShield {
      * @return 成功返回true，否则返回false
      */
     private boolean refreshUser(String token, HttpServletRequest httpRequest) {
-        if (SessionUtils.getUser(httpRequest) != null) return true;
+        boolean forceRefresh = SessionUtils.isRefreshUser(httpRequest);
+        if (!forceRefresh && SessionUtils.getUser(httpRequest) != null) return true;
         User user = getUser(token);
         if (user == null) {
             logger.error("get user failed for token[{}]", token);
             return false;
         }
         SessionUtils.setUser(httpRequest, user);
+        SessionUtils.removeRefreshUser(httpRequest);
         return true;
     }
 
@@ -220,13 +222,15 @@ public class HylianShield {
      * @return 成功返回true，否则返回false
      */
     private boolean refreshTenant(String token, HttpServletRequest httpRequest) {
-        if (SessionUtils.getTenant(httpRequest) != null) return true;
+        boolean forceRefresh = SessionUtils.isRefreshTenant(httpRequest);
+        if (!forceRefresh && SessionUtils.getTenant(httpRequest) != null) return true;
         Tenant tenant = getTenant(token);
         if (tenant == null) {
             logger.error("get tenant failed for token[{}]", token);
             return false;
         }
         SessionUtils.setTenant(httpRequest, tenant);
+        SessionUtils.removeRefreshTenant(httpRequest);
         return true;
     }
 

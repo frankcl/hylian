@@ -34,7 +34,6 @@ public class JWTServiceImplTest {
         UserProfile userProfile = new UserProfile();
         userProfile.id = RandomID.build();
         userProfile.userId = "aaa";
-        userProfile.tenantId = "bbb";
         Date expiresAt = new Date(System.currentTimeMillis() + 86400000L);
         Map<String, Object> headerMap = new HashMap<>();
         headerMap.put(Constants.JWT_HEADER_CATEGORY, Constants.JWT_CATEGORY_TOKEN);
@@ -50,6 +49,5 @@ public class JWTServiceImplTest {
         Assert.assertNotNull(decodedUserProfile);
         Assert.assertEquals(userProfile.id, decodedUserProfile.id);
         Assert.assertEquals(userProfile.userId, decodedUserProfile.userId);
-        Assert.assertEquals(userProfile.tenantId, decodedUserProfile.tenantId);
     }
 }

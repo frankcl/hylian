@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import xin.manong.hylian.client.aspect.EnableACLAspect;
+import xin.manong.hylian.client.util.SessionUtils;
 import xin.manong.hylian.model.*;
 import xin.manong.hylian.server.aspect.EnableAppFollowAspect;
 import xin.manong.hylian.server.common.Constants;
@@ -32,7 +33,9 @@ import xin.manong.weapon.base.util.RandomID;
 import xin.manong.weapon.spring.web.ws.aspect.EnableWebLogAspect;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -107,11 +110,6 @@ public class UserController {
         userRequest.check();
         User user = Converter.convert(userRequest);
         user.id = RandomID.build();
-        Tenant tenant = tenantService.get(user.tenantId);
-        if (tenant == null) {
-            logger.error("tenant[{}] is not found for adding", user.tenantId);
-            throw new NotFoundException("租户不存在");
-        }
         user.check();
         return userService.add(user);
     }
@@ -128,7 +126,8 @@ public class UserController {
     @Path("update")
     @PostMapping("update")
     @EnableWebLogAspect
-    public boolean update(@RequestBody UserUpdateRequest userUpdateRequest) {
+    public boolean update(@RequestBody UserUpdateRequest userUpdateRequest,
+                          @Context HttpServletRequest httpRequest) {
         if (userUpdateRequest == null) throw new BadRequestException("用户信息为空");
         userUpdateRequest.check();
         User currentUser = ContextManager.getUser();
@@ -144,6 +143,8 @@ public class UserController {
                 throw new NotFoundException("租户不存在");
             }
         }
+        SessionUtils.setRefreshUser(httpRequest);
+        SessionUtils.setRefreshTenant(httpRequest);
         return userService.update(user);
     }
 
@@ -178,11 +179,11 @@ public class UserController {
     @Produces(MediaType.APPLICATION_JSON)
     @Path("addUserRole")
     @PutMapping("addUserRole")
-    @EnableACLAspect
     @EnableWebLogAspect
     public boolean addUserRole(@RequestBody UserRoleRequest request) {
         if (request == null) throw new BadRequestException("用户角色关系为空");
         request.check();
+        PermissionValidator.validateAppPermission(request.appId);
         UserRole userRole = Converter.convert(request);
         userRole.check();
         return userRoleService.add(userRole);
@@ -198,9 +199,11 @@ public class UserController {
     @Produces(MediaType.APPLICATION_JSON)
     @Path("removeUserRole")
     @DeleteMapping("removeUserRole")
-    @EnableACLAspect
     @EnableWebLogAspect
     public boolean removeUserRole(@QueryParam("id") @RequestParam("id") Long id) {
+        UserRole userRole = userRoleService.get(id);
+        if (userRole == null) throw new NotFoundException("用户角色关系不存在");
+        PermissionValidator.validateAppPermission(userRole.appId);
         return userRoleService.delete(id);
     }
 
@@ -215,7 +218,6 @@ public class UserController {
     @Produces(MediaType.APPLICATION_JSON)
     @Path("batchUpdateUserRole")
     @PostMapping("batchUpdateUserRole")
-    @EnableACLAspect
     @EnableWebLogAspect
     @EnableAppFollowAspect
     public boolean batchUpdateUserRole(@RequestBody BatchUserRoleRequest request) {

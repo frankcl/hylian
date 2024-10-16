@@ -16,6 +16,14 @@ import java.util.List;
 public interface UserRoleService {
 
     /**
+     * 根据ID获取用户角色关系
+     *
+     * @param id 关系ID
+     * @return 用户角色关系
+     */
+    UserRole get(Long id);
+
+    /**
      * 添加用户角色关系
      *
      * @param userRole 用户角色关系

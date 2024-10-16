@@ -30,9 +30,4 @@ public class UserProfile implements Serializable {
      */
     @JsonProperty("user_id")
     public String userId;
-    /**
-     * 租户ID
-     */
-    @JsonProperty("tenant_id")
-    public String tenantId;
 }

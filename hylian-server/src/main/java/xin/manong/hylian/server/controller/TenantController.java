@@ -6,6 +6,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import xin.manong.hylian.client.aspect.EnableACLAspect;
 import xin.manong.hylian.client.core.ContextManager;
+import xin.manong.hylian.client.util.SessionUtils;
 import xin.manong.hylian.model.User;
 import xin.manong.hylian.server.model.Pager;
 import xin.manong.hylian.model.Tenant;
@@ -19,7 +20,9 @@ import xin.manong.weapon.base.util.RandomID;
 import xin.manong.weapon.spring.web.ws.aspect.EnableWebLogAspect;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import java.util.ArrayList;
 
@@ -98,13 +101,15 @@ public class TenantController {
     @PostMapping("update")
     @EnableACLAspect
     @EnableWebLogAspect
-    public boolean update(@RequestBody TenantUpdateRequest tenantUpdateRequest) {
+    public boolean update(@RequestBody TenantUpdateRequest tenantUpdateRequest,
+                          @Context HttpServletRequest httpRequest) {
         User currentUser = ContextManager.getUser();
         assert currentUser != null;
         if (!currentUser.superAdmin) throw new ForbiddenException("无权操作");
         if (tenantUpdateRequest == null) throw new BadRequestException("更新租户信息为空");
         tenantUpdateRequest.check();
         Tenant tenant = Converter.convert(tenantUpdateRequest);
+        SessionUtils.setRefreshTenant(httpRequest);
         return tenantService.update(tenant);
     }
 

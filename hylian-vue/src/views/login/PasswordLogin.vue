@@ -5,10 +5,12 @@ import { useUserStore } from '@/store'
 import { ElButton, ElCol, ElForm, ElFormItem, ElInput, ElRow } from 'element-plus'
 import { asyncApplyCaptcha, asyncCurrentUser, asyncPasswordLogin } from '@/common/service'
 import { drawCaptcha, submitForm } from '@/common/assortment'
+import RegisterUser from '@/views/user/RegisterUser'
 
 const router = useRouter()
 const userStore = useUserStore()
 const captcha = ref('')
+const openRegisterDialog = ref(false)
 const formRef = useTemplateRef('formRef')
 const captchaRef = useTemplateRef('captchaRef')
 const userForm = reactive({
@@ -74,9 +76,10 @@ watchEffect(() => {
       <el-button style="width: 100%" color="#6077ff" @click="submit(formRef)">登录</el-button>
     </el-form-item>
     <el-row class="register-prompt" align="middle" justify="center">
-      <span>没有账号？</span><a>注册</a><span>一个</span>
+      <span>没有账号？</span><a @click="openRegisterDialog = true">注册</a><span>一个</span>
     </el-row>
   </el-form>
+  <register-user v-model="openRegisterDialog" @close="openRegisterDialog = false; refreshCaptcha()"></register-user>
 </template>
 
 <style scoped>
@@ -94,10 +97,5 @@ watchEffect(() => {
   line-height: 1.0;
   font-size: 8px;
   height: 8px;
-}
-.captcha {
-  display: flex;
-  align-items: center;
-  margin-left: 20px;
 }
 </style>
