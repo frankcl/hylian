@@ -1,7 +1,5 @@
 package xin.manong.hylian.server.controller;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import xin.manong.hylian.client.aspect.EnableACLAspect;
@@ -38,8 +36,6 @@ import java.util.ArrayList;
 @RequestMapping("api/tenant")
 public class TenantController {
 
-    private static final Logger logger = LoggerFactory.getLogger(TenantController.class);
-
     @Resource
     protected TenantService tenantService;
 
@@ -56,10 +52,7 @@ public class TenantController {
     @EnableWebLogAspect
     public ViewTenant get(@QueryParam("id") @RequestParam("id") String id) {
         Tenant tenant = tenantService.get(id);
-        if (tenant == null) {
-            logger.error("tenant[{}] is not found", id);
-            throw new NotFoundException("租户不存在");
-        }
+        if (tenant == null) throw new NotFoundException("租户不存在");
         return Converter.convert(tenant);
     }
 
@@ -109,7 +102,7 @@ public class TenantController {
         if (tenantUpdateRequest == null) throw new BadRequestException("更新租户信息为空");
         tenantUpdateRequest.check();
         Tenant tenant = Converter.convert(tenantUpdateRequest);
-        SessionUtils.setRefreshTenant(httpRequest);
+        if (currentUser.tenantId.equals(tenant.id)) SessionUtils.setRefreshUser(httpRequest);
         return tenantService.update(tenant);
     }
 

@@ -48,10 +48,7 @@ public class AppUserServiceImpl implements AppUserService {
     public boolean add(AppUser appUser) {
         LambdaQueryWrapper<AppUser> query = new LambdaQueryWrapper<>();
         query.eq(AppUser::getUserId, appUser.getUserId()).eq(AppUser::getAppId, appUser.getAppId());
-        if (appUserMapper.selectCount(query) > 0) {
-            logger.error("app user already exist");
-            throw new IllegalStateException("应用用户关系已存在");
-        }
+        if (appUserMapper.selectCount(query) > 0) throw new IllegalStateException("应用用户关系已存在");
         return appUserMapper.insert(appUser) > 0;
     }
 
@@ -100,10 +97,7 @@ public class AppUserServiceImpl implements AppUserService {
 
     @Override
     public boolean delete(Long id) {
-        if (id == null) {
-            logger.error("app user id is null");
-            throw new BadRequestException("应用用户关系ID为空");
-        }
+        if (id == null) throw new BadRequestException("应用用户关系ID为空");
         return appUserMapper.deleteById(id) > 0;
     }
 

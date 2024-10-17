@@ -83,6 +83,7 @@ public class Converter {
         User user = new User();
         user.id = userRequest.id;
         user.name = userRequest.name;
+        user.username = userRequest.username;
         user.tenantId = userRequest.tenantId;
         user.avatar = userRequest.avatar;
         user.disabled = userRequest.disabled;

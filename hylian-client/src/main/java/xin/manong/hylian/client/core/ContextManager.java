@@ -1,7 +1,6 @@
 package xin.manong.hylian.client.core;
 
 import xin.manong.hylian.client.util.SessionUtils;
-import xin.manong.hylian.model.Tenant;
 import xin.manong.hylian.model.User;
 import xin.manong.hylian.client.common.Constants;
 import xin.manong.weapon.base.common.Context;
@@ -29,17 +28,6 @@ public class ContextManager {
         Context context = THREAD_LOCAL_CONTEXT.get();
         if (context == null) return null;
         return (User) context.get(Constants.CURRENT_USER);
-    }
-
-    /**
-     * 获取租户信息
-     *
-     * @return 成功返回租户信息，否则返回null
-     */
-    public static Tenant getTenant() {
-        Context context = THREAD_LOCAL_CONTEXT.get();
-        if (context == null) return null;
-        return (Tenant) context.get(Constants.CURRENT_TENANT);
     }
 
     /**
@@ -91,7 +79,6 @@ public class ContextManager {
             THREAD_LOCAL_CONTEXT.set(context);
         }
         context.put(Constants.CURRENT_USER, SessionUtils.getUser(httpRequest));
-        context.put(Constants.CURRENT_TENANT, SessionUtils.getTenant(httpRequest));
     }
 
     /**

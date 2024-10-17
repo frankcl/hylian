@@ -5,8 +5,6 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import xin.manong.hylian.server.model.Pager;
 import xin.manong.hylian.server.common.Constants;
@@ -31,8 +29,6 @@ import java.util.List;
 @Service
 public class ActivityServiceImpl implements ActivityService {
 
-    private static final Logger logger = LoggerFactory.getLogger(ActivityServiceImpl.class);
-
     @Resource
     protected ActivityMapper activityMapper;
 
@@ -40,10 +36,7 @@ public class ActivityServiceImpl implements ActivityService {
     public boolean add(Activity activity) {
         LambdaQueryWrapper<Activity> query = new LambdaQueryWrapper<>();
         query.eq(Activity::getSessionId, activity.sessionId).eq(Activity::getAppId, activity.appId);
-        if (activityMapper.selectCount(query) > 0) {
-            logger.error("user has login for app[{}] and session[{}]", activity.appId, activity.sessionId);
-            throw new IllegalStateException("用户已登录应用");
-        }
+        if (activityMapper.selectCount(query) > 0) throw new IllegalStateException("活动记录已存在");
         return activityMapper.insert(activity) > 0;
     }
 

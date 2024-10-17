@@ -1,7 +1,5 @@
 package xin.manong.hylian.server.controller;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import xin.manong.hylian.client.core.ContextManager;
@@ -39,8 +37,6 @@ import java.util.List;
 @RequestMapping("api/permission")
 public class PermissionController {
 
-    private static final Logger logger = LoggerFactory.getLogger(PermissionController.class);
-
     @Resource
     protected AppService appService;
     @Resource
@@ -59,10 +55,7 @@ public class PermissionController {
     @EnableWebLogAspect
     public Permission get(@QueryParam("id") @RequestParam("id") String id) {
         Permission permission = permissionService.get(id);
-        if (permission == null) {
-            logger.error("permission[{}] is not found", id);
-            throw new NotFoundException("权限不存在");
-        }
+        if (permission == null) throw new NotFoundException("权限不存在");
         return permission;
     }
 
@@ -167,7 +160,8 @@ public class PermissionController {
     public Pager<ViewPermission> search(@BeanParam PermissionSearchRequest searchRequest) {
         User currentUser = ContextManager.getUser();
         assert currentUser != null;
-        searchRequest.appIds = currentUser.superAdmin ? null : ContextManager.getFollowApps();
+        searchRequest.appIds = currentUser.superAdmin || searchRequest.ignoreCheck ?
+                null : ContextManager.getFollowApps();
         Pager<Permission> pager = permissionService.search(searchRequest);
         Pager<ViewPermission> viewPager = new Pager<>();
         viewPager.current = pager.current;

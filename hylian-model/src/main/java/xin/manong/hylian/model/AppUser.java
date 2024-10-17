@@ -16,6 +16,7 @@ import org.slf4j.LoggerFactory;
 import javax.ws.rs.BadRequestException;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
+import java.util.Objects;
 
 /**
  * 应用用户关系
@@ -56,6 +57,19 @@ public class AppUser extends BaseModel {
     @JSONField(name = "user_id")
     @JsonProperty("user_id")
     public String userId;
+
+    @Override
+    public boolean equals(Object object) {
+        if (!(object instanceof AppUser)) return false;
+        AppUser appUser = (AppUser) object;
+        return Objects.equals(appUser.appId, appId) &&
+                Objects.equals(appUser.userId, userId);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(appId, userId);
+    }
 
     /**
      * 检测有效性

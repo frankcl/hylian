@@ -173,37 +173,13 @@ public class SecurityController {
             throw new NotAuthorizedException("用户不存在");
         }
         if (appUserService.getAppUser(appId, user.id) != null) user.superAdmin = true;
-        return user;
-    }
-
-    /**
-     * 获取租户信息
-     * 认证失败抛出异常NotAuthorizedException
-     *
-     * @param token 令牌
-     * @param appId 应用ID
-     * @param appSecret 应用秘钥
-     * @return 成功返回租户信息，否则返回null
-     */
-    @GET
-    @Produces(MediaType.APPLICATION_JSON)
-    @Path("getTenant")
-    @GetMapping("getTenant")
-    @EnableWebLogAspect
-    public Tenant getTenant(@QueryParam("token") @RequestParam("token") String token,
-                            @QueryParam("app_id") @RequestParam("app_id") String appId,
-                            @QueryParam("app_secret") @RequestParam("app_secret") String appSecret) {
-        appService.verifyApp(appId, appSecret);
-        if (!verifyToken(token)) return null;
-        UserProfile userProfile = jwtService.decodeProfile(token);
-        User user = userService.get(userProfile.userId);
-        if (user == null) throw new NotAuthorizedException("用户不存在");
         Tenant tenant = tenantService.get(user.tenantId);
         if (tenant == null) {
             logger.error("tenant[{}] is not found", user.tenantId);
             throw new NotAuthorizedException("租户不存在");
         }
-        return tenant;
+        user.tenant = tenant;
+        return user;
     }
 
     /**
@@ -378,7 +354,7 @@ public class SecurityController {
         }
         if (user.disabled) {
             logger.error("user is disabled");
-            throw new IllegalStateException("用户处于禁用状态");
+            throw new IllegalStateException("账号尚未启用，请联系管理员");
         }
         UserProfile userProfile = new UserProfile();
         userProfile.setId(RandomID.build()).setUserId(user.id);
@@ -389,6 +365,13 @@ public class SecurityController {
         return true;
     }
 
+    /**
+     * 注册用户
+     *
+     * @param request 注册请求
+     * @param httpRequest HTTP请求
+     * @return 成功返回true，否则返回false
+     */
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
@@ -417,7 +400,6 @@ public class SecurityController {
         String sessionId = SessionUtils.getSessionID(httpRequest);
         String currentCaptcha = captchaService.get(sessionId);
         if (currentCaptcha == null || !currentCaptcha.equalsIgnoreCase(captcha)) {
-            logger.error("captcha is incorrect");
             throw new BadRequestException("验证码不正确");
         }
     }

@@ -55,7 +55,7 @@ watchEffect(async () => {
       <el-row>
         <el-col :span="16">
           <el-form-item label="用户名" prop="username">
-            <el-input v-model.trim="userForm.username" disabled clearable></el-input>
+            <el-input v-model.trim="userForm.username" clearable></el-input>
           </el-form-item>
           <el-form-item label="用户名称" prop="name">
             <el-input v-model.trim="userForm.name" clearable></el-input>

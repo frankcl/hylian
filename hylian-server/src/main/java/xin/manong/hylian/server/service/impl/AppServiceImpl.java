@@ -5,8 +5,6 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -36,8 +34,6 @@ import javax.ws.rs.NotFoundException;
 @Service
 public class AppServiceImpl implements AppService {
 
-    private static final Logger logger = LoggerFactory.getLogger(AppServiceImpl.class);
-
     @Resource
     protected AppMapper appMapper;
     @Lazy
@@ -52,10 +48,7 @@ public class AppServiceImpl implements AppService {
 
     @Override
     public App get(String id) {
-        if (StringUtils.isEmpty(id)) {
-            logger.error("app id is empty when getting");
-            throw new BadRequestException("应用ID为空");
-        }
+        if (StringUtils.isEmpty(id)) throw new BadRequestException("应用ID为空");
         return appMapper.selectById(id);
     }
 
@@ -63,28 +56,19 @@ public class AppServiceImpl implements AppService {
     public boolean add(App app) {
         LambdaQueryWrapper<App> query = new LambdaQueryWrapper<>();
         query.eq(App::getId, app.id).or().eq(App::getName, app.name);
-        if (appMapper.selectCount(query) > 0) {
-            logger.error("app has existed for the same id[{}] or name[{}]", app.id, app.name);
-            throw new IllegalStateException("同名应用已存在");
-        }
+        if (appMapper.selectCount(query) > 0) throw new IllegalStateException("应用已存在");
         return appMapper.insert(app) > 0;
     }
 
     @Override
     public boolean update(App app) {
         App prevApp = appMapper.selectById(app.id);
-        if (prevApp == null) {
-            logger.error("app is not found for id[{}]", app.id);
-            throw new NotFoundException("应用不存在");
-        }
+        if (prevApp == null) throw new NotFoundException("应用不存在");
         if (StringUtils.isEmpty(app.name)) app.name = null;
         if (app.name != null && !app.name.equals(prevApp.name)) {
             LambdaQueryWrapper<App> query = new LambdaQueryWrapper<>();
             query.eq(App::getName, app.name);
-            if (appMapper.selectCount(query) > 0) {
-                logger.error("app has existed for the same name[{}]", app.name);
-                throw new IllegalStateException("同名应用已存在");
-            }
+            if (appMapper.selectCount(query) > 0) throw new IllegalStateException("应用已存在");
         }
         return appMapper.updateById(app) > 0;
     }
@@ -92,17 +76,14 @@ public class AppServiceImpl implements AppService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public boolean delete(String id) {
-        if (StringUtils.isEmpty(id)) {
-            logger.error("app id is empty when deleting");
-            throw new BadRequestException("应用ID为空");
-        }
-        boolean result = appMapper.deleteById(id) > 0;
-        if (result) {
+        if (StringUtils.isEmpty(id)) throw new BadRequestException("应用ID为空");
+        boolean success = appMapper.deleteById(id) > 0;
+        if (success) {
             permissionService.deleteByApp(id);
             roleService.deleteByApp(id);
             appUserService.deleteByApp(id);
         }
-        return result;
+        return success;
     }
 
     @Override
@@ -121,22 +102,10 @@ public class AppServiceImpl implements AppService {
 
     @Override
     public void verifyApp(String appId, String appSecret) {
-        if (StringUtils.isEmpty(appId)) {
-            logger.error("app id is empty");
-            throw new NotAuthorizedException("应用ID为空");
-        }
-        if (StringUtils.isEmpty(appSecret)) {
-            logger.error("app secret is empty");
-            throw new NotAuthorizedException("应用秘钥为空");
-        }
+        if (StringUtils.isEmpty(appId)) throw new NotAuthorizedException("应用ID为空");
+        if (StringUtils.isEmpty(appSecret)) throw new NotAuthorizedException("应用秘钥为空");
         App app = get(appId);
-        if (app == null) {
-            logger.error("app[{}] is not found", appId);
-            throw new NotAuthorizedException("应用不存在");
-        }
-        if (!app.secret.equals(appSecret)) {
-            logger.error("app secret not matched");
-            throw new NotAuthorizedException("应用秘钥不匹配");
-        }
+        if (app == null) throw new NotAuthorizedException("应用不存在");
+        if (!app.secret.equals(appSecret)) throw new NotAuthorizedException("应用秘钥不匹配");
     }
 }

@@ -2,8 +2,6 @@ package xin.manong.hylian.server.controller;
 
 import com.google.common.collect.Sets;
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import xin.manong.hylian.client.core.ContextManager;
@@ -45,8 +43,6 @@ import java.util.stream.Collectors;
 @RequestMapping("api/role")
 public class RoleController {
 
-    private static final Logger logger = LoggerFactory.getLogger(RoleController.class);
-
     @Resource
     protected AppService appService;
     @Resource
@@ -67,10 +63,7 @@ public class RoleController {
     @EnableWebLogAspect
     public Role get(@QueryParam("id") @RequestParam("id") String id) {
         Role role = roleService.get(id);
-        if (role == null) {
-            logger.error("role[{}] is not found", id);
-            throw new NotFoundException("角色不存在");
-        }
+        if (role == null) throw new NotFoundException("角色不存在");
         return role;
     }
 
@@ -232,7 +225,8 @@ public class RoleController {
     public Pager<ViewRole> search(@BeanParam RoleSearchRequest searchRequest) {
         User currentUser = ContextManager.getUser();
         assert currentUser != null;
-        searchRequest.appIds = currentUser.superAdmin ? null : ContextManager.getFollowApps();
+        searchRequest.appIds = currentUser.superAdmin || searchRequest.ignoreCheck ?
+                null : ContextManager.getFollowApps();
         Pager<Role> pager = roleService.search(searchRequest);
         Pager<ViewRole> viewPager = new Pager<>();
         viewPager.current = pager.size;

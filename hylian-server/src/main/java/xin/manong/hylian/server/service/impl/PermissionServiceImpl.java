@@ -21,7 +21,6 @@ import xin.manong.hylian.server.util.ModelValidator;
 
 import javax.annotation.Resource;
 import javax.ws.rs.BadRequestException;
-import javax.ws.rs.NotFoundException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -46,10 +45,7 @@ public class PermissionServiceImpl implements PermissionService {
 
     @Override
     public Permission get(String id) {
-        if (StringUtils.isEmpty(id)) {
-            logger.error("permission id is empty for getting");
-            throw new BadRequestException("权限ID为空");
-        }
+        if (StringUtils.isEmpty(id)) throw new BadRequestException("权限ID为空");
         return permissionMapper.selectById(id);
     }
 
@@ -84,31 +80,21 @@ public class PermissionServiceImpl implements PermissionService {
 
     @Override
     public boolean update(Permission permission) {
-        if (permissionMapper.selectById(permission.id) == null) {
-            logger.error("permission is not found for id[{}]", permission.id);
-            throw new NotFoundException("权限不存在");
-        }
         beforeAddUpdate(permission);
         return permissionMapper.updateById(permission) > 0;
     }
 
     @Override
     public boolean delete(String id) {
-        if (StringUtils.isEmpty(id)) {
-            logger.error("permission id is empty for deleting");
-            throw new BadRequestException("权限ID为空");
-        }
-        boolean result = permissionMapper.deleteById(id) > 0;
-        if (result) rolePermissionService.deleteByPermission(id);
-        return result;
+        if (StringUtils.isEmpty(id)) throw new BadRequestException("权限ID为空");
+        boolean success = permissionMapper.deleteById(id) > 0;
+        if (success) rolePermissionService.deleteByPermission(id);
+        return success;
     }
 
     @Override
     public void deleteByApp(String appId) {
-        if (StringUtils.isEmpty(appId)) {
-            logger.error("app id is empty");
-            throw new BadRequestException("应用ID为空");
-        }
+        if (StringUtils.isEmpty(appId)) throw new BadRequestException("应用ID为空");
         LambdaQueryWrapper<Permission> query = new LambdaQueryWrapper<>();
         query.eq(Permission::getAppId, appId);
         int n = permissionMapper.delete(query);
@@ -144,10 +130,6 @@ public class PermissionServiceImpl implements PermissionService {
             wrapper.or().eq(Permission::getName, permission.name);
         });
         if (StringUtils.isNotEmpty(permission.id)) query.ne(Permission::getId, permission.id);
-        if (permissionMapper.selectCount(query) > 0) {
-            logger.error("permission has existed for the same name[{}] or path[{}]",
-                    permission.name, permission.path);
-            throw new IllegalStateException("权限已存在");
-        }
+        if (permissionMapper.selectCount(query) > 0) throw new IllegalStateException("权限已存在");
     }
 }

@@ -96,6 +96,14 @@ public class User extends BaseModel {
     public boolean superAdmin;
 
     /**
+     * 租户信息
+     */
+    @JSONField(name = "tenant")
+    @JsonProperty("tenant")
+    @TableField(exist = false)
+    public Tenant tenant;
+
+    /**
      * 检测用户有效性
      * 无效抛出异常
      */

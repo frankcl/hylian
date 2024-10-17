@@ -30,7 +30,6 @@ import java.util.stream.Collectors;
  * @author frankcl
  * @date 2024-01-04 16:03:31
  */
-@SuppressWarnings("unchecked")
 @Component
 public class UserServiceSupport {
 

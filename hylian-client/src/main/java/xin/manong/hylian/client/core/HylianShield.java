@@ -64,9 +64,7 @@ public class HylianShield {
         }
         String token = SessionUtils.getToken(httpRequest);
         if (StringUtils.isNotEmpty(token)) {
-            if (refreshUser(token, httpRequest) &&
-                    refreshTenant(token, httpRequest) &&
-                    refreshToken(token, httpRequest)) return true;
+            if (refreshUser(token, httpRequest) && refreshToken(token, httpRequest)) return true;
             logger.warn("token is expired");
         }
         SessionUtils.removeResources(httpRequest);
@@ -211,26 +209,6 @@ public class HylianShield {
         }
         SessionUtils.setUser(httpRequest, user);
         SessionUtils.removeRefreshUser(httpRequest);
-        return true;
-    }
-
-    /**
-     * 刷新session租户信息
-     *
-     * @param token 令牌
-     * @param httpRequest HTTP请求
-     * @return 成功返回true，否则返回false
-     */
-    private boolean refreshTenant(String token, HttpServletRequest httpRequest) {
-        boolean forceRefresh = SessionUtils.isRefreshTenant(httpRequest);
-        if (!forceRefresh && SessionUtils.getTenant(httpRequest) != null) return true;
-        Tenant tenant = getTenant(token);
-        if (tenant == null) {
-            logger.error("get tenant failed for token[{}]", token);
-            return false;
-        }
-        SessionUtils.setTenant(httpRequest, tenant);
-        SessionUtils.removeRefreshTenant(httpRequest);
         return true;
     }
 

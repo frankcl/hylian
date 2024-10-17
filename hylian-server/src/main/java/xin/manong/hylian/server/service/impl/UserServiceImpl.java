@@ -73,10 +73,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User get(String id) {
-        if (StringUtils.isEmpty(id)) {
-            logger.error("user id is empty for getting");
-            throw new BadRequestException("用户ID为空");
-        }
+        if (StringUtils.isEmpty(id)) throw new BadRequestException("用户ID为空");
         return userMapper.selectById(id);
     }
 
@@ -105,10 +102,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User getByUserName(String username) {
-        if (StringUtils.isEmpty(username)) {
-            logger.error("username is empty");
-            throw new BadRequestException("用户名为空");
-        }
+        if (StringUtils.isEmpty(username)) throw new BadRequestException("用户名为空");
         UserSearchRequest searchRequest = new UserSearchRequest();
         searchRequest.current = 1;
         searchRequest.size = 1;
@@ -120,16 +114,10 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public boolean add(User user) {
-        if (tenantService.get(user.tenantId) == null) {
-            logger.error("tenant[{}] is not found", user.tenantId);
-            throw new NotFoundException("租户不存在");
-        }
+        if (tenantService.get(user.tenantId) == null) throw new NotFoundException("租户不存在");
         LambdaQueryWrapper<User> query = new LambdaQueryWrapper<>();
         query.eq(User::getId, user.id).or().eq(User::getUsername, user.username);
-        if (userMapper.selectCount(query) > 0) {
-            logger.error("user has existed for the same id[{}] or username[{}]", user.id, user.username);
-            throw new IllegalStateException("用户已存在");
-        }
+        if (userMapper.selectCount(query) > 0) throw new IllegalStateException("用户名已存在");
         user.password = DigestUtils.md5Hex(user.password.trim());
         saveAvatar(user);
         return userMapper.insert(user) > 0;
@@ -137,14 +125,15 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public boolean update(User user) {
-        User prevUser = userMapper.selectById(user.id);
-        if (prevUser == null) {
-            logger.error("user is not found for id[{}]", user.id);
-            throw new NotFoundException("用户不存在");
+        if (user.username != null) {
+            LambdaQueryWrapper<User> query = new LambdaQueryWrapper<>();
+            query.ne(User::getId, user.id).eq(User::getUsername, user.username);
+            if (userMapper.selectCount(query) > 0) throw new BadRequestException("用户名已存在");
         }
+        User prevUser = userMapper.selectById(user.id);
+        if (prevUser == null) throw new NotFoundException("用户不存在");
         avatarNeedUpdate(user, prevUser);
         saveAvatar(user);
-        user.username = null;
         if (user.password != null) user.password = DigestUtils.md5Hex(user.password);
         boolean result = userMapper.updateById(user) > 0;
         if (StringUtils.isNotEmpty(user.avatar) && result) deleteAvatar(prevUser);
@@ -155,23 +144,17 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public boolean delete(String id) {
-        if (StringUtils.isEmpty(id)) {
-            logger.error("user id is empty for deleting");
-            throw new BadRequestException("用户ID为空");
-        }
+        if (StringUtils.isEmpty(id)) throw new BadRequestException("用户ID为空");
         User user = get(id);
-        if (user == null) {
-            logger.error("user[{}] is not found for deleting", id);
-            throw new IllegalStateException("用户不存在");
-        }
-        boolean result = userMapper.deleteById(id) > 0;
-        if (result) {
+        if (user == null) throw new NotFoundException("用户不存在");
+        boolean success = userMapper.deleteById(id) > 0;
+        if (success) {
             userRoleService.deleteByUser(id);
             appUserService.deleteByUser(id);
             deleteAvatar(user);
             removeUserProfile(user);
         }
-        return result;
+        return success;
     }
 
     @Override
@@ -255,6 +238,7 @@ public class UserServiceImpl implements UserService {
             logger.error("transfer avatar failed");
             throw new InternalServerErrorException("转存头像失败");
         }
+        ossClient.deleteObject(ossMeta.bucket, ossMeta.key);
         user.avatar = OSSClient.buildURL(new OSSMeta(serverConfig.ossRegion, serverConfig.ossBucket, ossKey));
     }
 

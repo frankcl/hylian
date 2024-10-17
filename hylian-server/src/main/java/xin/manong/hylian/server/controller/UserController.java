@@ -82,10 +82,7 @@ public class UserController {
     @EnableWebLogAspect
     public ViewUser get(@QueryParam("id") @RequestParam("id") String id) {
         User user = userService.get(id);
-        if (user == null) {
-            logger.error("user[{}] is not found", id);
-            throw new NotFoundException("用户不存在");
-        }
+        if (user == null) throw new NotFoundException("用户不存在");
         return fillAndConvertUser(user);
     }
 
@@ -138,13 +135,9 @@ public class UserController {
         User user = Converter.convert(userUpdateRequest);
         if (!StringUtils.isEmpty(user.tenantId)) {
             Tenant tenant = tenantService.get(user.tenantId);
-            if (tenant == null) {
-                logger.error("tenant[{}] is not found for updating", user.tenantId);
-                throw new NotFoundException("租户不存在");
-            }
+            if (tenant == null) throw new NotFoundException("租户不存在");
         }
         SessionUtils.setRefreshUser(httpRequest);
-        SessionUtils.setRefreshTenant(httpRequest);
         return userService.update(user);
     }
 
@@ -290,8 +283,8 @@ public class UserController {
     @EnableWebLogAspect
     public ViewUser getCurrentUser() {
         User user = ContextManager.getUser();
-        Tenant tenant = ContextManager.getTenant();
-        ViewTenant viewTenant = Converter.convert(tenant);
+        assert user != null && user.tenant != null;
+        ViewTenant viewTenant = Converter.convert(user.tenant);
         signAvatar(user);
         return Converter.convert(user, viewTenant);
     }
@@ -342,7 +335,6 @@ public class UserController {
                 Constants.TEMP_AVATAR_DIR, RandomID.build());
         if (StringUtils.isNotEmpty(suffix)) ossKey = String.format("%s.%s", ossKey, suffix);
         if (!ossClient.putObject(serverConfig.ossBucket, ossKey, fileInputStream)) {
-            logger.error("upload avatar failed");
             throw new IllegalStateException("上传头像失败");
         }
         return ossClient.sign(serverConfig.ossBucket, ossKey);
@@ -356,10 +348,7 @@ public class UserController {
      */
     private ViewUser fillAndConvertUser(User user) {
         Tenant tenant = tenantService.get(user.tenantId);
-        if (tenant == null) {
-            logger.error("tenant[{}] is not found", user.tenantId);
-            throw new NotFoundException("租户不存在");
-        }
+        if (tenant == null) throw new NotFoundException("租户不存在");
         ViewTenant viewTenant = Converter.convert(tenant);
         signAvatar(user);
         return Converter.convert(user, viewTenant);

@@ -23,7 +23,6 @@ import xin.manong.hylian.server.util.ModelValidator;
 
 import javax.annotation.Resource;
 import javax.ws.rs.BadRequestException;
-import javax.ws.rs.NotFoundException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -51,10 +50,7 @@ public class RoleServiceImpl implements RoleService {
 
     @Override
     public Role get(String id) {
-        if (StringUtils.isEmpty(id)) {
-            logger.error("role id is empty for getting");
-            throw new BadRequestException("角色ID为空");
-        }
+        if (StringUtils.isEmpty(id)) throw new BadRequestException("角色ID为空");
         return roleMapper.selectById(id);
     }
 
@@ -89,10 +85,6 @@ public class RoleServiceImpl implements RoleService {
 
     @Override
     public boolean update(Role role) {
-        if (roleMapper.selectById(role.id) == null) {
-            logger.error("role is not found for id[{}]", role.id);
-            throw new NotFoundException("角色不存在");
-        }
         beforeAddUpdate(role);
         return roleMapper.updateById(role) > 0;
     }
@@ -100,24 +92,18 @@ public class RoleServiceImpl implements RoleService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public boolean delete(String id) {
-        if (StringUtils.isEmpty(id)) {
-            logger.error("role id is empty for deleting");
-            throw new BadRequestException("角色ID为空");
-        }
-        boolean result = roleMapper.deleteById(id) > 0;
-        if (result) {
+        if (StringUtils.isEmpty(id)) throw new BadRequestException("角色ID为空");
+        boolean success = roleMapper.deleteById(id) > 0;
+        if (success) {
             userRoleService.deleteByRole(id);
             rolePermissionService.deleteByRole(id);
         }
-        return result;
+        return success;
     }
 
     @Override
     public void deleteByApp(String appId) {
-        if (StringUtils.isEmpty(appId)) {
-            logger.error("app id is empty");
-            throw new BadRequestException("应用ID为空");
-        }
+        if (StringUtils.isEmpty(appId)) throw new BadRequestException("应用ID为空");
         LambdaQueryWrapper<Role> query = new LambdaQueryWrapper<>();
         query.eq(Role::getAppId, appId);
         int n = roleMapper.delete(query);
@@ -149,7 +135,7 @@ public class RoleServiceImpl implements RoleService {
         query.eq(Role::getAppId, role.appId).eq(Role::getName, role.name);
         if (StringUtils.isNotEmpty(role.id)) query.ne(Role::getId, role.id);
         if (roleMapper.selectCount(query) > 0) {
-            logger.error("role has existed for the same name[{}]", role.name);
+            logger.error("role existed for name[{}]", role.name);
             throw new IllegalStateException("角色已存在");
         }
     }

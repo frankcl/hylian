@@ -42,6 +42,12 @@ public class UserUpdateRequest implements Serializable {
     public String name;
 
     /**
+     * 用户名
+     */
+    @JsonProperty("username")
+    public String username;
+
+    /**
      * 租户ID
      */
     @JsonProperty("tenant_id")
@@ -69,7 +75,8 @@ public class UserUpdateRequest implements Serializable {
             throw new BadRequestException("用户ID为空");
         }
         if (StringUtils.isEmpty(name) && StringUtils.isEmpty(tenantId) &&
-                StringUtils.isEmpty(avatar) && disabled == null) {
+                StringUtils.isEmpty(username) && StringUtils.isEmpty(avatar) &&
+                disabled == null) {
             logger.error("user info is empty");
             throw new BadRequestException("用户信息为空");
         }

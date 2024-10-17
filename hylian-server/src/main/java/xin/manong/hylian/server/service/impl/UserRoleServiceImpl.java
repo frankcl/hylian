@@ -54,10 +54,7 @@ public class UserRoleServiceImpl implements UserRoleService {
     public boolean add(UserRole userRole) {
         LambdaQueryWrapper<UserRole> query = new LambdaQueryWrapper<>();
         query.eq(UserRole::getUserId, userRole.userId).eq(UserRole::getRoleId, userRole.roleId);
-        if (userRoleMapper.selectCount(query) > 0) {
-            logger.error("user role has existed for user id[{}] and role id[{}]", userRole.userId, userRole.roleId);
-            throw new IllegalStateException("用户角色关系已存在");
-        }
+        if (userRoleMapper.selectCount(query) > 0) throw new IllegalStateException("用户角色关系已存在");
         return userRoleMapper.insert(userRole) > 0;
     }
 

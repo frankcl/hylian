@@ -44,10 +44,7 @@ public class TenantServiceImpl implements TenantService {
 
     @Override
     public Tenant get(String id) {
-        if (StringUtils.isEmpty(id)) {
-            logger.error("tenant id is empty for getting");
-            throw new BadRequestException("租户ID为空");
-        }
+        if (StringUtils.isEmpty(id)) throw new BadRequestException("租户ID为空");
         return tenantMapper.selectById(id);
     }
 
@@ -56,46 +53,34 @@ public class TenantServiceImpl implements TenantService {
         LambdaQueryWrapper<Tenant> query = new LambdaQueryWrapper<>();
         query.eq(Tenant::getId, tenant.id);
         query.or(wrapper -> wrapper.eq(Tenant::getName, tenant.name));
-        if (tenantMapper.selectCount(query) > 0) {
-            logger.error("the same name tenant has existed for adding");
-            throw new IllegalStateException("租户已存在");
-        }
+        if (tenantMapper.selectCount(query) > 0) throw new IllegalStateException("租户已存在");
         return tenantMapper.insert(tenant) > 0;
     }
 
     @Override
     public boolean update(Tenant tenant) {
         Tenant prevTenant = tenantMapper.selectById(tenant.id);
-        if (prevTenant == null) {
-            logger.error("tenant is not found for id[{}]", tenant.id);
-            throw new NotFoundException("租户不存在");
-        }
+        if (prevTenant == null) throw new NotFoundException("租户不存在");
         if (StringUtils.isEmpty(tenant.name)) tenant.name = null;
         String name = tenant.name != null && !tenant.name.equals(prevTenant.name) ?
                 tenant.name : prevTenant.name;
         if (!name.equals(prevTenant.name)) {
             LambdaQueryWrapper<Tenant> query = new LambdaQueryWrapper<>();
             query.eq(Tenant::getName, name);
-            if (tenantMapper.selectCount(query) > 0) {
-                logger.error("the same name tenant has existed for updating");
-                throw new IllegalStateException("租户已存在");
-            }
+            if (tenantMapper.selectCount(query) > 0) throw new IllegalStateException("租户已存在");
         }
         return tenantMapper.updateById(tenant) > 0;
     }
 
     @Override
     public boolean delete(String id) {
-        if (StringUtils.isEmpty(id)) {
-            logger.error("tenant id is empty for deleting");
-            throw new BadRequestException("租户ID为空");
-        }
+        if (StringUtils.isEmpty(id)) throw new BadRequestException("租户ID为空");
         UserSearchRequest searchRequest = new UserSearchRequest();
         searchRequest.tenantId = id;
         Pager<User> pager = userService.search(searchRequest);
         if (pager != null && pager.total > 0) {
             logger.error("users are found for tenant[{}], not allowed to be deleted", id);
-            throw new IllegalStateException(String.format("租户尚存%d用户", pager.total));
+            throw new IllegalStateException("该租户下存在用户，不能删除");
         }
         return tenantMapper.deleteById(id) > 0;
     }

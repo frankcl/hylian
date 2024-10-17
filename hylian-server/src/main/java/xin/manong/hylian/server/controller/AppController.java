@@ -2,8 +2,6 @@ package xin.manong.hylian.server.controller;
 
 import com.google.common.collect.Sets;
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import xin.manong.hylian.client.core.ContextManager;
@@ -46,8 +44,6 @@ import java.util.stream.Collectors;
 @RequestMapping("api/app")
 public class AppController {
 
-    private static final Logger logger = LoggerFactory.getLogger(AppController.class);
-
     private static final int APP_SECRET_LEN = 8;
 
     @Resource
@@ -67,15 +63,9 @@ public class AppController {
     @GetMapping("get")
     @EnableWebLogAspect
     public App get(@QueryParam("id") @RequestParam("id") String id) {
-        if (StringUtils.isEmpty(id)) {
-            logger.error("app id is empty for getting");
-            throw new BadRequestException("应用ID为空");
-        }
+        if (StringUtils.isEmpty(id)) throw new BadRequestException("应用ID为空");
         App app = appService.get(id);
-        if (app == null) {
-            logger.error("app[{}] is not found", id);
-            throw new NotFoundException("应用不存在");
-        }
+        if (app == null) throw new NotFoundException("应用不存在");
         return app;
     }
 

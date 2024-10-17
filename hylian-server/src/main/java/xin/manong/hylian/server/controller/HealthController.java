@@ -32,6 +32,6 @@ public class HealthController {
     @Path("check")
     @GetMapping("check")
     public String check() {
-        return "Hylian is ok";
+        return "server is ok";
     }
 }

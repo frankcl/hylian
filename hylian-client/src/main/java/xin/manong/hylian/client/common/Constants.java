@@ -33,7 +33,6 @@ public class Constants {
     public static final String SERVER_PATH_GET_APP_ROLE_PERMISSIONS = "api/security/getAppRolePermissions";
 
     public static final String CURRENT_USER = "__user__";
-    public static final String CURRENT_TENANT = "__tenant__";
     public static final String CURRENT_FOLLOW_APPS = "__follow_apps__";
 
     public static final String CHARSET_UTF8 = "UTF-8";

@@ -55,20 +55,13 @@ public class RolePermissionServiceImpl implements RolePermissionService {
         LambdaQueryWrapper<RolePermission> query = new LambdaQueryWrapper<>();
         query.eq(RolePermission::getRoleId, rolePermission.roleId).
                 eq(RolePermission::getPermissionId, rolePermission.permissionId);
-        if (rolePermissionMapper.selectCount(query) > 0) {
-            logger.error("role permission has existed for role id[{}] and permission id[{}]",
-                    rolePermission.roleId, rolePermission.permissionId);
-            throw new IllegalStateException("角色权限关系已存在");
-        }
+        if (rolePermissionMapper.selectCount(query) > 0) throw new IllegalStateException("角色权限关系已存在");
         return rolePermissionMapper.insert(rolePermission) > 0;
     }
 
     @Override
     public List<RolePermission> getByRoleId(String roleId) {
-        if (StringUtils.isEmpty(roleId)) {
-            logger.error("role id is empty for getting");
-            throw new BadRequestException("角色ID为空");
-        }
+        if (StringUtils.isEmpty(roleId)) throw new BadRequestException("角色ID为空");
         LambdaQueryWrapper<RolePermission> query = new LambdaQueryWrapper<>();
         query.eq(RolePermission::getRoleId, roleId);
         return rolePermissionMapper.selectList(query);
@@ -94,19 +87,13 @@ public class RolePermissionServiceImpl implements RolePermissionService {
 
     @Override
     public boolean delete(Long id) {
-        if (id == null) {
-            logger.error("role permission id is null");
-            throw new BadRequestException("角色权限关系ID为空");
-        }
+        if (id == null) throw new BadRequestException("角色权限关系ID为空");
         return rolePermissionMapper.deleteById(id) > 0;
     }
 
     @Override
     public void deleteByRole(String roleId) {
-        if (StringUtils.isEmpty(roleId)) {
-            logger.error("role id is empty");
-            throw new BadRequestException("角色ID为空");
-        }
+        if (StringUtils.isEmpty(roleId)) throw new BadRequestException("角色ID为空");
         LambdaQueryWrapper<RolePermission> query = new LambdaQueryWrapper<>();
         query.eq(RolePermission::getRoleId, roleId);
         int n = rolePermissionMapper.delete(query);
@@ -115,10 +102,7 @@ public class RolePermissionServiceImpl implements RolePermissionService {
 
     @Override
     public void deleteByPermission(String permissionId) {
-        if (StringUtils.isEmpty(permissionId)) {
-            logger.error("permission id is empty");
-            throw new BadRequestException("权限ID为空");
-        }
+        if (StringUtils.isEmpty(permissionId)) throw new BadRequestException("权限ID为空");
         LambdaQueryWrapper<RolePermission> query = new LambdaQueryWrapper<>();
         query.eq(RolePermission::getPermissionId, permissionId);
         int n = rolePermissionMapper.delete(query);
