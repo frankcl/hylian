@@ -211,6 +211,7 @@ public class AppController {
         assert currentUser != null;
         searchRequest.appIds = currentUser.superAdmin || searchRequest.ignoreCheck ?
                 null : ContextManager.getFollowApps();
-        return appService.search(searchRequest);
+        return searchRequest.appIds != null && searchRequest.appIds.isEmpty() ?
+                Pager.empty(searchRequest.current, searchRequest.size) : appService.search(searchRequest);
     }
 }

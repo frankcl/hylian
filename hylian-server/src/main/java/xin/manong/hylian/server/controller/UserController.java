@@ -13,7 +13,6 @@ import xin.manong.hylian.client.aspect.EnableACLAspect;
 import xin.manong.hylian.client.util.SessionUtils;
 import xin.manong.hylian.model.*;
 import xin.manong.hylian.server.aspect.EnableAppFollowAspect;
-import xin.manong.hylian.server.common.Constants;
 import xin.manong.hylian.server.config.ServerConfig;
 import xin.manong.hylian.server.controller.request.*;
 import xin.manong.hylian.server.controller.response.ViewTenant;
@@ -25,6 +24,7 @@ import xin.manong.hylian.server.service.UserRoleService;
 import xin.manong.hylian.server.service.UserService;
 import xin.manong.hylian.server.service.request.UserSearchRequest;
 import xin.manong.hylian.client.core.ContextManager;
+import xin.manong.hylian.server.util.AvatarUtils;
 import xin.manong.hylian.server.util.PermissionValidator;
 import xin.manong.weapon.aliyun.oss.OSSClient;
 import xin.manong.weapon.aliyun.oss.OSSMeta;
@@ -330,14 +330,7 @@ public class UserController {
     @Produces(MediaType.APPLICATION_JSON)
     public String uploadAvatar(@FormDataParam("file") FormDataContentDisposition fileDetail,
                                @FormDataParam("file") final InputStream fileInputStream) {
-        String suffix = FileUtil.getFileSuffix(fileDetail.getFileName());
-        String ossKey = String.format("%s%s%s", serverConfig.ossBaseDirectory,
-                Constants.TEMP_AVATAR_DIR, RandomID.build());
-        if (StringUtils.isNotEmpty(suffix)) ossKey = String.format("%s.%s", ossKey, suffix);
-        if (!ossClient.putObject(serverConfig.ossBucket, ossKey, fileInputStream)) {
-            throw new IllegalStateException("上传头像失败");
-        }
-        return ossClient.sign(serverConfig.ossBucket, ossKey);
+        return AvatarUtils.uploadAvatar(fileDetail, fileInputStream, ossClient, serverConfig);
     }
 
     /**

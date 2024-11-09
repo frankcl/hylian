@@ -227,7 +227,8 @@ public class RoleController {
         assert currentUser != null;
         searchRequest.appIds = currentUser.superAdmin || searchRequest.ignoreCheck ?
                 null : ContextManager.getFollowApps();
-        Pager<Role> pager = roleService.search(searchRequest);
+        Pager<Role> pager = searchRequest.appIds != null && searchRequest.appIds.isEmpty() ?
+                Pager.empty(searchRequest.current, searchRequest.size) : roleService.search(searchRequest);
         Pager<ViewRole> viewPager = new Pager<>();
         viewPager.current = pager.size;
         viewPager.size = pager.size;

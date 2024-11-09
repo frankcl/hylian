@@ -2,6 +2,7 @@ package xin.manong.hylian.server;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.web.servlet.ServletComponentScan;
 import xin.manong.hylian.client.annotation.EnableCORSFilter;
 import xin.manong.hylian.client.annotation.EnableHylianGuard;
 import xin.manong.hylian.client.aspect.EnableACLAspect;
@@ -22,6 +23,7 @@ import xin.manong.weapon.spring.web.ws.aspect.EnableWebLogAspect;
 @EnableHylianGuard
 @EnableACLAspect
 @EnableWebLogAspect
+@ServletComponentScan
 @SpringBootApplication(scanBasePackages = { "xin.manong.hylian.server" })
 public class Application {
 

@@ -27,22 +27,50 @@ public class HTTPExecutor {
     private static final HttpClient httpClient = new HttpClient();
 
     /**
+     * 检测HTTP响应是否失败
+     *
+     * @param httpRequest HTTP请求
+     * @param httpResponse HTTP响应
+     * @return 失败返回true，否则返回false
+     */
+    private static boolean failHttpResponse(HttpRequest httpRequest, Response httpResponse) {
+        if (httpResponse == null || !httpResponse.isSuccessful() || httpResponse.code() != HTTP_CODE_OK) {
+            logger.error("execute http request failed for url[{}], http code[{}]",
+                    httpRequest.requestURL, httpResponse == null ? -1 : httpResponse.code());
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * 执行HTTP请求，返回字节数组
+     *
+     * @param httpRequest HTTP请求
+     * @return 成功返回相应字节数组，否则返回null
+     */
+    public static byte[] executeRaw(HttpRequest httpRequest) {
+        try (Response httpResponse = httpClient.execute(httpRequest)) {
+            if (failHttpResponse(httpRequest, httpResponse)) return null;
+            assert httpResponse.body() != null;
+            return httpResponse.body().bytes();
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
+            return null;
+        }
+    }
+
+    /**
      * 执行HTTP请求
      *
      * @param httpRequest HTTP请求
      * @return 成功返回结果，否则返回null
      */
-    private static String execute(HttpRequest httpRequest) {
+    public static String execute(HttpRequest httpRequest) {
         try (Response httpResponse = httpClient.execute(httpRequest)) {
-            if (httpResponse == null || !httpResponse.isSuccessful() || httpResponse.code() != HTTP_CODE_OK) {
-                logger.error("execute http request failed for url[{}], http code[{}]",
-                        httpRequest.requestURL, httpResponse == null ? -1 : httpResponse.code());
-                return null;
-            }
+            if (failHttpResponse(httpRequest, httpResponse)) return null;
             assert httpResponse.body() != null;
             return httpResponse.body().string();
         } catch (Exception e) {
-            logger.error("exception occurred for url[{}]", httpRequest.requestURL);
             logger.error(e.getMessage(), e);
             return null;
         }

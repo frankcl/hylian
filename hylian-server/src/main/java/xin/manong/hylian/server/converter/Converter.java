@@ -7,6 +7,8 @@ import xin.manong.hylian.model.*;
 import xin.manong.hylian.server.controller.request.*;
 import xin.manong.hylian.server.controller.response.*;
 import xin.manong.hylian.server.model.Pager;
+import xin.manong.hylian.server.model.QRCode;
+import xin.manong.hylian.server.wechat.QRCodeUpdateRequest;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -235,6 +237,20 @@ public class Converter {
         permission.path = permissionRequest.path;
         permission.appId = permissionRequest.appId;
         return permission;
+    }
+
+    /**
+     * 转换小程序码更新请求为对象
+     *
+     * @param request 小程序码更新请求
+     * @return 更新对象
+     */
+    public static QRCode convert(QRCodeUpdateRequest request) {
+        if (request == null) return null;
+        QRCode qrCode = new QRCode();
+        qrCode.key = request.key;
+        qrCode.status = request.status;
+        return qrCode;
     }
 
     /**

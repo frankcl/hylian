@@ -23,6 +23,14 @@ public interface UserService {
     User get(String id);
 
     /**
+     * 根据微信UID获取用户信息
+     *
+     * @param wxUid 微信UID
+     * @return 成功返回用户信息，否则返回null
+     */
+    User getByWxUid(String wxUid);
+
+    /**
      * 批量获取用户
      *
      * @param ids 用户ID列表

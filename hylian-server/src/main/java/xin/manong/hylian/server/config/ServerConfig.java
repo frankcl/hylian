@@ -29,16 +29,31 @@ public class ServerConfig implements InitializingBean {
     public String defaultTenant;
     public JWTConfig jwtConfig;
 
+    /**
+     * 构建切面日志
+     *
+     * @return 切面日志实例
+     */
     @Bean(name = "webAspectLogger")
     public JSONLogger webAspectLogger() {
         return new JSONLogger(aspectLogFile, null);
     }
 
+    /**
+     * 构建清理器
+     *
+     * @return 清理器实例
+     */
     @Bean(initMethod = "start", destroyMethod = "stop")
     public Sweeper buildSweeper() {
         return new Sweeper();
     }
 
+    /**
+     * 构建HttpClient实例
+     *
+     * @return HttpClient实例
+     */
     @Bean
     public HttpClient buildHttpClient() {
         HttpClientConfig httpClientConfig = new HttpClientConfig();

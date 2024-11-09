@@ -1,6 +1,7 @@
 package xin.manong.hylian.model;
 
 import com.alibaba.fastjson.annotation.JSONField;
+import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
@@ -37,7 +38,7 @@ public class UserRole extends BaseModel {
     /**
      * 自增ID
      */
-    @TableId(value = "id")
+    @TableId(value = "id", type = IdType.AUTO)
     @JSONField(name = "id")
     @JsonProperty("id")
     public Long id;

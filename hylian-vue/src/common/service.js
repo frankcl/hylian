@@ -5,6 +5,23 @@ const HTTP_PUT = 'put'
 const HTTP_POST = 'post'
 const HTTP_DELETE = 'delete'
 
+export const asyncWechatLogin = async key => {
+  return await axios({
+    method: HTTP_GET,
+    url: '/api/wechat/login',
+    params: {
+      key: key
+    }
+  })
+}
+
+export const asyncGenerateQRCode = async () => {
+  return await axios({
+    method: HTTP_GET,
+    url: '/api/wechat/code/generate'
+  })
+}
+
 export const asyncSearchActivities = async request => {
   return await axios({
     method: HTTP_GET,

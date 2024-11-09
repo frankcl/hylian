@@ -3,6 +3,8 @@ package xin.manong.hylian.server.monitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import xin.manong.hylian.server.service.ActivityService;
+import xin.manong.hylian.server.service.QRCodeService;
+import xin.manong.hylian.server.websocket.QRCodeWebSocket;
 
 import javax.annotation.Resource;
 
@@ -24,6 +26,8 @@ public class Sweeper implements Runnable {
     private Thread runThread;
     @Resource
     protected ActivityService activityService;
+    @Resource
+    protected QRCodeService qrCodeService;
 
     /**
      * 启动清理
@@ -62,6 +66,10 @@ public class Sweeper implements Runnable {
                 Long maxUpdateTime = System.currentTimeMillis() - EXPIRED_INTERVAL_MS;
                 int n = activityService.removeExpires(maxUpdateTime);
                 logger.info("sweep {} expired activities", n);
+                Long before = System.currentTimeMillis() - 60000L;
+                QRCodeWebSocket.removeExpires(before);
+                n = qrCodeService.deleteExpires(before);
+                logger.info("sweep {} expired QRCodes", n);
                 Thread.sleep(CHECK_INTERVAL_MS);
             } catch (Exception e) {
                 logger.error(e.getMessage(), e);

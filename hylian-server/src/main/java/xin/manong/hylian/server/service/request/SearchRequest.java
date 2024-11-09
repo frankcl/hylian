@@ -3,6 +3,7 @@ package xin.manong.hylian.server.service.request;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import xin.manong.hylian.server.common.Constants;
 
 import javax.ws.rs.QueryParam;
 import java.io.Serializable;
@@ -22,13 +23,13 @@ public class SearchRequest implements Serializable {
      */
     @JsonProperty("current")
     @QueryParam("current")
-    public Integer current;
+    public Integer current = Constants.DEFAULT_CURRENT;
     /**
      * 分页大小，默认20
      */
     @JsonProperty("size")
     @QueryParam("size")
-    public Integer size;
+    public Integer size = Constants.DEFAULT_PAGE_SIZE;
     /**
      * 排序方式
      */

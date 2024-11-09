@@ -27,3 +27,4 @@ server:
       min: 8
       max: 200
     max-http-form-post-size: 1048576
+  address: 192.168.3.43

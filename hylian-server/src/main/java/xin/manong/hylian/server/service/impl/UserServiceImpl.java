@@ -78,6 +78,14 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public User getByWxUid(String wxUid) {
+        if (StringUtils.isEmpty(wxUid)) throw new BadRequestException("微信UID为空");
+        LambdaQueryWrapper<User> query = new LambdaQueryWrapper<>();
+        query.eq(User::getWxUid, wxUid);
+        return userMapper.selectOne(query);
+    }
+
+    @Override
     public List<User> batchGet(List<String> ids) {
         if (ids == null || ids.isEmpty()) return new ArrayList<>();
         List<User> users = Collections.synchronizedList(new ArrayList<>());
@@ -103,13 +111,9 @@ public class UserServiceImpl implements UserService {
     @Override
     public User getByUserName(String username) {
         if (StringUtils.isEmpty(username)) throw new BadRequestException("用户名为空");
-        UserSearchRequest searchRequest = new UserSearchRequest();
-        searchRequest.current = 1;
-        searchRequest.size = 1;
-        searchRequest.username = username;
-        Pager<User> pager = search(searchRequest);
-        if (pager == null || pager.total == 0 || pager.records.isEmpty()) return null;
-        return pager.records.get(0);
+        LambdaQueryWrapper<User> query = new LambdaQueryWrapper<>();
+        query.eq(User::getUsername, username);
+        return userMapper.selectOne(query);
     }
 
     @Override
@@ -118,6 +122,11 @@ public class UserServiceImpl implements UserService {
         LambdaQueryWrapper<User> query = new LambdaQueryWrapper<>();
         query.eq(User::getId, user.id).or().eq(User::getUsername, user.username);
         if (userMapper.selectCount(query) > 0) throw new IllegalStateException("用户名已存在");
+        if (StringUtils.isNotEmpty(user.wxUid)) {
+            query = new LambdaQueryWrapper<>();
+            query.eq(User::getWxUid, user.wxUid);
+            if (userMapper.selectCount(query) > 0) throw new IllegalStateException("微信用户已存在");
+        }
         user.password = DigestUtils.md5Hex(user.password.trim());
         saveAvatar(user);
         return userMapper.insert(user) > 0;

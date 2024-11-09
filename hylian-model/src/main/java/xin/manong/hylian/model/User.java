@@ -80,6 +80,14 @@ public class User extends BaseModel {
     public String avatar;
 
     /**
+     * 微信UID
+     */
+    @TableField(value = "wx_uid")
+    @JSONField(name = "wx_uid")
+    @JsonProperty("wx_uid")
+    public String wxUid;
+
+    /**
      * 是否禁用
      */
     @TableField(value = "disabled")

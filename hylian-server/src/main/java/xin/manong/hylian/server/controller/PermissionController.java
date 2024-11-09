@@ -162,7 +162,8 @@ public class PermissionController {
         assert currentUser != null;
         searchRequest.appIds = currentUser.superAdmin || searchRequest.ignoreCheck ?
                 null : ContextManager.getFollowApps();
-        Pager<Permission> pager = permissionService.search(searchRequest);
+        Pager<Permission> pager = searchRequest.appIds != null && searchRequest.appIds.isEmpty() ?
+                Pager.empty(searchRequest.current, searchRequest.size) : permissionService.search(searchRequest);
         Pager<ViewPermission> viewPager = new Pager<>();
         viewPager.current = pager.current;
         viewPager.size = pager.size;
