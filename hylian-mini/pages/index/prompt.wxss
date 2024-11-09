@@ -1,0 +1,13 @@
+/* pages/login/prompt.wxss */
+.prompt-image {
+  width: 100px;
+  height: 100px;
+  margin: 20px;
+}
+.prompt-text {
+  margin: 20px 0;
+  text-align: center;
+  color: #666666;
+  font-size: 20px;
+  font-weight: bold;
+}

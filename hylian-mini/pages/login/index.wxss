@@ -1,0 +1,48 @@
+/* pages/login/index.wxss */
+.logo {
+  width: 100px;
+  height: 100px;
+  margin-top: 20px;
+  margin-bottom: 40px;
+}
+.button-login {
+  margin-top: 40px;
+  padding: 10px;
+  background-color: #2d557c;
+  color: #ffffff;
+  font-size: 16px;
+}
+.userinfo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  color: #aaaaaa;
+  width: 80%;
+}
+.avatar-wrapper {
+  padding: 0;
+  width: 56px !important;
+  border-radius: 8px;
+  margin-top: 40px;
+  margin-bottom: 40px;
+}
+.avatar {
+  display: block;
+  width: 56px;
+  height: 56px;
+}
+.nickname-wrapper {
+  display: flex;
+  width: 100%;
+  padding: 16px;
+  box-sizing: border-box;
+  border-top: .5px solid rgba(0, 0, 0, 0.1);
+  border-bottom: .5px solid rgba(0, 0, 0, 0.1);
+  color: black;
+}
+.nickname-label {
+  width: 105px;
+}
+.nickname-input {
+  flex: 1;
+}
