@@ -23,7 +23,25 @@ export const isJsonStr = str => {
   }
 }
 
-export const copyToClipboard = async text => await navigator.clipboard.writeText(text)
+export const copyToClipboard = async text => {
+  if (navigator.clipboard && window.isSecureContext) {
+    await navigator.clipboard.writeText(text)
+    return
+  }
+  const inputElement = document.createElement('input')
+  inputElement.style.position = 'fixed'
+  inputElement.style.top = '-10000px'
+  inputElement.style.zIndex = '-999'
+  document.body.appendChild(inputElement)
+  inputElement.value = text
+  inputElement.focus()
+  inputElement.select()
+  try {
+    document.execCommand('copy')
+  } finally {
+    document.body.removeChild(inputElement)
+  }
+}
 
 export const searchQueryToRequest = query => {
   const request = {

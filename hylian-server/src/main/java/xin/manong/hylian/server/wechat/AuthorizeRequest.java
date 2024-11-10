@@ -30,7 +30,7 @@ public class AuthorizeRequest implements Serializable {
     private static final Logger logger = LoggerFactory.getLogger(AuthorizeRequest.class);
 
     /**
-     * 微信小程序code
+     * 微信小程序授权码
      */
     @JsonProperty("code")
     public String code;

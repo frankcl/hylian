@@ -8,7 +8,6 @@ import lombok.experimental.Accessors;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import xin.manong.hylian.server.model.QRCode;
 
 import javax.ws.rs.BadRequestException;
 import javax.xml.bind.annotation.XmlAccessType;
@@ -16,7 +15,7 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import java.io.Serializable;
 
 /**
- * 小程序码更新请求
+ * 微信账号绑定请求
  *
  * @author frankcl
  * @date 2024-10-16 16:29:29
@@ -26,34 +25,34 @@ import java.io.Serializable;
 @Accessors(chain = true)
 @XmlAccessorType(XmlAccessType.FIELD)
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class QRCodeUpdateRequest implements Serializable {
+public class UserBindRequest implements Serializable {
 
-    private static final Logger logger = LoggerFactory.getLogger(QRCodeUpdateRequest.class);
+    private static final Logger logger = LoggerFactory.getLogger(UserBindRequest.class);
 
     /**
-     * 小程序码key
+     * 微信小程序授权码
+     */
+    @JsonProperty("code")
+    public String code;
+
+    /**
+     * 微信小程序码key
      */
     @JsonProperty("key")
     public String key;
-
-    /**
-     * 状态
-     */
-    @JsonProperty("status")
-    public Integer status;
 
     /**
      * 检测有效性
      * 无效信息抛出异常
      */
     public void check() {
+        if (StringUtils.isEmpty(code)) {
+            logger.error("code is empty");
+            throw new BadRequestException("微信小程序凭证code为空");
+        }
         if (StringUtils.isEmpty(key)) {
             logger.error("key is empty");
-            throw new BadRequestException("小程序码key为空");
-        }
-        if (status == null || status < QRCode.STATUS_ERROR || status > QRCode.STATUS_BIND) {
-            logger.error("status is invalid");
-            throw new BadRequestException("小程序码状态非法");
+            throw new BadRequestException("微信小程序码key为空");
         }
     }
 }

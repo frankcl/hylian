@@ -7,6 +7,7 @@ export const useUserStore = defineStore(
     const id = ref()
     const username = ref()
     const name = ref()
+    const openid = ref()
     const avatar = ref()
     const tenant = ref()
     const superAdmin = ref()
@@ -20,6 +21,7 @@ export const useUserStore = defineStore(
       username.value = user.username
       name.value = user.name
       avatar.value = user.avatar
+      openid.value = user.wx_openid
       superAdmin.value = user.super_admin
       tenant.value = user.tenant
       roles.value = user.roles
@@ -30,12 +32,13 @@ export const useUserStore = defineStore(
       username.value = undefined
       name.value = undefined
       avatar.value = undefined
+      openid.value = undefined
       superAdmin.value = undefined
       tenant.value = undefined
       roles.value = undefined
     }
 
-    return { id, username, name, avatar, superAdmin, tenant, roles, injected, inject, clear }
+    return { id, username, name, openid, avatar, superAdmin, tenant, roles, injected, inject, clear }
   },
   {
     persist: {

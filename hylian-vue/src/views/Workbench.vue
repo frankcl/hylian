@@ -6,19 +6,29 @@ import {
   ElFooter, ElHeader, ElIcon, ElMain, ElMenu, ElMenuItem, ElRow, ElSubMenu
 } from 'element-plus'
 import { useUserStore } from '@/store'
-import { logout } from '@/common/assortment'
+import { asyncUnbind } from '@/common/service'
+import { logout, refreshUser, submitForm } from '@/common/assortment'
 import UserProfile from '@/components/user/UserProfile'
 import UpdatePassword from '@/views/user/UpdatePassword'
+import BindUser from '@/views/user/BindUser'
 import EditUser from '@/views/user/EditUser'
 
 const userStore = useUserStore()
 const openEditDialog = ref(false)
 const openPasswordDialog = ref(false)
+const openBindDialog = ref(false)
 
-const handleCommand = command => {
+const handleCommand = async command => {
   if (command === 'edit') openEditDialog.value = true
   else if (command === 'password') openPasswordDialog.value = true
-  else if (command === 'logout') logout()
+  else if (command === 'bind') openBindDialog.value = true
+  else if (command === 'logout') await logout()
+  else if (command === 'unbind') {
+    if (await submitForm(undefined, { id: userStore.id }, asyncUnbind,
+      '解绑微信账号成功', '解绑微信账号失败')) {
+      await refreshUser(true)
+    }
+  }
 }
 </script>
 
@@ -27,6 +37,7 @@ const handleCommand = command => {
     <el-header class="workbench-header">
       <update-password v-model="openPasswordDialog" @close="openPasswordDialog = false"></update-password>
       <edit-user v-model="openEditDialog" :id="userStore.id" @close="openEditDialog = false"></edit-user>
+      <bind-user v-model="openBindDialog" :id="userStore.id" @close="openBindDialog = false"></bind-user>
       <el-row style="margin-top: 5px" align="middle" justify="end">
         <user-profile></user-profile>&nbsp;&nbsp;
         <el-dropdown trigger="click" @command="handleCommand">
@@ -38,6 +49,8 @@ const handleCommand = command => {
             <el-dropdown-menu>
               <el-dropdown-item command="edit">编辑用户</el-dropdown-item>
               <el-dropdown-item command="password">修改密码</el-dropdown-item>
+              <el-dropdown-item v-if="userStore.openid" command="unbind">解绑微信</el-dropdown-item>
+              <el-dropdown-item v-else command="bind">绑定微信</el-dropdown-item>
               <el-dropdown-item command="logout">退出系统</el-dropdown-item>
             </el-dropdown-menu>
           </template>

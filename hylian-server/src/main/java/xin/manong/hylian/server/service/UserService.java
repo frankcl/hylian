@@ -25,10 +25,10 @@ public interface UserService {
     /**
      * 根据微信UID获取用户信息
      *
-     * @param wxUid 微信UID
+     * @param wxOpenid 微信小程序openid
      * @return 成功返回用户信息，否则返回null
      */
-    User getByWxUid(String wxUid);
+    User getByWxOpenid(String wxOpenid);
 
     /**
      * 批量获取用户

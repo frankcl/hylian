@@ -40,7 +40,7 @@ watch(() => [props.id, appId.value], async() => {
 </script>
 
 <template>
-  <el-dialog v-model="model" @close="emits('close')" align-center show-close>
+  <el-dialog v-model="model" @close="emits('close')" width="650" align-center show-close>
     <el-row>
       <el-breadcrumb :separator-icon="ArrowRight">
         <el-breadcrumb-item>账号管理</el-breadcrumb-item>

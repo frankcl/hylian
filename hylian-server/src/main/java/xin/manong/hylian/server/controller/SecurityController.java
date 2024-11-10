@@ -386,8 +386,25 @@ public class SecurityController {
         User user = Converter.convert(request);
         user.id = RandomID.build();
         user.tenantId = serverConfig.defaultTenant;
+        user.registerMode = User.REGISTER_MODE_NORMAL;
         user.check();
         return userService.add(user);
+    }
+
+    /**
+     * 强制刷新session用户信息
+     *
+     * @param httpRequest HTTP请求
+     * @return 成功返回true，否则返回false
+     */
+    @POST
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("forceRefresh")
+    @PostMapping("forceRefresh")
+    @EnableWebLogAspect
+    public boolean forceRefresh(@Context HttpServletRequest httpRequest) {
+        SessionUtils.setRefreshUser(httpRequest);
+        return true;
     }
 
     /**

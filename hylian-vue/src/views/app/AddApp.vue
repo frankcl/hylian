@@ -39,7 +39,7 @@ const submit = async formEl => {
 </script>
 
 <template>
-  <el-dialog v-model="model" @close="emits('close')" align-center show-close>
+  <el-dialog v-model="model" @close="emits('close')" width="480" align-center show-close>
     <el-row>
       <el-breadcrumb :separator-icon="ArrowRight">
         <el-breadcrumb-item>应用管理</el-breadcrumb-item>
@@ -55,10 +55,11 @@ const submit = async formEl => {
         <el-col :span="18">
           <el-input v-model.trim="appForm.secret" clearable></el-input>
         </el-col>
-        <el-col :span="6">
+        <el-col :span="1"></el-col>
+        <el-col :span="5">
           <el-row justify="end">
             <el-button @click="refreshAppSecret(appForm)">
-              自动生成秘钥&nbsp;
+              刷新&nbsp;
               <el-icon><Refresh /></el-icon>
             </el-button>
           </el-row>

@@ -31,6 +31,9 @@ public class User extends BaseModel {
 
     private static final Logger logger = LoggerFactory.getLogger(User.class);
 
+    public static final int REGISTER_MODE_NORMAL = 0;
+    public static final int REGISTER_MODE_WECHAT = 1;
+
     /**
      * 用户ID
      */
@@ -82,10 +85,10 @@ public class User extends BaseModel {
     /**
      * 微信UID
      */
-    @TableField(value = "wx_uid")
-    @JSONField(name = "wx_uid")
-    @JsonProperty("wx_uid")
-    public String wxUid;
+    @TableField(value = "wx_openid")
+    @JSONField(name = "wx_openid")
+    @JsonProperty("wx_openid")
+    public String wxOpenid;
 
     /**
      * 是否禁用
@@ -94,6 +97,16 @@ public class User extends BaseModel {
     @JSONField(name = "disabled")
     @JsonProperty("disabled")
     public Boolean disabled;
+
+    /**
+     * 注册方式
+     * 普通注册：0
+     * 微信注册：1
+     */
+    @TableField(value = "register_mode")
+    @JSONField(name = "register_mode")
+    @JsonProperty("register_mode")
+    public Integer registerMode;
 
     /**
      * 是否为超级管理员

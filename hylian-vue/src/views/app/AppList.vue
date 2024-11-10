@@ -140,7 +140,7 @@ watch(query, () => search(), { immediate: true })
         <el-icon v-if="copyContent === `name#${scope.row.id}`"><document-copy></document-copy></el-icon>
         <el-popover v-else content="点击复制">
           <template #reference>
-            <el-icon @click="copyValue('name', scope.row.name, scope.row.id)">
+            <el-icon @click="copyValue('name', scope.row.id, scope.row.id)">
               <copy-document></copy-document>
             </el-icon>
           </template>

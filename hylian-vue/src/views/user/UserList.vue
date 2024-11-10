@@ -4,7 +4,7 @@ import { reactive, ref, useTemplateRef, watch } from 'vue'
 import { ArrowRight, Timer } from '@element-plus/icons-vue'
 import {
   ElBreadcrumb, ElBreadcrumbItem, ElButton, ElCol, ElForm, ElFormItem, ElIcon,
-  ElPagination, ElRadioButton, ElRadioGroup, ElRow, ElSwitch, ElTable, ElTableColumn
+  ElPagination, ElRadio, ElRadioButton, ElRadioGroup, ElRow, ElSwitch, ElTable, ElTableColumn
 } from 'element-plus'
 import { useUserStore } from '@/store'
 import {
@@ -36,6 +36,8 @@ const query = reactive({
   current: 1,
   size: 20,
   disabled: 'all',
+  bind_wechat: 'all',
+  register_mode: -1,
   user_id: null,
   tenant_id: null,
   sort_field: null,
@@ -47,6 +49,8 @@ const search = async () => {
   if (query.user_id) request.ids = JSON.stringify([query.user_id])
   if (query.tenant_id) request.tenant_id = query.tenant_id
   if (query.disabled !== 'all') request.disabled = query.disabled
+  if (query.bind_wechat !== 'all') request.bind_wechat = query.bind_wechat
+  if (query.register_mode !== -1) request.register_mode = query.register_mode
   const pager = await asyncSearchUsers(request)
   total.value = pager.total
   users.value = pager.records
@@ -116,6 +120,20 @@ watch(query, () => search(), { immediate: true })
           <el-radio-button :value="true" label="禁用"></el-radio-button>
         </el-radio-group>
       </el-form-item>
+      <el-form-item label="微信账号" prop="bind_wechat">
+        <el-radio-group v-model="query.bind_wechat">
+          <el-radio-button value="all" label="全部"></el-radio-button>
+          <el-radio-button :value="false" label="未绑定"></el-radio-button>
+          <el-radio-button :value="true" label="已绑定"></el-radio-button>
+        </el-radio-group>
+      </el-form-item>
+      <el-form-item label="注册方式" prop="register_mode">
+        <el-radio-group v-model="query.register_mode">
+          <el-radio :value="-1" label="全部"></el-radio>
+          <el-radio :value="0" label="普通"></el-radio>
+          <el-radio :value="1" label="微信"></el-radio>
+        </el-radio-group>
+      </el-form-item>
       <el-form-item label="租户选择" prop="tenant_id">
         <tenant-select v-model="query.tenant_id" placeholder="全部"></tenant-select>
       </el-form-item>
@@ -142,7 +160,7 @@ watch(query, () => search(), { immediate: true })
         <span v-else>{{ scope.row.tenant.name }}</span>
       </template>
     </el-table-column>
-    <el-table-column prop="disabled" width="150" label="状态">
+    <el-table-column prop="disabled" width="80" label="状态">
       <template #default="scope">
         <el-switch v-if="scope.row.checked" v-model="scope.row.disabled"
                    @change="v => updateDisabled(scope.row, v)"
@@ -152,6 +170,13 @@ watch(query, () => search(), { immediate: true })
           <span v-if="scope.row.disabled">禁用</span>
           <span v-else>启用</span>
         </div>
+      </template>
+    </el-table-column>
+    <el-table-column prop="register_mode" width="80" label="注册方式">
+      <template #default="scope">
+        <span v-if="scope.row.register_mode === 0">普通</span>
+        <span v-else-if="scope.row.register_mode === 1">微信</span>
+        <span v-else>其他</span>
       </template>
     </el-table-column>
     <el-table-column label="创建时间" width="140" prop="create_time" show-overflow-tooltip sortable="custom">

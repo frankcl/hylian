@@ -286,6 +286,8 @@ public class Converter {
         viewUser.createTime = user.createTime;
         viewUser.updateTime = user.updateTime;
         viewUser.superAdmin = user.superAdmin;
+        viewUser.registerMode = user.registerMode;
+        viewUser.wxOpenid = user.wxOpenid;
         viewUser.disabled = user.disabled == null || user.disabled;
         viewUser.tenant = tenant;
         if (tenant != null) {

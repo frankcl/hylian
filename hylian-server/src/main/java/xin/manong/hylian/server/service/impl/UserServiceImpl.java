@@ -78,10 +78,10 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User getByWxUid(String wxUid) {
-        if (StringUtils.isEmpty(wxUid)) throw new BadRequestException("微信UID为空");
+    public User getByWxOpenid(String wxOpenid) {
+        if (StringUtils.isEmpty(wxOpenid)) throw new BadRequestException("微信openid为空");
         LambdaQueryWrapper<User> query = new LambdaQueryWrapper<>();
-        query.eq(User::getWxUid, wxUid);
+        query.eq(User::getWxOpenid, wxOpenid);
         return userMapper.selectOne(query);
     }
 
@@ -122,9 +122,9 @@ public class UserServiceImpl implements UserService {
         LambdaQueryWrapper<User> query = new LambdaQueryWrapper<>();
         query.eq(User::getId, user.id).or().eq(User::getUsername, user.username);
         if (userMapper.selectCount(query) > 0) throw new IllegalStateException("用户名已存在");
-        if (StringUtils.isNotEmpty(user.wxUid)) {
+        if (StringUtils.isNotEmpty(user.wxOpenid)) {
             query = new LambdaQueryWrapper<>();
-            query.eq(User::getWxUid, user.wxUid);
+            query.eq(User::getWxOpenid, user.wxOpenid);
             if (userMapper.selectCount(query) > 0) throw new IllegalStateException("微信用户已存在");
         }
         user.password = DigestUtils.md5Hex(user.password.trim());
@@ -180,6 +180,11 @@ public class UserServiceImpl implements UserService {
         if (!StringUtils.isEmpty(searchRequest.name)) query.like("name", searchRequest.name);
         if (searchRequest.idList != null) query.in("id", searchRequest.idList);
         if (searchRequest.disabled != null) query.eq("disabled", searchRequest.disabled ? 1 : 0);
+        if (searchRequest.registerMode != null) query.eq("register_mode", searchRequest.registerMode);
+        if (searchRequest.bindWechat != null) {
+            if (searchRequest.bindWechat) query.isNotNull("wx_openid").ne("wx_openid", "");
+            else query.and(wrapper -> wrapper.eq("wx_openid", "").or().isNull("wx_openid"));
+        }
         IPage<User> page = userMapper.selectPage(new Page<>(searchRequest.current, searchRequest.size), query);
         return Converter.convert(page);
     }

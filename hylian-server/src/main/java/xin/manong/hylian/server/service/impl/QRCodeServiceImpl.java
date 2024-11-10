@@ -48,7 +48,7 @@ public class QRCodeServiceImpl implements QRCodeService {
     public boolean updateByKey(QRCode qrCode) {
         if (StringUtils.isEmpty(qrCode.key)) throw new BadRequestException("小程序码key为空");
         if (qrCode.status != null && (qrCode.status < QRCode.STATUS_ERROR ||
-                qrCode.status > QRCode.STATUS_AUTHORIZED)) throw new BadRequestException("小程序码状态非法");
+                qrCode.status > QRCode.STATUS_BIND)) throw new BadRequestException("小程序码状态非法");
         LambdaQueryWrapper<QRCode> query = new LambdaQueryWrapper<>();
         query.eq(QRCode::getKey, qrCode.key);
         return qrCodeMapper.update(qrCode, query) > 0;

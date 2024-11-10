@@ -107,6 +107,7 @@ public class UserController {
         userRequest.check();
         User user = Converter.convert(userRequest);
         user.id = RandomID.build();
+        user.registerMode = User.REGISTER_MODE_NORMAL;
         user.check();
         return userService.add(user);
     }
@@ -139,6 +140,34 @@ public class UserController {
         }
         SessionUtils.setRefreshUser(httpRequest);
         return userService.update(user);
+    }
+
+    /**
+     * 解绑微信账号
+     *
+     * @param request 解绑微信账号请求
+     * @return 成功返回true，否则返回false
+     */
+    @POST
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("unbind")
+    @PostMapping("unbind")
+    @EnableWebLogAspect
+    public boolean unbind(@RequestBody UnbindUserRequest request,
+                          @Context HttpServletRequest httpRequest) {
+        if (request == null) throw new BadRequestException("解绑请求为空");
+        request.check();
+        User currentUser = ContextManager.getUser();
+        assert currentUser != null;
+        if (!currentUser.id.equals(request.id) && !currentUser.superAdmin) {
+            throw new ForbiddenException("无权操作");
+        }
+        User updateUser = new User();
+        updateUser.id = request.id;
+        updateUser.wxOpenid = "";
+        SessionUtils.setRefreshUser(httpRequest);
+        return userService.update(updateUser);
     }
 
     /**

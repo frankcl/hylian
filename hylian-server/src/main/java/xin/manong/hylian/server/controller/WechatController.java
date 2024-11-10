@@ -62,6 +62,9 @@ public class WechatController {
 
     private static final Logger logger = LoggerFactory.getLogger(WechatController.class);
 
+    private static final int CATEGORY_LOGIN = 1;
+    private static final int CATEGORY_BIND = 2;
+
     private static final String WECHAT_BASE_URL = "https://api.weixin.qq.com/";
     private static final String WECHAT_PATH_TOKEN = "cgi-bin/token";
     private static final String WECHAT_PATH_WXA_CODE = "wxa/getwxacodeunlimit";
@@ -80,6 +83,7 @@ public class WechatController {
     private static final String GRANT_TYPE_CLIENT_CREDENTIAL = "client_credential";
     private static final String GRANT_TYPE_AUTHORIZATION_CODE = "authorization_code";
     private static final String WX_LOGIN_PAGE = "pages/login/index";
+    private static final String WX_BIND_PAGE = "pages/bind/index";
     private static final String WX_SCENE_FORMAT = "key=%s";
     private static final String WX_VERSION = "develop";
     private static final String DEFAULT_PASSWORD = "123456";
@@ -105,17 +109,20 @@ public class WechatController {
      * @return 小程序码图片
      */
     @GET
+    @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @Path("code/generate")
     @GetMapping("code/generate")
-    public QRCodeImage generateQRCode() {
+    public QRCodeImage generateQRCode(@BeanParam QRCodeGenerateRequest request) {
+        if (request == null) throw new BadRequestException("小程序码生成请求为空");
+        request.check();
         AccessToken accessToken = getAccessToken();
         String qrCodeKey = AppSecretUtils.buildSecret(12);
         while (qrCodeService.getByKey(qrCodeKey) != null) qrCodeKey = AppSecretUtils.buildSecret(12);
         String requestURL = String.format("%s%s?%s=%s", WECHAT_BASE_URL, WECHAT_PATH_WXA_CODE,
                 PARAM_KEY_ACCESS_TOKEN, accessToken.token);
         Map<String, Object> requestBody = new HashMap<>();
-        requestBody.put(PARAM_KEY_PAGE, WX_LOGIN_PAGE);
+        requestBody.put(PARAM_KEY_PAGE, request.category == CATEGORY_LOGIN ? WX_LOGIN_PAGE : WX_BIND_PAGE);
         requestBody.put(PARAM_KEY_CHECK_PATH, false);
         requestBody.put(PARAM_KEY_SCENE, String.format(WX_SCENE_FORMAT, qrCodeKey));
         requestBody.put(PARAM_KEY_VERSION, WX_VERSION);
@@ -126,6 +133,7 @@ public class WechatController {
         QRCode qrCode = new QRCode();
         qrCode.key = qrCodeKey;
         qrCode.status = 0;
+        qrCode.userid = request.userid;
         if (!qrCodeService.add(qrCode)) throw new InternalServerErrorException("添加小程序码记录失败");
         QRCodeImage qrCodeImage = new QRCodeImage();
         qrCodeImage.key = qrCodeKey;
@@ -166,7 +174,7 @@ public class WechatController {
     public boolean userExists(@QueryParam("code") String code) {
         if (StringUtils.isEmpty(code)) throw new BadRequestException("参数code缺失");
         String openid = getOpenid(code);
-        return userService.getByWxUid(openid) != null;
+        return userService.getByWxOpenid(openid) != null;
     }
 
     /**
@@ -184,6 +192,48 @@ public class WechatController {
     public String uploadAvatar(@FormDataParam("file") FormDataContentDisposition fileDetail,
                                @FormDataParam("file") final InputStream fileInputStream) {
         return AvatarUtils.uploadAvatar(fileDetail, fileInputStream, ossClient, serverConfig);
+    }
+
+    /**
+     * 微信账号绑定
+     *
+     * @param request 账号绑定请求
+     * @return 成功返回true，否则返回false
+     */
+    @POST
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("user/bind")
+    @PostMapping("user/bind")
+    public boolean bind(@RequestBody UserBindRequest request) throws IOException {
+        if (request == null) throw new BadRequestException("微信账号绑定请求为空");
+        request.check();
+        QRCode qrCode = qrCodeService.getByKey(request.key);
+        if (qrCode == null) throw new IllegalStateException("小程序码已过期");
+        try {
+            String openid = getOpenid(request.getCode());
+            User user = userService.getByWxOpenid(openid);
+            if (user != null) throw new IllegalStateException("微信账号已被绑定");
+            user = userService.get(qrCode.userid);
+            if (user == null) {
+                logger.error("user[{}] is not found", qrCode.userid);
+                throw new IllegalStateException("未找到绑定用户");
+            }
+            User updateUser = new User();
+            updateUser.id = qrCode.userid;
+            updateUser.wxOpenid = openid;
+            boolean success = userService.update(updateUser);
+            qrCode.status = QRCode.STATUS_BIND;
+            if (!qrCodeService.updateByKey(qrCode)) logger.warn("update QRCode bind status failed");
+            return success;
+        } catch (Exception e) {
+            qrCode.status = QRCode.STATUS_ERROR;
+            qrCode.message = e.getMessage();
+            if (!qrCodeService.updateByKey(qrCode)) logger.warn("update bind QRCode[{}] status failed", qrCode.key);
+            throw e;
+        } finally {
+            QRCodeWebSocket.sendMessage(qrCode.key, JSON.toJSONString(qrCode));
+        }
     }
 
     /**
@@ -205,10 +255,10 @@ public class WechatController {
         try {
             String openid = getOpenid(request.code);
             qrCode.openid = openid;
-            User user = userService.getByWxUid(openid);
+            User user = userService.getByWxOpenid(openid);
             if (user == null) {
                 addWechatUser(request.user, openid);
-                user = userService.getByWxUid(openid);
+                user = userService.getByWxOpenid(openid);
             }
             qrCode.status = QRCode.STATUS_AUTHORIZED;
             if (!qrCodeService.updateByKey(qrCode)) logger.warn("update QRCode authorize status failed");
@@ -217,7 +267,7 @@ public class WechatController {
         } catch (Exception e) {
             qrCode.status = QRCode.STATUS_ERROR;
             qrCode.message = e.getMessage();
-            if (!qrCodeService.updateByKey(qrCode)) logger.warn("update QRCode error status failed");
+            if (!qrCodeService.updateByKey(qrCode)) logger.warn("update login QRCode[{}] status failed", qrCode.key);
             throw e;
         } finally {
             QRCodeWebSocket.sendMessage(qrCode.key, JSON.toJSONString(qrCode));
@@ -235,8 +285,8 @@ public class WechatController {
     @GET
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    @Path("login")
-    @GetMapping("login")
+    @Path("user/login")
+    @GetMapping("user/login")
     public boolean login(@QueryParam("key") String key,
                          @Context HttpServletRequest httpRequest,
                          @Context HttpServletResponse httpResponse) {
@@ -246,7 +296,7 @@ public class WechatController {
         if (StringUtils.isEmpty(qrCode.openid) || qrCode.status != QRCode.STATUS_AUTHORIZED) {
             throw new IllegalStateException("微信账号未授权");
         }
-        User user = userService.getByWxUid(qrCode.openid);
+        User user = userService.getByWxOpenid(qrCode.openid);
         if (user == null) throw new IllegalStateException("用户未绑定微信账号");
         if (user.disabled) throw new IllegalStateException("账号尚未启用，请联系管理员");
         UserProfile userProfile = new UserProfile();
@@ -273,7 +323,8 @@ public class WechatController {
         user.tenantId = serverConfig.defaultTenant;
         user.password = DigestUtils.md5Hex(DEFAULT_PASSWORD);
         user.disabled = true;
-        user.wxUid = openId;
+        user.wxOpenid = openId;
+        user.registerMode = User.REGISTER_MODE_WECHAT;
         String avatarURL = downloadAvatar(wechatUser);
         if (StringUtils.isNotEmpty(avatarURL)) user.avatar = avatarURL;
         if (!userService.add(user)) throw new InternalServerErrorException("添加微信用户失败");
@@ -286,7 +337,7 @@ public class WechatController {
      * @return 成功返回OSS地址，否则返回null
      */
     private String downloadAvatar(WechatUser wechatUser) {
-        if (StringUtils.isEmpty(wechatUser.avatar)) return null;
+        if (!needDownload(wechatUser.avatar)) return wechatUser.avatar;
         URL avatarURL;
         try {
             avatarURL = new URL(wechatUser.avatar);
@@ -316,6 +367,19 @@ public class WechatController {
     }
 
     /**
+     * 判断头像是否需要下载
+     * OSS地址不需要下载
+     *
+     * @param avatarURL 头像URL
+     * @return 需要下载返回true，否则返回false
+     */
+    private boolean needDownload(String avatarURL) {
+        if (StringUtils.isEmpty(avatarURL)) return false;
+        OSSMeta ossMeta = OSSClient.parseURL(avatarURL);
+        return ossMeta == null || !ossMeta.region.equals(serverConfig.ossRegion);
+    }
+
+    /**
      * 获取小程序openid
      *
      * @param code 微信授权码
@@ -330,7 +394,7 @@ public class WechatController {
         paramMap.put(PARAM_KEY_JS_CODE, code);
         HttpRequest httpRequest = HttpRequest.buildGetRequest(requestURL, paramMap);
         String body = HTTPExecutor.execute(httpRequest);
-        if (StringUtils.isEmpty(body)) throw new InternalServerErrorException("微信登录失败");
+        if (StringUtils.isEmpty(body)) throw new InternalServerErrorException("获取微信小程序openid失败");
         WechatLoginResponse response = JSON.parseObject(body, WechatLoginResponse.class);
         return response.openid;
     }

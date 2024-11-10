@@ -15,7 +15,7 @@ const QRCode = ref()
 const refreshQRCode = async () => {
   error.value = false
   prompt.value = '请用微信扫一扫登录'
-  const response = await asyncGenerateQRCode()
+  const response = await asyncGenerateQRCode({ category: 1 })
   QRCode.value = response.image
   if (websocket !== undefined) websocket.close()
   websocket = new WebSocket(import.meta.env.VITE_WS_BASE_URL + '/api/ws/qrcode?key=' + response.key)
@@ -27,7 +27,7 @@ const refreshQRCode = async () => {
       prompt.value = '登录异常：'+ obj.message
       this.close()
     } else if (obj.status === 2) {
-      prompt.value = '已授权'
+      prompt.value = '授权成功'
       this.close()
       if (!await asyncWechatLogin(response.key)) return
       const user = await asyncCurrentUser()

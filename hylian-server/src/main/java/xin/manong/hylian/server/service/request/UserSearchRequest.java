@@ -46,4 +46,16 @@ public class UserSearchRequest extends SearchRequest {
     @JsonProperty("disabled")
     @QueryParam("disabled")
     public Boolean disabled;
+    /**
+     * 是否绑定微信
+     */
+    @JsonProperty("bind_wechat")
+    @QueryParam("bind_wechat")
+    public Boolean bindWechat;
+    /**
+     * 注册方式
+     */
+    @JsonProperty("register_mode")
+    @QueryParam("register_mode")
+    public Integer registerMode;
 }

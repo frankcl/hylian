@@ -35,6 +35,13 @@ const userStore = useUserStore()
           <span v-else>普通用户</span>
         </el-col>
       </el-row>
+      <el-row>
+        <el-col :span="9">微信:</el-col>
+        <el-col :span="15">
+          <span v-if="userStore.openid">已绑定</span>
+          <span v-else>未绑定</span>
+        </el-col>
+      </el-row>
     </template>
   </el-popover>
 </template>

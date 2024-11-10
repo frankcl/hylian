@@ -44,6 +44,12 @@ public class ViewUser implements Serializable {
     public String name;
 
     /**
+     * 微信小程序openid
+     */
+    @JsonProperty("wx_openid")
+    public String wxOpenid;
+
+    /**
      * 租户信息
      */
     @JsonProperty("tenant")
@@ -66,6 +72,12 @@ public class ViewUser implements Serializable {
      */
     @JsonProperty("disabled")
     public boolean disabled = true;
+
+    /**
+     * 注册方式
+     */
+    @JsonProperty("register_mode")
+    public Integer registerMode;
 
     /**
      * 超级管理员

@@ -33,6 +33,7 @@ public class QRCode extends BaseModel {
     public static final int STATUS_WAIT = 0;
     public static final int STATUS_SCANNED = 1;
     public static final int STATUS_AUTHORIZED = 2;
+    public static final int STATUS_BIND = 3;
 
     /**
      * 自增ID
@@ -57,6 +58,14 @@ public class QRCode extends BaseModel {
     @JSONField(name = "openid")
     @JsonProperty("openid")
     public String openid;
+
+    /**
+     * 用户ID
+     */
+    @TableField(value = "userid")
+    @JSONField(name = "userid")
+    @JsonProperty("userid")
+    public String userid;
 
     /**
      * 小程序码状态

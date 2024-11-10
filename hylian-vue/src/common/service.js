@@ -5,20 +5,36 @@ const HTTP_PUT = 'put'
 const HTTP_POST = 'post'
 const HTTP_DELETE = 'delete'
 
+export const asyncForceRefresh = async () => {
+  return await axios({
+    method: HTTP_POST,
+    url: '/api/security/forceRefresh'
+  })
+}
+
+export const asyncUnbind = async user => {
+  return await axios({
+    method: HTTP_POST,
+    url: '/api/user/unbind',
+    data: user
+  })
+}
+
 export const asyncWechatLogin = async key => {
   return await axios({
     method: HTTP_GET,
-    url: '/api/wechat/login',
+    url: '/api/wechat/user/login',
     params: {
       key: key
     }
   })
 }
 
-export const asyncGenerateQRCode = async () => {
+export const asyncGenerateQRCode = async request => {
   return await axios({
     method: HTTP_GET,
-    url: '/api/wechat/code/generate'
+    url: '/api/wechat/code/generate',
+    params: request
   })
 }
 
