@@ -2,7 +2,7 @@
 <view class="container">
   <image class="logo" src="/images/logo.png"></image>
   <block wx:if="{{ register }}">
-    <button class="button-login" loading="{{ loading }}" bind:tap="getUserProfile">授权登录</button>
+    <button class="button-login" loading="{{ showLoading }}" bind:tap="getUserProfile">授权登录</button>
   </block>
   <block wx:else>
     <block wx:if="{{ canUseNicknameComp }}">
@@ -14,11 +14,11 @@
           <text class="nickname-label">昵称</text>
           <input type="nickname" class="nickname-input" placeholder="请输入昵称" bind:change="onInputChange" />
         </view>
-        <button class="button-login" loading="{{ loading }}" bind:tap="login">授权登录</button>
+        <button class="button-login" loading="{{ showLoading }}" bind:tap="login">授权登录</button>
       </view>
     </block>
     <block wx:else>
-      <button class="button-login" loading="{{ loading }}" bind:tap="getUserProfile">授权登录</button>
+      <button class="button-login" loading="{{ showLoading }}" bind:tap="getUserProfile">授权登录</button>
     </block>
   </block>
 </view>

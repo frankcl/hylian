@@ -11,53 +11,13 @@ Page({
     canUseNicknameComp: wx.canIUse('input.type.nickname'),
     avatarUrl: defaultAvatarUrl,
     nickName: '',
-    authorizeURL: app.globalData.serverBaseURL + '/api/wechat/user/authorize',
-    updateStatusURL: app.globalData.serverBaseURL + '/api/wechat/code/update'
+    authorizeURL: app.globalData.serverBaseURL + '/api/wechat/user/authorize'
   },
   onLoad(options) {
     this.isRegister()
-    const scene = decodeURIComponent(options.scene)
-    if (!scene || scene === 'undefined') {
-      wx.navigateTo({
-        url: '/pages/index/prompt?success=false&message=小程序码缺失参数scene'
-      })
-      return
-    }
-    const queryMap = new Map()
-    const queries = scene.split('&')
-    queries.forEach(query => {
-      const kv = query.split('=')
-      if (kv.length !== 2) return
-      queryMap.set(kv[0], kv[1])
-    })
-    if (!queryMap.has('key')) {
-      wx.navigateTo({
-        url: '/pages/index/prompt?success=false&message=scene缺失参数key'
-      })
-      return
-    }
-    this.setData({ key: queryMap.get('key') })
-    wx.request({
-      url: this.data.updateStatusURL,
-      method: 'POST',
-      data: {
-        key: this.data.key,
-        status: 1
-      },
-      success: res => {
-        const serverResponse = res.data
-        if (!serverResponse.status || !serverResponse.data) {
-          wx.navigateTo({
-            url: '/pages/index/prompt?success=false&message=小程序码已过期，请刷新后重新扫码'
-          })
-        }
-      },
-      fail: error => {
-        wx.navigateTo({
-          url: '/pages/index/prompt?success=false&message=服务器连接异常 ' + error.errMsg
-        })
-      }
-    })
+    const key = app.parseQRCodeKey(options.scene)
+    this.setData({ key: key })
+    app.updateQRCodeStatus(key)
   },
   onChooseAvatar(e) {
     const currentPage = this
@@ -160,6 +120,7 @@ Page({
             }
           },
           fail: error => {
+            currentPage.setData({ showLoading: false })
             wx.navigateTo({
               url: '/pages/index/prompt?success=false&message=服务器连接异常 ' + error.errMsg
             })

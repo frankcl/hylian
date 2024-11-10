@@ -2,7 +2,8 @@
   "pages": [
     "pages/index/index",
     "pages/index/prompt",
-    "pages/login/index"
+    "pages/login/index",
+    "pages/bind/index"
   ],
   "window": {
     "navigationBarTextStyle": "black",

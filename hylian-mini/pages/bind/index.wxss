@@ -1,0 +1,8 @@
+/* pages/bind/index.wxss */
+.button-bind {
+  margin-top: 40px;
+  padding: 10px;
+  background-color: #2d557c;
+  color: #ffffff;
+  font-size: 16px;
+}

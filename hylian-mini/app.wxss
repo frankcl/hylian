@@ -8,3 +8,9 @@
   padding: 200rpx 0;
   box-sizing: border-box;
 } 
+.logo {
+  width: 100px;
+  height: 100px;
+  margin-top: 20px;
+  margin-bottom: 40px;
+}

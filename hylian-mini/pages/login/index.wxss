@@ -1,10 +1,4 @@
 /* pages/login/index.wxss */
-.logo {
-  width: 100px;
-  height: 100px;
-  margin-top: 20px;
-  margin-bottom: 40px;
-}
 .button-login {
   margin-top: 40px;
   padding: 10px;
