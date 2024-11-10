@@ -1,13 +1,14 @@
 <script setup>
 import { onMounted, ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRoute } from 'vue-router'
 import { ElIcon, ElRow } from 'element-plus'
 import { Refresh } from '@element-plus/icons-vue'
 import { useUserStore } from '@/store'
+import { redirectAfterLogin } from '@/common/assortment'
 import { asyncCurrentUser, asyncGenerateQRCode, asyncWechatLogin } from '@/common/service'
 
 let websocket = undefined
-const router = useRouter()
+const route = useRoute()
 const userStore = useUserStore()
 const error = ref(false)
 const prompt = ref('请用微信扫一扫登录')
@@ -32,7 +33,7 @@ const refreshQRCode = async () => {
       if (!await asyncWechatLogin(response.key)) return
       const user = await asyncCurrentUser()
       userStore.inject(user)
-      await router.push('/workbench')
+      await redirectAfterLogin(route.query.redirect)
     }
   }
 }

@@ -7,11 +7,19 @@ const passwordNavRef = useTemplateRef('passwordNavRef')
 const wechatNavRef = useTemplateRef('wechatNavRef')
 const route = useRoute()
 
-function highlight() {
+const redirectLogin = name => {
+  const redirectTarget = { name: name }
+  if (route.query.redirect) {
+    redirectTarget.query = {}
+    redirectTarget.query.redirect = route.query.redirect
+  }
+  return redirectTarget
+}
+const highlight = () => {
   [ passwordNavRef, wechatNavRef ].forEach(navRef => {
     navRef.value.$el.className = 'login-nav-item'
     const link = navRef.value.$el.querySelector('a')
-    if (link.href.endsWith(route.path)) {
+    if (link.href.endsWith(decodeURIComponent(route.fullPath))) {
       navRef.value.$el.className += ' login-nav-item-selected'
     }
   })
@@ -29,12 +37,12 @@ onMounted(highlight)
     <el-row class="login-box-nav">
       <el-col class="login-nav-item" ref="passwordNavRef" :span="12">
         <el-row justify="center">
-          <RouterLink :to="{ name: 'PasswordLogin' }"><strong>密码登录</strong></RouterLink>
+          <RouterLink :to="redirectLogin('PasswordLogin')"><strong>密码登录</strong></RouterLink>
         </el-row>
       </el-col>
       <el-col class="login-nav-item" ref="wechatNavRef" :span="12">
         <el-row justify="center">
-          <RouterLink :to="{ name: 'WechatLogin' }"><strong>微信登录</strong></RouterLink>
+          <RouterLink :to="redirectLogin('WechatLogin')"><strong>微信登录</strong></RouterLink>
         </el-row>
       </el-col>
     </el-row>

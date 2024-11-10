@@ -1,13 +1,13 @@
 <script setup>
 import { onMounted, reactive, ref, useTemplateRef, watchEffect } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRoute } from 'vue-router'
 import { useUserStore } from '@/store'
 import { ElButton, ElCol, ElForm, ElFormItem, ElInput, ElRow } from 'element-plus'
 import { asyncApplyCaptcha, asyncCurrentUser, asyncPasswordLogin } from '@/common/service'
-import { drawCaptcha, submitForm } from '@/common/assortment'
+import { drawCaptcha, redirectAfterLogin, submitForm } from '@/common/assortment'
 import RegisterUser from '@/views/user/RegisterUser'
 
-const router = useRouter()
+const route = useRoute()
 const userStore = useUserStore()
 const captcha = ref('')
 const openRegisterDialog = ref(false)
@@ -36,7 +36,7 @@ async function submit(formEl) {
   if (!await submitForm(formEl, userForm, asyncPasswordLogin)) return
   const user = await asyncCurrentUser()
   userStore.inject(user)
-  await router.push('/workbench')
+  await redirectAfterLogin(route.query.redirect)
 }
 
 onMounted(async () => refreshCaptcha())

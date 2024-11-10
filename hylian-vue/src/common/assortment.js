@@ -1,6 +1,6 @@
 import Cookies from 'js-cookie'
-import { ElMessageBox, ElNotification } from 'element-plus'
 import router from '@/router'
+import { ElMessageBox, ElNotification } from 'element-plus'
 import { useUserStore } from '@/store'
 import {
   asyncCurrentUser,
@@ -89,6 +89,15 @@ export const logout = async () => {
   await asyncLogout()
   useUserStore().clear()
   await router.push('/')
+}
+
+export const redirectAfterLogin = async redirectURL => {
+  if (redirectURL) redirectURL = decodeURIComponent(redirectURL)
+  if (redirectURL && (redirectURL.startsWith('http://') || redirectURL.startsWith('https://'))) {
+    window.location.href = redirectURL
+    return
+  }
+  await router.push('/workbench')
 }
 
 export const refreshUser = async (force = false) => {
