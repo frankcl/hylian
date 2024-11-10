@@ -1,7 +1,7 @@
 <!--index.wxml-->
 <scroll-view class="scrollarea" scroll-y type="list">
   <view class="container">
-    <image class="logo" src="/images/logo.png"></image>
+    <image class="logo" src="/images/logo.jpg"></image>
     <view class="welcome">
       <text>欢迎使用</text>
     </view>

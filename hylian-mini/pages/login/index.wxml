@@ -1,6 +1,6 @@
 <!--pages/login/index.wxml-->
 <view class="container">
-  <image class="logo" src="/images/logo.png"></image>
+  <image class="logo" src="/images/logo.jpg"></image>
   <block wx:if="{{ register }}">
     <button class="button-login" loading="{{ showLoading }}" bind:tap="getUserProfile">授权登录</button>
   </block>
