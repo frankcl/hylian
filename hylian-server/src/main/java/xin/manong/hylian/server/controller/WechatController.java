@@ -62,9 +62,6 @@ public class WechatController {
 
     private static final Logger logger = LoggerFactory.getLogger(WechatController.class);
 
-    private static final int CATEGORY_LOGIN = 1;
-    private static final int CATEGORY_BIND = 2;
-
     private static final String WECHAT_BASE_URL = "https://api.weixin.qq.com/";
     private static final String WECHAT_PATH_TOKEN = "cgi-bin/token";
     private static final String WECHAT_PATH_WXA_CODE = "wxa/getwxacodeunlimit";
@@ -122,7 +119,8 @@ public class WechatController {
         String requestURL = String.format("%s%s?%s=%s", WECHAT_BASE_URL, WECHAT_PATH_WXA_CODE,
                 PARAM_KEY_ACCESS_TOKEN, accessToken.token);
         Map<String, Object> requestBody = new HashMap<>();
-        requestBody.put(PARAM_KEY_PAGE, request.category == CATEGORY_LOGIN ? WX_LOGIN_PAGE : WX_BIND_PAGE);
+        requestBody.put(PARAM_KEY_PAGE, request.category ==
+                QRCodeGenerateRequest.CATEGORY_LOGIN ? WX_LOGIN_PAGE : WX_BIND_PAGE);
         requestBody.put(PARAM_KEY_CHECK_PATH, false);
         requestBody.put(PARAM_KEY_SCENE, String.format(WX_SCENE_FORMAT, qrCodeKey));
         requestBody.put(PARAM_KEY_VERSION, WX_VERSION);
@@ -132,7 +130,7 @@ public class WechatController {
         String image = String.format("data:image/png;base64,%s", Base64.getEncoder().encodeToString(bytes));
         QRCode qrCode = new QRCode();
         qrCode.key = qrCodeKey;
-        qrCode.status = 0;
+        qrCode.status = QRCode.STATUS_WAIT;
         qrCode.userid = request.userid;
         if (!qrCodeService.add(qrCode)) throw new InternalServerErrorException("添加小程序码记录失败");
         QRCodeImage qrCodeImage = new QRCodeImage();
@@ -237,6 +235,43 @@ public class WechatController {
     }
 
     /**
+     * 微信账号注册
+     *
+     * @param request 授权认证请求
+     * @return 成功返回true，否则返回false
+     */
+    @POST
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("user/register")
+    @PostMapping("user/register")
+    public boolean register(@RequestBody RegisterRequest request) throws IOException {
+        if (request == null) throw new BadRequestException("微信注册请求为空");
+        request.check();
+        QRCode qrCode = new QRCode();
+        qrCode.key = request.key;
+        try {
+            String openid = getOpenid(request.code);
+            qrCode.openid = openid;
+            User user = userService.getByWxOpenid(openid);
+            if (user != null) throw new IllegalStateException("微信账号已注册");
+            addWechatUser(request.user, openid);
+            qrCode.status = QRCode.STATUS_REGISTERED;
+            if (!qrCodeService.updateByKey(qrCode)) logger.warn("update QRCode register status failed");
+            return true;
+        } catch (Exception e) {
+            qrCode.status = QRCode.STATUS_ERROR;
+            qrCode.message = e.getMessage();
+            if (!qrCodeService.updateByKey(qrCode)) {
+                logger.warn("update QRCode[{}] status failed when registering", qrCode.key);
+            }
+            throw e;
+        } finally {
+            QRCodeWebSocket.sendMessage(qrCode.key, JSON.toJSONString(qrCode));
+        }
+    }
+
+    /**
      * 微信账号授权认证
      *
      * @param request 授权认证请求
@@ -256,18 +291,16 @@ public class WechatController {
             String openid = getOpenid(request.code);
             qrCode.openid = openid;
             User user = userService.getByWxOpenid(openid);
-            if (user == null) {
-                addWechatUser(request.user, openid);
-                user = userService.getByWxOpenid(openid);
-            }
+            if (user == null) throw new IllegalStateException("微信用户不存在");
             qrCode.status = QRCode.STATUS_AUTHORIZED;
             if (!qrCodeService.updateByKey(qrCode)) logger.warn("update QRCode authorize status failed");
-            if (user.disabled) throw new InternalServerErrorException("账号尚未审核通过，请联系管理员");
             return true;
         } catch (Exception e) {
             qrCode.status = QRCode.STATUS_ERROR;
             qrCode.message = e.getMessage();
-            if (!qrCodeService.updateByKey(qrCode)) logger.warn("update login QRCode[{}] status failed", qrCode.key);
+            if (!qrCodeService.updateByKey(qrCode)) {
+                logger.warn("update QRCode[{}] status failed when authorizing", qrCode.key);
+            }
             throw e;
         } finally {
             QRCodeWebSocket.sendMessage(qrCode.key, JSON.toJSONString(qrCode));
@@ -289,23 +322,32 @@ public class WechatController {
     @GetMapping("user/login")
     public boolean login(@QueryParam("key") String key,
                          @Context HttpServletRequest httpRequest,
-                         @Context HttpServletResponse httpResponse) {
+                         @Context HttpServletResponse httpResponse) throws IOException {
         if (StringUtils.isEmpty(key)) throw new BadRequestException("小程序码key为空");
         QRCode qrCode = qrCodeService.getByKey(key);
         if (qrCode == null) throw new NotFoundException("小程序码已过期");
-        if (StringUtils.isEmpty(qrCode.openid) || qrCode.status != QRCode.STATUS_AUTHORIZED) {
-            throw new IllegalStateException("微信账号未授权");
+        try {
+            if (StringUtils.isEmpty(qrCode.openid) || (qrCode.status != QRCode.STATUS_AUTHORIZED &&
+                    qrCode.status != QRCode.STATUS_REGISTERED)) {
+                throw new IllegalStateException("微信账号未授权");
+            }
+            User user = userService.getByWxOpenid(qrCode.openid);
+            if (user == null) throw new IllegalStateException("用户未绑定微信账号");
+            if (user.disabled) throw new IllegalStateException("账号尚未审核，请联系管理员");
+            UserProfile userProfile = new UserProfile();
+            userProfile.setId(RandomID.build()).setUserId(user.id);
+            String ticket = ticketService.buildTicket(userProfile, Constants.COOKIE_TICKET_EXPIRED_TIME_MS);
+            ticketService.putTicket(userProfile.id, ticket);
+            CookieUtils.setCookie(Constants.COOKIE_TICKET, ticket, "/", true, httpRequest, httpResponse);
+            CookieUtils.setCookie(Constants.COOKIE_TOKEN, RandomID.build(), "/", false, httpRequest, httpResponse);
+            return true;
+        } catch (Exception e) {
+            qrCode.status = QRCode.STATUS_ERROR;
+            qrCode.message = e.getMessage();
+            if (!qrCodeService.updateByKey(qrCode)) logger.warn("update QRCode[{}] status failed when login", qrCode.key);
+            QRCodeWebSocket.sendMessage(qrCode.key, JSON.toJSONString(qrCode));
+            throw e;
         }
-        User user = userService.getByWxOpenid(qrCode.openid);
-        if (user == null) throw new IllegalStateException("用户未绑定微信账号");
-        if (user.disabled) throw new IllegalStateException("账号尚未启用，请联系管理员");
-        UserProfile userProfile = new UserProfile();
-        userProfile.setId(RandomID.build()).setUserId(user.id);
-        String ticket = ticketService.buildTicket(userProfile, Constants.COOKIE_TICKET_EXPIRED_TIME_MS);
-        ticketService.putTicket(userProfile.id, ticket);
-        CookieUtils.setCookie(Constants.COOKIE_TICKET, ticket, "/", true, httpRequest, httpResponse);
-        CookieUtils.setCookie(Constants.COOKIE_TOKEN, RandomID.build(), "/", false, httpRequest, httpResponse);
-        return true;
     }
 
     /**

@@ -27,7 +27,7 @@ const refreshQRCode = async () => {
       error.value = true
       prompt.value = '绑定异常：'+ obj.message
       this.close()
-    } else if (obj.status === 3) {
+    } else if (obj.status === 4) {
       await asyncForceRefresh()
       await refreshUser(true)
       prompt.value = '成功绑定'

@@ -27,13 +27,13 @@ const refreshQRCode = async () => {
       error.value = true
       prompt.value = '登录异常：'+ obj.message
       this.close()
-    } else if (obj.status === 2) {
-      prompt.value = '授权成功'
-      this.close()
+    } else if (obj.status === 2 || obj.status === 3) {
+      prompt.value = obj.status === 2 ? '授权成功' : '注册成功'
       if (!await asyncWechatLogin(response.key)) return
       const user = await asyncCurrentUser()
       userStore.inject(user)
       await redirectAfterLogin(route.query.redirect)
+      this.close()
     }
   }
 }

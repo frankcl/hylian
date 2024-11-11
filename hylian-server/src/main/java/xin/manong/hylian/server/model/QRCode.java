@@ -33,7 +33,8 @@ public class QRCode extends BaseModel {
     public static final int STATUS_WAIT = 0;
     public static final int STATUS_SCANNED = 1;
     public static final int STATUS_AUTHORIZED = 2;
-    public static final int STATUS_BIND = 3;
+    public static final int STATUS_REGISTERED = 3;
+    public static final int STATUS_BIND = 4;
 
     /**
      * 自增ID

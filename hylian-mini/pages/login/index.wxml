@@ -1,8 +1,8 @@
 <!--pages/login/index.wxml-->
 <view class="container">
   <image class="logo" src="/images/logo.jpg"></image>
-  <block wx:if="{{ register }}">
-    <button class="button-login" loading="{{ showLoading }}" bind:tap="getUserProfile">授权登录</button>
+  <block wx:if="{{ registered }}">
+    <button class="button-login" loading="{{ showLoading }}" bind:tap="authorize">授权登录</button>
   </block>
   <block wx:else>
     <block wx:if="{{ canUseNicknameComp }}">
@@ -14,11 +14,14 @@
           <text class="nickname-label">昵称</text>
           <input type="nickname" class="nickname-input" placeholder="请输入昵称" bind:change="onInputChange" />
         </view>
-        <button class="button-login" loading="{{ showLoading }}" bind:tap="login">授权登录</button>
+        <button class="button-login" loading="{{ showLoading }}" bind:tap="register">注册</button>
       </view>
     </block>
+    <block wx:elif="{{ canUseGetUserProfile }}">
+      <button class="button-login" loading="{{ showLoading }}" bind:tap="registerWithUserProfile">注册</button>
+    </block>
     <block wx:else>
-      <button class="button-login" loading="{{ showLoading }}" bind:tap="getUserProfile">授权登录</button>
+      <text>基础库版本过低，不支持获取用户信息</text>
     </block>
   </block>
 </view>

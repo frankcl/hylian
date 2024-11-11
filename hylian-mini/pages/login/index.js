@@ -5,13 +5,12 @@ const defaultAvatarUrl = 'https://mmbiz.qpic.cn/mmbiz/icTdbqWNOwNRna42FI242Lcia0
 Page({
   data: {
     key: undefined,
-    register: false,
+    registered: false,
     showLoading: false,
     canUseGetUserProfile: wx.canIUse('getUserProfile'),
     canUseNicknameComp: wx.canIUse('input.type.nickname'),
     avatarUrl: defaultAvatarUrl,
-    nickName: '',
-    authorizeURL: app.globalData.serverBaseURL + '/api/wechat/user/authorize'
+    nickName: ''
   },
   onLoad(options) {
     this.isRegister()
@@ -27,19 +26,11 @@ Page({
       url: app.globalData.serverBaseURL + '/api/wechat/user/uploadAvatar',
       success: res => {
         const serverResponse = JSON.parse(res.data)
-        if (!serverResponse.status) {
-          wx.navigateTo({
-            url: '/pages/index/prompt?success=false&message=上传头像失败'
-          })
-          return
-        }
+        app.handleServerResponse(serverResponse, undefined, '上传头像失败')
+        if (!serverResponse.status || !serverResponse.data) return
         currentPage.setData({ avatarUrl: serverResponse.data })
       },
-      fail: error => {
-        wx.navigateTo({
-          url: '/pages/index/prompt?success=false&message=服务器连接异常 ' + error.errMsg
-        })
-      }
+      fail: error => app.handleServerError(error)
     })
   },
   onInputChange(e) {
@@ -53,24 +44,16 @@ Page({
           url: app.globalData.serverBaseURL + '/api/wechat/user/exists?code=' + res.code,
           success: res => {
             const serverResponse = res.data
-            if (!serverResponse.status) {
-              wx.navigateTo({
-                url: '/pages/index/prompt?success=false&message=服务端异常：' + serverResponse.message
-              })
-              return
-            }
-            currentPage.setData({ register: serverResponse.data })
+            app.handleServerResponse(serverResponse, undefined, '服务异常：' + serverResponse.message, false)
+            if (!serverResponse.status) return
+            currentPage.setData({ registered: serverResponse.data })
           },
-          fail: error => {
-            wx.navigateTo({
-              url: '/pages/index/prompt?success=false&message=服务器连接异常 ' + error.errMsg
-            })
-          }
+          fail: error => app.handleServerError(error)
         })
       }
     })
   },
-  getUserProfile(e) {
+  registerWithUserProfile() {
     const currentPage = this
     wx.getUserProfile({
       desc: '获取用户信息',
@@ -79,11 +62,36 @@ Page({
           nickName: res.userInfo.nickName,
           avatarUrl: res.userInfo.avatarUrl
         })
-        currentPage.login()
+        currentPage.register()
       }
     })
   },
-  login() {
+  authorize() {
+    const currentPage = this
+    this.setData({ showLoading: true })
+    wx.login({
+      success: res => {
+        wx.request({
+          url: app.globalData.serverBaseURL + '/api/wechat/user/authorize',
+          method: 'POST',
+          data: {
+            key: currentPage.data.key,
+            code: res.code
+          },
+          success: res => {
+            currentPage.setData({ showLoading: false })
+            const serverResponse = res.data
+            app.handleServerResponse(serverResponse, '授权成功', '授权失败：' + serverResponse.message)
+          },
+          fail: error => {
+            currentPage.setData({ showLoading: false })
+            app.handleServerError(error)
+          }
+        })
+      }
+    })
+  },
+  register() {
     if (!this.data.nickName) {
       wx.showToast({
         title: '请输入用户昵称',
@@ -96,7 +104,7 @@ Page({
     wx.login({
       success: res => {
         wx.request({
-          url: currentPage.data.authorizeURL,
+          url: app.globalData.serverBaseURL + '/api/wechat/user/register',
           method: 'POST',
           data: {
             key: currentPage.data.key,
@@ -109,21 +117,11 @@ Page({
           success: res => {
             currentPage.setData({ showLoading: false })
             const serverResponse = res.data
-            if (serverResponse.status && serverResponse.data) {
-              wx.navigateTo({
-                url: '/pages/index/prompt?success=true&message=授权成功'
-              })
-            } else {
-              wx.navigateTo({
-                url: '/pages/index/prompt?success=false&message=授权失败：' + serverResponse.message
-              })
-            }
+            app.handleServerResponse(serverResponse, '注册成功', '注册失败：' + serverResponse.message)
           },
           fail: error => {
             currentPage.setData({ showLoading: false })
-            wx.navigateTo({
-              url: '/pages/index/prompt?success=false&message=服务器连接异常 ' + error.errMsg
-            })
+            app.handleServerError(error)
           }
         })
       }

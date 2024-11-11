@@ -42,12 +42,6 @@ public class AuthorizeRequest implements Serializable {
     public String key;
 
     /**
-     * 微信用户信息
-     */
-    @JsonProperty("user")
-    public WechatUser user;
-
-    /**
      * 检测有效性
      * 无效信息抛出异常
      */
