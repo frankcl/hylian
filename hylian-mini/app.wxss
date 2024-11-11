@@ -8,9 +8,12 @@
   padding: 200rpx 0;
   box-sizing: border-box;
 } 
+.scrollarea {
+  flex: 1;
+  overflow-y: hidden;
+}
 .logo {
-  width: 100px;
-  height: 100px;
-  margin-top: 20px;
-  margin-bottom: 40px;
+  width: 85px;
+  height: 85px;
+  margin: 20rpx;
 }

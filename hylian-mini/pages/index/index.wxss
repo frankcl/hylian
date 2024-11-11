@@ -4,15 +4,6 @@ page {
   display: flex;
   flex-direction: column;
 }
-.scrollarea {
-  flex: 1;
-  overflow-y: hidden;
-}
-.logo {
-  width: 100px;
-  height: 100px;
-  margin: 20px;
-}
 .welcome {
-  margin-top: 200px;
+  margin-top: 200rpx;
 }

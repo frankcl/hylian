@@ -1,6 +1,11 @@
 /* pages/login/index.wxss */
+page {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
 .button-login {
-  margin-top: 40px;
+  margin-top: 200rpx;
   padding: 10px;
   background-color: #2d557c;
   color: #ffffff;
@@ -12,13 +17,14 @@
   align-items: center;
   color: #aaaaaa;
   width: 80%;
+  height: 80%;
 }
 .avatar-wrapper {
   padding: 0;
   width: 56px !important;
   border-radius: 8px;
-  margin-top: 40px;
-  margin-bottom: 40px;
+  margin-top: 40rpx;
+  margin-bottom: 40rpx;
 }
 .avatar {
   display: block;

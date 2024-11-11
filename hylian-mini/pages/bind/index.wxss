@@ -1,6 +1,11 @@
 /* pages/bind/index.wxss */
+page {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
 .button-bind {
-  margin-top: 40px;
+  margin-top: 200rpx;
   padding: 10px;
   background-color: #2d557c;
   color: #ffffff;

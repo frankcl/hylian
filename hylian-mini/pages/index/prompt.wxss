@@ -1,11 +1,16 @@
 /* pages/login/prompt.wxss */
+page {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
 .prompt-image {
   width: 100px;
   height: 100px;
-  margin: 20px;
+  margin: 20rpx;
 }
 .prompt-text {
-  margin: 20px 0;
+  margin: 20rpx 0;
   text-align: center;
   color: #666666;
   font-size: 20px;
