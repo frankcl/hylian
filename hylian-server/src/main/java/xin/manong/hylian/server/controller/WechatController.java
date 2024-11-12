@@ -22,10 +22,8 @@ import xin.manong.hylian.server.wechat.*;
 import xin.manong.hylian.server.controller.response.WechatLoginResponse;
 import xin.manong.hylian.server.converter.Converter;
 import xin.manong.hylian.server.model.QRCode;
-import xin.manong.hylian.server.model.Wechat;
 import xin.manong.hylian.server.service.QRCodeService;
 import xin.manong.hylian.server.service.UserService;
-import xin.manong.hylian.server.service.WechatService;
 import xin.manong.hylian.server.util.AppSecretUtils;
 import xin.manong.weapon.aliyun.oss.OSSClient;
 import xin.manong.weapon.aliyun.oss.OSSMeta;
@@ -33,6 +31,8 @@ import xin.manong.weapon.base.http.HttpRequest;
 import xin.manong.weapon.base.http.RequestFormat;
 import xin.manong.weapon.base.util.FileUtil;
 import xin.manong.weapon.base.util.RandomID;
+import xin.manong.weapon.spring.boot.etcd.WatchValue;
+import xin.manong.weapon.spring.boot.etcd.WatchValueDisposableBean;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
@@ -58,7 +58,7 @@ import java.util.Map;
 @Controller
 @Path("/api/wechat")
 @RequestMapping("/api/wechat")
-public class WechatController {
+public class WechatController extends WatchValueDisposableBean {
 
     private static final Logger logger = LoggerFactory.getLogger(WechatController.class);
 
@@ -86,11 +86,8 @@ public class WechatController {
     private static final String DEFAULT_PASSWORD = "123456";
 
     protected AccessToken accessToken;
-    protected Wechat wechatMini;
     @Resource
     protected UserService userService;
-    @Resource
-    protected WechatService wechatService;
     @Resource
     protected QRCodeService qrCodeService;
     @Resource
@@ -99,6 +96,10 @@ public class WechatController {
     private ServerConfig serverConfig;
     @Resource
     private OSSClient ossClient;
+    @WatchValue(namespace = "hylian/wechat", key = "app_id")
+    private String appId;
+    @WatchValue(namespace = "hylian/wechat", key = "app_secret")
+    private String appSecret;
 
     /**
      * 生成小程序码
@@ -430,8 +431,8 @@ public class WechatController {
     private String getOpenid(String code) {
         String requestURL = String.format("%s%s", WECHAT_BASE_URL, WECHAT_PATH_CODE_TO_SESSION);
         Map<String, Object> paramMap = new HashMap<>();
-        paramMap.put(PARAM_KEY_APP_ID, getMiniAppId());
-        paramMap.put(PARAM_KEY_APP_SECRET, getMiniAppSecret());
+        paramMap.put(PARAM_KEY_APP_ID, appId);
+        paramMap.put(PARAM_KEY_APP_SECRET, appSecret);
         paramMap.put(PARAM_KEY_GRANT_TYPE, GRANT_TYPE_AUTHORIZATION_CODE);
         paramMap.put(PARAM_KEY_JS_CODE, code);
         HttpRequest httpRequest = HttpRequest.buildGetRequest(requestURL, paramMap);
@@ -450,8 +451,8 @@ public class WechatController {
         if (accessToken != null && accessToken.expiresIn - System.currentTimeMillis() > 60000) return accessToken;
         String requestURL = String.format("%s%s", WECHAT_BASE_URL, WECHAT_PATH_TOKEN);
         Map<String, Object> paramMap = new HashMap<>();
-        paramMap.put(PARAM_KEY_APP_ID, getMiniAppId());
-        paramMap.put(PARAM_KEY_APP_SECRET, getMiniAppSecret());
+        paramMap.put(PARAM_KEY_APP_ID, appId);
+        paramMap.put(PARAM_KEY_APP_SECRET, appSecret);
         paramMap.put(PARAM_KEY_GRANT_TYPE, GRANT_TYPE_CLIENT_CREDENTIAL);
         HttpRequest httpRequest = HttpRequest.buildGetRequest(requestURL, paramMap);
         String body = HTTPExecutor.execute(httpRequest);
@@ -459,25 +460,5 @@ public class WechatController {
         accessToken = JSON.parseObject(body, AccessToken.class);
         accessToken.expiresIn = System.currentTimeMillis() + accessToken.expiresIn * 1000L;
         return accessToken;
-    }
-
-    /**
-     * 获取小程序应用ID
-     *
-     * @return 小程序应用ID
-     */
-    private String getMiniAppId() {
-        if (wechatMini == null) wechatMini = wechatService.getMiniWeChat();
-        return wechatMini.appId;
-    }
-
-    /**
-     * 获取小程序应用秘钥
-     *
-     * @return 小程序应用秘钥
-     */
-    private String getMiniAppSecret() {
-        if (wechatMini == null) wechatMini = wechatService.getMiniWeChat();
-        return wechatMini.appSecret;
     }
 }

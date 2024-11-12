@@ -26,7 +26,7 @@ public class TokenServiceImplTest {
     @Test
     public void testBuildAndVerify() {
         UserProfile userProfile = new UserProfile();
-        userProfile.setId(RandomID.build()).setUserId("user").setTenantId("tenant");
+        userProfile.setId(RandomID.build()).setUserId("user");
         String token = tokenService.buildToken(userProfile, 600000L);
         Assert.assertFalse(StringUtils.isEmpty(token));
         Assert.assertTrue(tokenService.verifyToken(token));
@@ -35,7 +35,7 @@ public class TokenServiceImplTest {
     @Test
     public void testTokenCache() {
         UserProfile userProfile = new UserProfile();
-        userProfile.setId(RandomID.build()).setUserId("user").setTenantId("tenant");
+        userProfile.setId(RandomID.build()).setUserId("user");
         String token = tokenService.buildToken(userProfile, 600000L);
         Assert.assertFalse(StringUtils.isEmpty(token));
         String ticket = "ticket";

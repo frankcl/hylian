@@ -43,13 +43,13 @@ public class ActivityServiceImplTest {
             Assert.assertTrue(activityService.add(activity));
         }
         {
-            Assert.assertTrue(activityService.isCheckin("app1", "session1"));
+            Assert.assertNotNull(activityService.get("app1", "xxx"));
         }
         {
-            Assert.assertTrue(activityService.isCheckin("app2", "session2"));
+            Assert.assertNotNull(activityService.get("app2", "xxx"));
         }
         {
-            Assert.assertFalse(activityService.isCheckin("app3", "session3"));
+            Assert.assertNull(activityService.get("app3", "xxx"));
         }
         {
             List<Activity> activities = activityService.getWithTicket("xxx");

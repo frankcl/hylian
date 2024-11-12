@@ -28,7 +28,7 @@ public class TicketServiceImplTest {
     @Test
     public void testBuildAndVerify() {
         UserProfile userProfile = new UserProfile();
-        userProfile.setId(RandomID.build()).setUserId("user").setTenantId("tenant");
+        userProfile.setId(RandomID.build()).setUserId("user");
         String ticket = ticketService.buildTicket(userProfile, 600000L);
         Assert.assertFalse(StringUtils.isEmpty(ticket));
         Assert.assertTrue(ticketService.verifyTicket(ticket));
@@ -37,7 +37,7 @@ public class TicketServiceImplTest {
     @Test
     public void testTicketCache() {
         UserProfile userProfile = new UserProfile();
-        userProfile.setId(RandomID.build()).setUserId("user").setTenantId("tenant");
+        userProfile.setId(RandomID.build()).setUserId("user");
         String ticket = ticketService.buildTicket(userProfile, 600000L);
         Assert.assertFalse(StringUtils.isEmpty(ticket));
         ticketService.putTicket(userProfile.id, ticket);
