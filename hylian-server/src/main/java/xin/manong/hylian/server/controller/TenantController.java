@@ -15,7 +15,7 @@ import xin.manong.hylian.server.controller.request.TenantUpdateRequest;
 import xin.manong.hylian.server.service.TenantService;
 import xin.manong.hylian.server.service.request.TenantSearchRequest;
 import xin.manong.weapon.base.util.RandomID;
-import xin.manong.weapon.spring.web.ws.aspect.EnableWebLogAspect;
+import xin.manong.weapon.spring.boot.aspect.EnableWebLogAspect;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;

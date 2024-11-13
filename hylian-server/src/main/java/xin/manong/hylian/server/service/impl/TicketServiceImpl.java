@@ -18,7 +18,6 @@ import xin.manong.weapon.base.redis.RedisClient;
 import javax.annotation.Resource;
 import java.time.Duration;
 import java.util.*;
-import java.util.concurrent.TimeUnit;
 
 /**
  * ticket服务实现
@@ -62,7 +61,7 @@ public class TicketServiceImpl implements TicketService {
     public void putTicket(String id, String ticket) {
         String key = String.format("%s%s", Constants.TICKET_CACHE_PREFIX, id);
         RBucket<String> bucket = redisClient.getRedissonClient().getBucket(key);
-        bucket.set(ticket, Constants.CACHE_TICKET_EXPIRED_TIME_MS, TimeUnit.MILLISECONDS);
+        bucket.set(ticket, Duration.ofMillis(Constants.CACHE_TICKET_EXPIRED_TIME_MS));
     }
 
     @Override

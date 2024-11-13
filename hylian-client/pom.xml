@@ -57,8 +57,7 @@
         </dependency>
         <dependency>
             <groupId>xin.manong</groupId>
-            <artifactId>weapon-spring-boot-starter</artifactId>
-            <version>${weapon.version}</version>
+            <artifactId>weapon-jersey</artifactId>
         </dependency>
         <dependency>
             <groupId>xin.manong</groupId>

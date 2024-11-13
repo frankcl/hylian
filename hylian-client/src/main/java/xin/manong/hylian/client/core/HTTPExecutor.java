@@ -7,7 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import xin.manong.weapon.base.http.HttpClient;
 import xin.manong.weapon.base.http.HttpRequest;
-import xin.manong.weapon.spring.web.WebResponse;
+import xin.manong.weapon.jersey.WebResponse;
 
 import java.util.List;
 import java.util.Map;

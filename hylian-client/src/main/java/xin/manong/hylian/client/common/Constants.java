@@ -34,6 +34,4 @@ public class Constants {
 
     public static final String CURRENT_USER = "__user__";
     public static final String CURRENT_FOLLOW_APPS = "__follow_apps__";
-
-    public static final String CHARSET_UTF8 = "UTF-8";
 }

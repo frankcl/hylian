@@ -4,7 +4,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import xin.manong.hylian.client.util.SessionUtils;
 import xin.manong.hylian.server.service.CaptchaService;
-import xin.manong.weapon.spring.web.ws.aspect.EnableWebLogAspect;
+import xin.manong.weapon.spring.boot.aspect.EnableWebLogAspect;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;

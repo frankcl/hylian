@@ -28,9 +28,8 @@ import xin.manong.hylian.server.util.AvatarUtils;
 import xin.manong.hylian.server.util.PermissionValidator;
 import xin.manong.weapon.aliyun.oss.OSSClient;
 import xin.manong.weapon.aliyun.oss.OSSMeta;
-import xin.manong.weapon.base.util.FileUtil;
 import xin.manong.weapon.base.util.RandomID;
-import xin.manong.weapon.spring.web.ws.aspect.EnableWebLogAspect;
+import xin.manong.weapon.spring.boot.aspect.EnableWebLogAspect;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;

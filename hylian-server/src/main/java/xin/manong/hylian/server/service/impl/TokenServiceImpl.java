@@ -15,10 +15,10 @@ import xin.manong.hylian.server.service.TokenService;
 import xin.manong.weapon.base.redis.RedisClient;
 
 import javax.annotation.Resource;
+import java.time.Duration;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
 /**
  * token服务实现
@@ -71,7 +71,7 @@ public class TokenServiceImpl implements TokenService {
         String tokenId = DigestUtils.md5Hex(token);
         String key = String.format("%s%s", Constants.TOKEN_CACHE_PREFIX, tokenId);
         RBucket<String> bucket = redisClient.getRedissonClient().getBucket(key);
-        bucket.set(ticket, Constants.CACHE_TOKEN_EXPIRED_TIME_MS, TimeUnit.MILLISECONDS);
+        bucket.set(ticket, Duration.ofMillis(Constants.CACHE_TOKEN_EXPIRED_TIME_MS));
     }
 
     @Override

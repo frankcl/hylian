@@ -9,8 +9,8 @@ import xin.manong.hylian.client.aspect.EnableACLAspect;
 import xin.manong.weapon.spring.boot.annotation.EnableEtcdClient;
 import xin.manong.weapon.spring.boot.annotation.EnableOSSClient;
 import xin.manong.weapon.spring.boot.annotation.EnableRedisClient;
-import xin.manong.weapon.spring.boot.etcd.EnableWatchValuePostProcessor;
-import xin.manong.weapon.spring.web.ws.aspect.EnableWebLogAspect;
+import xin.manong.weapon.spring.boot.aspect.EnableWebLogAspect;
+import xin.manong.weapon.spring.boot.etcd.EnableWatchValueBeanProcessor;
 
 /**
  * 应用程序入口
@@ -22,7 +22,7 @@ import xin.manong.weapon.spring.web.ws.aspect.EnableWebLogAspect;
 @EnableRedisClient
 @EnableEtcdClient
 @EnableOSSClient
-@EnableWatchValuePostProcessor
+@EnableWatchValueBeanProcessor
 @EnableCORSFilter
 @EnableHylianGuard
 @EnableACLAspect

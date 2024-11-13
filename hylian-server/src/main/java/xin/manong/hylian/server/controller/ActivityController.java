@@ -13,7 +13,7 @@ import xin.manong.hylian.server.service.ActivityService;
 import xin.manong.hylian.server.service.AppService;
 import xin.manong.hylian.server.service.UserService;
 import xin.manong.hylian.server.service.request.ActivitySearchRequest;
-import xin.manong.weapon.spring.web.ws.aspect.EnableWebLogAspect;
+import xin.manong.weapon.spring.boot.aspect.EnableWebLogAspect;
 
 import javax.annotation.Resource;
 import javax.ws.rs.*;

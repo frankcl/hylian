@@ -10,12 +10,13 @@ import xin.manong.hylian.model.User;
 import xin.manong.hylian.client.common.Constants;
 import xin.manong.weapon.base.http.HttpRequest;
 import xin.manong.weapon.base.http.RequestFormat;
-import xin.manong.weapon.spring.web.WebResponse;
+import xin.manong.weapon.jersey.WebResponse;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -75,7 +76,7 @@ public class HylianShield {
             httpResponse.sendRedirect(String.format("%s%s?%s=%s&%s=%s&%s=%s", serverURL,
                     Constants.SERVER_PATH_APPLY_CODE, Constants.PARAM_APP_ID, appId,
                     Constants.PARAM_APP_SECRET, appSecret, Constants.PARAM_REDIRECT_URL,
-                    URLEncoder.encode(redirectURL, Constants.CHARSET_UTF8)));
+                    URLEncoder.encode(redirectURL, StandardCharsets.UTF_8)));
             return false;
         }
         String requestURL = HTTPUtils.removeQueries(HTTPUtils.getRequestURL(httpRequest),

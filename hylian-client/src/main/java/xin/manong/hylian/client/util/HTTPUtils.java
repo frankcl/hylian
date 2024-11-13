@@ -24,12 +24,6 @@ public class HTTPUtils {
     private static final int DEFAULT_HTTPS_PORT = 443;
     private static final String PROTOCOL_HTTP = "http";
     private static final String PROTOCOL_HTTPS = "https";
-    private static final String HTTP_REQUEST_HEAD_ORIGIN = "Origin";
-    private static final String HTTP_REQUEST_HEAD_ACCESS_CONTROL_REQUEST_HEADERS = "Access-Control-Request-Headers";
-    private static final String HTTP_RESPONSE_HEAD_ACCESS_CONTROL_ALLOW_ORIGIN = "Access-Control-Allow-Origin";
-    private static final String HTTP_RESPONSE_HEAD_ACCESS_CONTROL_ALLOW_HEADERS = "Access-Control-Allow-Headers";
-    private static final String HTTP_RESPONSE_HEAD_ACCESS_CONTROL_ALLOW_CREDENTIALS = "Access-Control-Allow-Credentials";
-    private static final String HTTP_RESPONSE_HEAD_ACCESS_CONTROL_ALLOW_METHODS = "Access-Control-Allow-Methods";
 
     /**
      * 获取请求URL

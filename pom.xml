@@ -23,8 +23,8 @@
         <junit.version>4.13.2</junit.version>
         <lombok.version>1.18.24</lombok.version>
         <slf4j-log4j12.version>1.7.25</slf4j-log4j12.version>
-        <mysql-connector.version>8.0.22</mysql-connector.version>
-        <guava.version>31.1-jre</guava.version>
+        <mysql-connector.version>8.0.33</mysql-connector.version>
+        <guava.version>33.3.1-jre</guava.version>
         <redisson.version>3.38.1</redisson.version>
         <jetcd.version>0.8.3</jetcd.version>
         <okhttp3.version>4.9.3</okhttp3.version>
@@ -350,7 +350,12 @@
             </dependency>
             <dependency>
                 <groupId>xin.manong</groupId>
-                <artifactId>weapon-spring-boot-starter</artifactId>
+                <artifactId>weapon-jersey</artifactId>
+                <version>${weapon.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>xin.manong</groupId>
+                <artifactId>weapon-spring-boot</artifactId>
                 <version>${weapon.version}</version>
             </dependency>
         </dependencies>

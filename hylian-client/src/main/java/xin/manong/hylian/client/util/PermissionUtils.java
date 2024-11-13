@@ -1,8 +1,6 @@
 package xin.manong.hylian.client.util;
 
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.BadRequestException;
 
@@ -13,8 +11,6 @@ import javax.ws.rs.BadRequestException;
  * @date 2023-10-13 17:24:23
  */
 public class PermissionUtils {
-
-    private static final Logger logger = LoggerFactory.getLogger(PermissionUtils.class);
 
     /**
      * 校验资源路径合法性

@@ -17,7 +17,7 @@ import xin.manong.hylian.server.service.PermissionService;
 import xin.manong.hylian.server.service.request.PermissionSearchRequest;
 import xin.manong.hylian.server.util.PermissionValidator;
 import xin.manong.weapon.base.util.RandomID;
-import xin.manong.weapon.spring.web.ws.aspect.EnableWebLogAspect;
+import xin.manong.weapon.spring.boot.aspect.EnableWebLogAspect;
 
 import javax.annotation.Resource;
 import javax.ws.rs.*;

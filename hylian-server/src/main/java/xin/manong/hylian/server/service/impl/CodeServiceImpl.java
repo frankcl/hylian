@@ -17,6 +17,7 @@ import xin.manong.weapon.base.util.RandomID;
 import xin.manong.weapon.base.util.ShortKeyBuilder;
 
 import javax.annotation.Resource;
+import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -63,7 +64,7 @@ public class CodeServiceImpl implements CodeService {
             logger.info("code[{}] is removed", name);
             removeLocalCache(name);
         });
-        bucket.set(ticket, Constants.CACHE_CODE_EXPIRED_TIME_MS, TimeUnit.MILLISECONDS);
+        bucket.set(ticket, Duration.ofMillis(Constants.CACHE_CODE_EXPIRED_TIME_MS));
         codeCache.put(code, bucket);
         return code;
     }

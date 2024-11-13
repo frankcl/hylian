@@ -146,7 +146,11 @@
         </dependency>
         <dependency>
             <groupId>xin.manong</groupId>
-            <artifactId>weapon-spring-boot-starter</artifactId>
+            <artifactId>weapon-jersey</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>xin.manong</groupId>
+            <artifactId>weapon-spring-boot</artifactId>
         </dependency>
         <dependency>
             <groupId>xin.manong</groupId>

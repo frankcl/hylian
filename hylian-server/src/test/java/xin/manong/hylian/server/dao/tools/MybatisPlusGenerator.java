@@ -71,10 +71,10 @@ public class MybatisPlusGenerator {
      */
     private static StrategyConfig buildStrategyConfig() {
         return new StrategyConfig.Builder().enableCapitalMode().enableSkipView().disableSqlFilter().addInclude(SCHEMA).
-                entityBuilder().superClass(Model.class).enableLombok().enableChainModel().fileOverride().idType(IdType.AUTO).
+                entityBuilder().superClass(Model.class).enableLombok().enableChainModel().enableFileOverride().idType(IdType.AUTO).
                 disableSerialVersionUID().enableTableFieldAnnotation().naming(NamingStrategy.underline_to_camel).
                 columnNaming(NamingStrategy.underline_to_camel).mapperBuilder().superClass(BaseMapper.class).
-                enableMapperAnnotation().enableBaseResultMap().enableBaseColumnList().fileOverride().build();
+                enableMapperAnnotation().enableBaseResultMap().enableBaseColumnList().build();
     }
 
     /**
