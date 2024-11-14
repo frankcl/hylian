@@ -1,12 +1,12 @@
 package xin.manong.hylian.server.websocket;
 
+import jakarta.ws.rs.NotFoundException;
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.api.annotations.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.ws.rs.NotFoundException;
 import java.io.IOException;
 import java.net.URI;
 import java.util.Iterator;
@@ -28,8 +28,8 @@ public class QRCodeWebSocket {
     private Session session;
     private Long createTime;
 
-    @OnWebSocketConnect
-    public void onConnect(Session session) {
+    @OnWebSocketOpen
+    public void onOpen(Session session) {
         String key = getQueryKey(session);
         if (StringUtils.isEmpty(key)) {
             logger.error("param key is missing");
@@ -79,7 +79,7 @@ public class QRCodeWebSocket {
             logger.error("websocket is not found for key[{}]", key);
             throw new NotFoundException("WebSocket尚未建立");
         }
-        webSocket.session.getRemote().sendString(message);
+        webSocket.session.sendText(message, null);
     }
 
     /**

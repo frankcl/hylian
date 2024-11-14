@@ -2,8 +2,8 @@ package xin.manong.hylian.server.service.request;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.ws.rs.QueryParam;
 
-import javax.ws.rs.QueryParam;
 import java.util.List;
 
 /**

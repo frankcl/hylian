@@ -1,8 +1,7 @@
 package xin.manong.hylian.client.util;
 
+import jakarta.ws.rs.BadRequestException;
 import org.apache.commons.lang3.StringUtils;
-
-import javax.ws.rs.BadRequestException;
 
 /**
  * 权限工具

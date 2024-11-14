@@ -1,13 +1,12 @@
 package xin.manong.hylian.client.config;
 
+import jakarta.annotation.Resource;
 import lombok.Data;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import xin.manong.hylian.client.interceptor.HylianInterceptor;
-
-import javax.annotation.Resource;
 
 /**
  * 安全拦截器配置

@@ -1,10 +1,10 @@
 package xin.manong.hylian.client.util;
 
+import jakarta.servlet.http.HttpServletRequest;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.servlet.http.HttpServletRequest;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
@@ -112,7 +112,7 @@ public class HTTPUtils {
                 int index = query.indexOf("=");
                 String key = index == -1 ? query : query.substring(0, index);
                 if (queryKeys.contains(key)) continue;
-                if (builder.length() > 0) builder.append("&");
+                if (!builder.isEmpty()) builder.append("&");
                 builder.append(query);
             }
             String protocol = requestURL.getProtocol();
@@ -120,7 +120,7 @@ public class HTTPUtils {
             String path = port < 0 ?
                     String.format("%s://%s%s", protocol, requestURL.getHost(), requestURL.getPath()) :
                     String.format("%s://%s:%d%s", protocol, requestURL.getHost(), port, requestURL.getPath());
-            return builder.length() > 0 ? String.format("%s?%s", path, builder) : path;
+            return !builder.isEmpty() ? String.format("%s?%s", path, builder) : path;
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
             return url;

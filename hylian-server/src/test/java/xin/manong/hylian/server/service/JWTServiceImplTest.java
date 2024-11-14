@@ -2,6 +2,7 @@ package xin.manong.hylian.server.service;
 
 import com.auth0.jwt.interfaces.Claim;
 import com.auth0.jwt.interfaces.DecodedJWT;
+import jakarta.annotation.Resource;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Assert;
 import org.junit.Test;
@@ -13,7 +14,6 @@ import xin.manong.hylian.server.common.Constants;
 import xin.manong.hylian.server.model.UserProfile;
 import xin.manong.weapon.base.util.RandomID;
 
-import javax.annotation.Resource;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;

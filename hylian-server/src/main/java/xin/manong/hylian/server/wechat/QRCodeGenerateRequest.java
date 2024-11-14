@@ -2,13 +2,17 @@ package xin.manong.hylian.server.wechat;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.ws.rs.BadRequestException;
+import jakarta.ws.rs.QueryParam;
+import jakarta.xml.bind.annotation.XmlAccessType;
+import jakarta.xml.bind.annotation.XmlAccessorType;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.experimental.Accessors;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import xin.manong.hylian.server.service.request.SearchRequest;
-
-import javax.ws.rs.BadRequestException;
-import javax.ws.rs.QueryParam;
 
 /**
  * 微信小程序码生成请求
@@ -16,6 +20,10 @@ import javax.ws.rs.QueryParam;
  * @author frankcl
  * @date 2024-11-10 16:41:18
  */
+@Getter
+@Setter
+@Accessors(chain = true)
+@XmlAccessorType(XmlAccessType.FIELD)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class QRCodeGenerateRequest extends SearchRequest {
 

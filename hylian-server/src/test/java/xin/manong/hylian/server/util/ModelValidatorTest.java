@@ -1,9 +1,8 @@
 package xin.manong.hylian.server.util;
 
+import jakarta.ws.rs.BadRequestException;
 import org.junit.Test;
 import xin.manong.hylian.model.User;
-
-import javax.ws.rs.BadRequestException;
 
 /**
  * @author frankcl

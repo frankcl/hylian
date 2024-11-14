@@ -3,9 +3,9 @@ package xin.manong.hylian.server.service.request;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.ws.rs.QueryParam;
 import xin.manong.hylian.server.common.Constants;
 
-import javax.ws.rs.QueryParam;
 import java.io.Serializable;
 import java.util.List;
 

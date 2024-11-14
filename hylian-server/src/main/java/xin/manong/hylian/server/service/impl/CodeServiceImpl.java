@@ -4,6 +4,7 @@ import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.RemovalCause;
 import com.google.common.cache.RemovalNotification;
+import jakarta.annotation.Resource;
 import org.redisson.api.DeletedObjectListener;
 import org.redisson.api.ExpiredObjectListener;
 import org.redisson.api.RBucket;
@@ -16,7 +17,6 @@ import xin.manong.weapon.base.redis.RedisClient;
 import xin.manong.weapon.base.util.RandomID;
 import xin.manong.weapon.base.util.ShortKeyBuilder;
 
-import javax.annotation.Resource;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 

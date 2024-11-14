@@ -3,6 +3,7 @@ package xin.manong.hylian.server.util;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.ws.rs.BadRequestException;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,7 +12,6 @@ import xin.manong.hylian.server.service.request.OrderByRequest;
 import xin.manong.hylian.server.service.request.SearchRequest;
 import xin.manong.weapon.base.util.ReflectUtil;
 
-import javax.ws.rs.BadRequestException;
 import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Map;

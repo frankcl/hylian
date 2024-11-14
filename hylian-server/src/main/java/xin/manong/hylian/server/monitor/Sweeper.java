@@ -1,12 +1,11 @@
 package xin.manong.hylian.server.monitor;
 
+import jakarta.annotation.Resource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import xin.manong.hylian.server.service.ActivityService;
 import xin.manong.hylian.server.service.QRCodeService;
 import xin.manong.hylian.server.websocket.QRCodeWebSocket;
-
-import javax.annotation.Resource;
 
 /**
  * 活动记录清理

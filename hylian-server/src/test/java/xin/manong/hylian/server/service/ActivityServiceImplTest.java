@@ -1,5 +1,6 @@
 package xin.manong.hylian.server.service;
 
+import jakarta.annotation.Resource;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -12,7 +13,6 @@ import xin.manong.hylian.server.ApplicationTest;
 import xin.manong.hylian.model.Activity;
 import xin.manong.hylian.server.service.request.ActivitySearchRequest;
 
-import javax.annotation.Resource;
 import java.util.List;
 
 /**

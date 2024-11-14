@@ -1,10 +1,10 @@
 package xin.manong.hylian.server.util;
 
+import jakarta.ws.rs.ForbiddenException;
+import jakarta.ws.rs.NotAuthorizedException;
 import xin.manong.hylian.client.core.ContextManager;
 import xin.manong.hylian.model.User;
 
-import javax.ws.rs.ForbiddenException;
-import javax.ws.rs.NotAuthorizedException;
 import java.util.List;
 
 /**

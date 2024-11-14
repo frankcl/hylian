@@ -1,10 +1,11 @@
 package xin.manong.hylian.server.servlet;
 
-import org.eclipse.jetty.websocket.servlet.WebSocketServlet;
-import org.eclipse.jetty.websocket.servlet.WebSocketServletFactory;
+import jakarta.servlet.annotation.WebServlet;
+import org.eclipse.jetty.ee10.websocket.server.JettyWebSocketServletFactory;
 import xin.manong.hylian.server.websocket.QRCodeWebSocket;
 
-import javax.servlet.annotation.WebServlet;
+import java.time.Duration;
+
 
 /**
  * WebSocket servlet定义
@@ -15,11 +16,11 @@ import javax.servlet.annotation.WebServlet;
  * @date 2024-11-08 18:44:36
  */
 @WebServlet(urlPatterns = { "/api/ws/qrcode" })
-public class JettyWebSocketServlet extends WebSocketServlet {
+public class JettyWebSocketServlet extends org.eclipse.jetty.ee10.websocket.server.JettyWebSocketServlet {
 
     @Override
-    public void configure(WebSocketServletFactory webSocketServletFactory) {
-        webSocketServletFactory.getPolicy().setIdleTimeout(300000);
+    public void configure(JettyWebSocketServletFactory webSocketServletFactory) {
+        webSocketServletFactory.setIdleTimeout(Duration.ofMillis(300000L));
         webSocketServletFactory.register(QRCodeWebSocket.class);
     }
 }

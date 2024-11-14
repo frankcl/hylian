@@ -2,6 +2,9 @@ package xin.manong.hylian.server.wechat;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.ws.rs.BadRequestException;
+import jakarta.xml.bind.annotation.XmlAccessType;
+import jakarta.xml.bind.annotation.XmlAccessorType;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
@@ -10,9 +13,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import xin.manong.hylian.server.model.QRCode;
 
-import javax.ws.rs.BadRequestException;
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
 import java.io.Serializable;
 
 /**

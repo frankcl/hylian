@@ -1,5 +1,6 @@
 package xin.manong.hylian.server.service;
 
+import jakarta.annotation.Resource;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Assert;
 import org.junit.Test;
@@ -9,8 +10,6 @@ import org.springframework.test.context.junit4.SpringRunner;
 import xin.manong.hylian.server.model.UserProfile;
 import xin.manong.hylian.server.ApplicationTest;
 import xin.manong.weapon.base.util.RandomID;
-
-import javax.annotation.Resource;
 
 /**
  * @author frankcl

@@ -1,5 +1,7 @@
 package xin.manong.hylian.server.service;
 
+import jakarta.annotation.Resource;
+import jakarta.ws.rs.NotFoundException;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -14,9 +16,6 @@ import xin.manong.hylian.server.model.Pager;
 import xin.manong.hylian.model.Tenant;
 import xin.manong.hylian.model.User;
 import xin.manong.hylian.server.service.request.UserSearchRequest;
-
-import javax.annotation.Resource;
-import javax.ws.rs.NotFoundException;
 
 /**
  * @author frankcl

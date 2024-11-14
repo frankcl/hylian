@@ -2,6 +2,7 @@ package xin.manong.hylian.server.service.impl;
 
 import com.auth0.jwt.interfaces.Claim;
 import com.auth0.jwt.interfaces.DecodedJWT;
+import jakarta.annotation.Resource;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.redisson.api.RBucket;
 import org.slf4j.Logger;
@@ -14,7 +15,6 @@ import xin.manong.hylian.server.service.JWTService;
 import xin.manong.hylian.server.service.TokenService;
 import xin.manong.weapon.base.redis.RedisClient;
 
-import javax.annotation.Resource;
 import java.time.Duration;
 import java.util.Date;
 import java.util.HashMap;

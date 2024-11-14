@@ -1,5 +1,6 @@
 package xin.manong.hylian.client.config;
 
+import jakarta.annotation.Resource;
 import lombok.Data;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -7,8 +8,6 @@ import org.springframework.boot.web.servlet.ServletListenerRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import xin.manong.hylian.client.core.SessionListener;
-
-import javax.annotation.Resource;
 
 /**
  * session监听器配置

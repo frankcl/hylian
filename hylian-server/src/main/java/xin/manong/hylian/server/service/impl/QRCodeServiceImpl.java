@@ -1,15 +1,14 @@
 package xin.manong.hylian.server.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import jakarta.annotation.Resource;
+import jakarta.ws.rs.BadRequestException;
+import jakarta.ws.rs.NotFoundException;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import xin.manong.hylian.server.dao.mapper.QRCodeMapper;
 import xin.manong.hylian.server.model.QRCode;
 import xin.manong.hylian.server.service.QRCodeService;
-
-import javax.annotation.Resource;
-import javax.ws.rs.BadRequestException;
-import javax.ws.rs.NotFoundException;
 
 /**
  * 小程序码服务实现

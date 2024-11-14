@@ -1,9 +1,8 @@
 package xin.manong.hylian.client.util;
 
+import jakarta.ws.rs.BadRequestException;
 import org.junit.Assert;
 import org.junit.Test;
-
-import javax.ws.rs.BadRequestException;
 
 /**
  * @author frankcl

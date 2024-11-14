@@ -1,6 +1,7 @@
 package xin.manong.hylian.client.config;
 
 import com.alibaba.fastjson.JSON;
+import jakarta.annotation.Resource;
 import lombok.Data;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,7 +14,6 @@ import xin.manong.hylian.client.common.URLPattern;
 import xin.manong.hylian.client.filter.HylianGuard;
 import xin.manong.weapon.base.util.CommonUtil;
 
-import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
 
