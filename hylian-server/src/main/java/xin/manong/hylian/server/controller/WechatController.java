@@ -96,9 +96,9 @@ public class WechatController extends WatchValueDisposableBean {
     private ServerConfig serverConfig;
     @Resource
     private OSSClient ossClient;
-    @WatchValue(namespace = "hylian/wechat", key = "app_id")
+    @WatchValue(namespace = "hylian", key = "wechat/app_id")
     private String appId;
-    @WatchValue(namespace = "hylian/wechat", key = "app_secret")
+    @WatchValue(namespace = "hylian", key = "wechat/app_secret")
     private String appSecret;
 
     /**
