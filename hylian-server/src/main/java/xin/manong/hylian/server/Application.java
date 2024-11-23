@@ -30,7 +30,7 @@ import xin.manong.weapon.spring.boot.io.EtcdPropertySourceFactory;
 @EnableACLAspect
 @EnableWebLogAspect
 @ServletComponentScan
-@PropertySource(name = "hylian", value = "application-dev.yml", factory = EtcdPropertySourceFactory.class)
+@PropertySource(name="default", value = "application-${spring.profiles.active}.yml", factory = EtcdPropertySourceFactory.class)
 @SpringBootApplication(scanBasePackages = { "xin.manong.hylian.server" })
 public class Application {
 
