@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import jakarta.annotation.Resource;
 import jakarta.ws.rs.BadRequestException;
+import jakarta.ws.rs.ForbiddenException;
 import jakarta.ws.rs.NotFoundException;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -79,7 +80,7 @@ public class TenantServiceImpl implements TenantService {
         Pager<User> pager = userService.search(searchRequest);
         if (pager != null && pager.total > 0) {
             logger.error("users are found for tenant[{}], not allowed to be deleted", id);
-            throw new IllegalStateException("该租户下存在用户，不能删除");
+            throw new ForbiddenException("该租户下存在用户，不能删除");
         }
         return tenantMapper.deleteById(id) > 0;
     }
