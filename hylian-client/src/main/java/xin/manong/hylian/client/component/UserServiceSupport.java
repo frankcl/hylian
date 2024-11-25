@@ -98,6 +98,24 @@ public class UserServiceSupport {
     }
 
     /**
+     * 是否为应用管理员
+     *
+     * @param user 用户信息
+     * @return 应用管理员返回true，否则返回false
+     */
+    public boolean isAppAdmin(User user) {
+        String requestURL = String.format("%s%s", clientConfig.serverURL,
+                Constants.SERVER_PATH_IS_APP_ADMIN);
+        Map<String, Object> paramMap = new HashMap<>();
+        paramMap.put(Constants.PARAM_USER_ID, user.id);
+        paramMap.put(Constants.PARAM_APP_ID, clientConfig.appId);
+        paramMap.put(Constants.PARAM_APP_SECRET, clientConfig.appSecret);
+        HttpRequest httpRequest = HttpRequest.buildGetRequest(requestURL, paramMap);
+        Boolean success = HTTPExecutor.executeAndUnwrap(httpRequest, Boolean.class);
+        return success != null && success;
+    }
+
+    /**
      * 获取用户角色列表
      *
      * @param user 用户信息

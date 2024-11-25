@@ -31,6 +31,7 @@ public class Constants {
     public static final String SERVER_PATH_GET_TENANT = "api/security/getTenant";
     public static final String SERVER_PATH_GET_APP_USER_ROLES = "api/security/getAppUserRoles";
     public static final String SERVER_PATH_GET_APP_ROLE_PERMISSIONS = "api/security/getAppRolePermissions";
+    public static final String SERVER_PATH_IS_APP_ADMIN = "api/security/isAppAdmin";
 
     public static final String CURRENT_USER = "__user__";
     public static final String CURRENT_FOLLOW_APPS = "__follow_apps__";

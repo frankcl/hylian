@@ -11,7 +11,7 @@
  Target Server Version : 80030 (8.0.30)
  File Encoding         : 65001
 
- Date: 17/10/2024 22:38:11
+ Date: 25/11/2024 20:39:59
 */
 
 SET NAMES utf8mb4;
@@ -37,7 +37,7 @@ CREATE TABLE `activity` (
   KEY `INDEX_ID` (`id`) USING BTREE,
   KEY `INDEX_SESSION_ID` (`session_id`) USING BTREE,
   KEY `INDEX_TICKET_ID` (`ticket_id`) USING BTREE
-) ENGINE=InnoDB AUTO_INCREMENT=385 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=511 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- ----------------------------
 -- Table structure for app
@@ -94,6 +94,24 @@ CREATE TABLE `permission` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- ----------------------------
+-- Table structure for qr_code
+-- ----------------------------
+DROP TABLE IF EXISTS `qr_code`;
+CREATE TABLE `qr_code` (
+  `id` bigint NOT NULL AUTO_INCREMENT,
+  `key` varchar(12) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `status` int NOT NULL DEFAULT '0',
+  `create_time` bigint NOT NULL,
+  `update_time` bigint NOT NULL,
+  `openid` varchar(32) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `userid` varchar(32) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `INDEX_KEY` (`key`) USING BTREE,
+  KEY `INDEX_CREATE_TIME` (`create_time`) USING BTREE,
+  KEY `INDEX_UPDATE_TIME` (`update_time`) USING BTREE
+) ENGINE=InnoDB AUTO_INCREMENT=254 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- ----------------------------
 -- Table structure for role
 -- ----------------------------
 DROP TABLE IF EXISTS `role`;
@@ -125,7 +143,7 @@ CREATE TABLE `role_permission` (
   KEY `INDEX_PERMISSION_ID` (`permission_id`) USING BTREE,
   KEY `INDEX_CREATE_TIME` (`create_time`) USING BTREE,
   KEY `INDEX_UPDATE_TIME` (`update_time`) USING BTREE
-) ENGINE=InnoDB AUTO_INCREMENT=1846519855931551746 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=1846519855931551776 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- ----------------------------
 -- Table structure for tenant
@@ -157,6 +175,8 @@ CREATE TABLE `user` (
   `avatar` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   `tenant_id` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
   `disabled` tinyint(1) NOT NULL DEFAULT '1',
+  `wx_openid` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `register_mode` int DEFAULT NULL,
   PRIMARY KEY (`id`) USING BTREE,
   UNIQUE KEY `INDEX_USER_NAME` (`username`) USING BTREE,
   KEY `INDEX_NAME` (`name`) USING BTREE,
@@ -164,7 +184,9 @@ CREATE TABLE `user` (
   KEY `INDEX_UPDATE_TIME` (`update_time`) USING BTREE,
   KEY `INDEX_TENANT_ID` (`tenant_id`) USING BTREE,
   KEY `INDEX_USER_ID` (`id`) USING BTREE,
-  KEY `INDEX_DISABLE` (`disabled`) USING BTREE
+  KEY `INDEX_DISABLE` (`disabled`) USING BTREE,
+  KEY `INDEX_WX_OPENID` (`wx_openid`) USING BTREE,
+  KEY `INDEX_REGISTER_MODE` (`register_mode`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- ----------------------------
@@ -184,6 +206,6 @@ CREATE TABLE `user_role` (
   KEY `INDEX_APP_ID` (`app_id`) USING BTREE,
   KEY `INDEX_CREATE_TIME` (`create_time`) USING BTREE,
   KEY `INDEX_UPDATE_TIME` (`update_time`) USING BTREE
-) ENGINE=InnoDB AUTO_INCREMENT=1846194229286604803 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=1846194229286604833 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 SET FOREIGN_KEY_CHECKS = 1;

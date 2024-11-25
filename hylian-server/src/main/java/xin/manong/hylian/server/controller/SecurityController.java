@@ -256,6 +256,27 @@ public class SecurityController {
     }
 
     /**
+     * 是否是应用管理员
+     *
+     * @param userId 用户ID
+     * @param appId 应用ID
+     * @param appSecret 应用秘钥
+     * @return 应用管理员返回true，否则返回false
+     */
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("isAppAdmin")
+    @GetMapping("isAppAdmin")
+    @EnableWebLogAspect
+    public boolean isAppAdmin(@QueryParam("user_id") @RequestParam("user_id") String userId,
+                              @QueryParam("app_id") @RequestParam("app_id") String appId,
+                              @QueryParam("app_secret") @RequestParam("app_secret") String appSecret) {
+        if (StringUtils.isEmpty(userId)) throw new BadRequestException("用户ID为空");
+        appService.verifyApp(appId, appSecret);
+        return appUserService.getAppUser(appId, userId) != null;
+    }
+
+    /**
      * 获取应用角色权限列表
      *
      * @param request 应用角色权限请求
