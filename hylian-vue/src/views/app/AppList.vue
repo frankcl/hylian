@@ -243,9 +243,8 @@ watch(query, () => search(), { immediate: true })
     <el-pagination background layout="prev, pager, next" :total="total"
                    v-model:page-size="query.size" v-model:current-page="query.current" />
   </el-row>
-  <add-app v-model="openAddDialog" @close="openAddDialog = false; search()"></add-app>
-  <allocate-user v-model="openAllocateDialog" v-bind="app"
-                 @close="openAllocateDialog = false; search()"></allocate-user>
+  <add-app v-model="openAddDialog" @close="search()"></add-app>
+  <allocate-user v-model="openAllocateDialog" v-bind="app" @close="search()"></allocate-user>
 </template>
 
 <style scoped>

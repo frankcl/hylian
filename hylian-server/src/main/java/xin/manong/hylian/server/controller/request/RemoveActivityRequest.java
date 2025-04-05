@@ -13,8 +13,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.Serializable;
-
 /**
  * 移除活动记录请求
  *
@@ -26,22 +24,10 @@ import java.io.Serializable;
 @Accessors(chain = true)
 @XmlAccessorType(XmlAccessType.FIELD)
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class RemoveActivityRequest implements Serializable {
+public class RemoveActivityRequest extends SecurityRequest {
 
     private static final Logger logger = LoggerFactory.getLogger(RemoveActivityRequest.class);
 
-    /**
-     * 应用ID
-     */
-    @JsonProperty("app_id")
-    @JSONField(name = "app_id")
-    public String appId;
-    /**
-     * 应用秘钥
-     */
-    @JsonProperty("app_secret")
-    @JSONField(name = "app_secret")
-    public String appSecret;
     /**
      * 会话ID
      */
@@ -53,14 +39,7 @@ public class RemoveActivityRequest implements Serializable {
      * 检测请求有效性，无效请求抛出异常BadRequestException
      */
     public void check() {
-        if (StringUtils.isEmpty(appId)) {
-            logger.error("app id is empty");
-            throw new BadRequestException("应用ID为空");
-        }
-        if (StringUtils.isEmpty(appSecret)) {
-            logger.error("app secret is empty");
-            throw new BadRequestException("应用秘钥为空");
-        }
+        super.check();
         if (StringUtils.isEmpty(sessionId)) {
             logger.error("session id is empty");
             throw new BadRequestException("会话ID为空");

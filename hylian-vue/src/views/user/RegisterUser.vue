@@ -43,7 +43,7 @@ const refreshCaptcha = async () => captcha.value = await asyncApplyCaptcha()
 const submit = async formEl => {
   if (!await submitForm(formEl, userForm, asyncRegister,
     '注册用户成功', '注册用户失败')) return
-  emits('close')
+  model.value = false
 }
 
 watchEffect(() => {

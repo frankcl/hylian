@@ -1,4 +1,4 @@
-package xin.manong.hylian.server.util;
+package xin.manong.hylian.client.util;
 
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
@@ -43,17 +43,19 @@ public class CookieUtils {
      * @param name cookie名称
      * @param value cookie值
      * @param path cookie生效路径
+     * @param domain cookie生效domain
      * @param httpOnly 只用于HTTP
      * @param httpRequest HTTP请求
      * @param httpResponse HTTP响应
      */
-    public static void setCookie(String name, String value, String path, boolean httpOnly,
+    public static void setCookie(String name, String value, String path, String domain, boolean httpOnly,
                                  HttpServletRequest httpRequest, HttpServletResponse httpResponse) {
         Cookie cookie = new Cookie(name, value);
         cookie.setHttpOnly(httpOnly);
         String schema = httpRequest.getScheme();
         if (!StringUtils.isEmpty(schema) && schema.equals("https")) cookie.setSecure(true);
         if (!StringUtils.isEmpty(path)) cookie.setPath(path);
+        if (!StringUtils.isEmpty(domain)) cookie.setDomain(domain);
         httpResponse.addCookie(cookie);
     }
 
@@ -62,12 +64,15 @@ public class CookieUtils {
      *
      * @param name cookie名称
      * @param path cookie生效路径
+     * @param domain cookie生效domain
      * @param httpResponse HTTP响应
      */
-    public static void removeCookie(String name, String path, HttpServletResponse httpResponse) {
+    public static void removeCookie(String name, String path, String domain,
+                                    HttpServletResponse httpResponse) {
         Cookie cookie = new Cookie(name, null);
         cookie.setMaxAge(0);
         if (!StringUtils.isEmpty(path)) cookie.setPath(path);
+        if (!StringUtils.isEmpty(domain)) cookie.setDomain(domain);
         httpResponse.addCookie(cookie);
     }
 }

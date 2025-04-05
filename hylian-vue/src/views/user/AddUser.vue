@@ -38,7 +38,7 @@ const formRules = {
 const submit = async formEl => {
   if (!await submitForm(formEl, userForm,asyncAddUser,
     '新增用户成功', '新增用户失败')) return
-  emits('close')
+  model.value = false
 }
 </script>
 

@@ -5,10 +5,11 @@ import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
+import xin.manong.hylian.client.common.Constants;
 import xin.manong.hylian.client.core.ContextManager;
 import xin.manong.hylian.model.App;
 import xin.manong.hylian.model.User;
-import xin.manong.hylian.server.aspect.EnableAppFollowAspect;
+import xin.manong.hylian.server.aspect.EnableAppInjectAspect;
 import xin.manong.hylian.server.model.Pager;
 import xin.manong.hylian.model.Permission;
 import xin.manong.hylian.server.converter.Converter;
@@ -88,7 +89,7 @@ public class PermissionController {
     @Path("add")
     @PutMapping("add")
     @EnableWebLogAspect
-    @EnableAppFollowAspect
+    @EnableAppInjectAspect
     public boolean add(@RequestBody PermissionRequest permissionRequest) {
         if (permissionRequest == null) throw new BadRequestException("权限信息为空");
         permissionRequest.check();
@@ -111,7 +112,7 @@ public class PermissionController {
     @Path("update")
     @PostMapping("update")
     @EnableWebLogAspect
-    @EnableAppFollowAspect
+    @EnableAppInjectAspect
     public boolean update(@RequestBody PermissionUpdateRequest permissionUpdateRequest) {
         if (permissionUpdateRequest == null) throw new BadRequestException("权限信息为空");
         permissionUpdateRequest.check();
@@ -136,7 +137,7 @@ public class PermissionController {
     @Path("delete")
     @DeleteMapping("delete")
     @EnableWebLogAspect
-    @EnableAppFollowAspect
+    @EnableAppInjectAspect
     public boolean delete(@QueryParam("id") @RequestParam("id") String id) {
         Permission permission = permissionService.get(id);
         if (permission == null) throw new NotFoundException("权限不存在");
@@ -150,18 +151,19 @@ public class PermissionController {
      * @param searchRequest 搜索请求
      * @return 权限分页列表
      */
+    @SuppressWarnings("unchecked")
     @GET
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @Path("search")
     @GetMapping("search")
     @EnableWebLogAspect
-    @EnableAppFollowAspect
+    @EnableAppInjectAspect
     public Pager<ViewPermission> search(@BeanParam PermissionSearchRequest searchRequest) {
         User currentUser = ContextManager.getUser();
         assert currentUser != null;
         searchRequest.appIds = currentUser.superAdmin || searchRequest.ignoreCheck ?
-                null : ContextManager.getFollowApps();
+                null : ContextManager.getValue(Constants.CURRENT_APPS, List.class);
         Pager<Permission> pager = searchRequest.appIds != null && searchRequest.appIds.isEmpty() ?
                 Pager.empty(searchRequest.current, searchRequest.size) : permissionService.search(searchRequest);
         Pager<ViewPermission> viewPager = new Pager<>();

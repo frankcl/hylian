@@ -8,6 +8,9 @@ package xin.manong.hylian.client.common;
  */
 public class Constants {
 
+    public static final String COOKIE_TICKET = "TICKET";
+    public static final String COOKIE_TOKEN = "TOKEN";
+
     public static final String PARAM_CODE = "code";
     public static final String PARAM_TOKEN = "token";
     public static final String PARAM_APP_ID = "app_id";
@@ -29,10 +32,11 @@ public class Constants {
     public static final String SERVER_PATH_REMOVE_ACTIVITY = "api/security/removeActivity";
     public static final String SERVER_PATH_GET_USER = "api/security/getUser";
     public static final String SERVER_PATH_GET_TENANT = "api/security/getTenant";
+    public static final String SERVER_PATH_GET_ALL_USERS = "api/security/getAllUsers";
     public static final String SERVER_PATH_GET_APP_USER_ROLES = "api/security/getAppUserRoles";
     public static final String SERVER_PATH_GET_APP_ROLE_PERMISSIONS = "api/security/getAppRolePermissions";
     public static final String SERVER_PATH_IS_APP_ADMIN = "api/security/isAppAdmin";
 
     public static final String CURRENT_USER = "__user__";
-    public static final String CURRENT_FOLLOW_APPS = "__follow_apps__";
+    public static final String CURRENT_APPS = "__apps__";
 }

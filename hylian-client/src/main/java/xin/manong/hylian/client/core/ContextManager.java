@@ -1,13 +1,8 @@
 package xin.manong.hylian.client.core;
 
-import jakarta.servlet.http.HttpServletRequest;
-import xin.manong.hylian.client.util.SessionUtils;
 import xin.manong.hylian.model.User;
 import xin.manong.hylian.client.common.Constants;
 import xin.manong.weapon.base.common.Context;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * 线程上下文管理器
@@ -25,60 +20,65 @@ public class ContextManager {
      * @return 成功返回用户信息，否则返回null
      */
     public static User getUser() {
+        return getValue(Constants.CURRENT_USER, User.class);
+    }
+
+    /**
+     * 设置用户信息
+     *
+     * @param user 用户信息
+     */
+    public static void setUser(User user) {
+        setValue(Constants.CURRENT_USER, user);
+    }
+
+    /**
+     * 移除用户信息
+     */
+    public static void removeUser() {
+        removeValue(Constants.CURRENT_USER);
+    }
+
+    /**
+     * 设置信息到上下文
+     *
+     * @param key 键
+     * @param value 值
+     */
+    public static void setValue(String key, Object value) {
+        if (value == null) return;
+        Context context = THREAD_LOCAL_CONTEXT.get();
+        if (context == null) {
+            context = new Context();
+            THREAD_LOCAL_CONTEXT.set(context);
+        }
+        context.put(key, value);
+    }
+
+    /**
+     * 从上下文获取值
+     *
+     * @param key 键
+     * @param valueType 值类型
+     * @return 成功返回值，否则返回null
+     * @param <T> 值类型
+     */
+    public static <T> T getValue(String key, Class<T> valueType) {
         Context context = THREAD_LOCAL_CONTEXT.get();
         if (context == null) return null;
-        return (User) context.get(Constants.CURRENT_USER);
+        Object value = context.get(key);
+        return value == null ? null : valueType.cast(value);
     }
 
     /**
-     * 获取关注应用列表
+     * 移除值
      *
-     * @return 成功返回关注应用列表，否则返回空列表
+     * @param key 键
      */
-    @SuppressWarnings("unchecked")
-    public static List<String> getFollowApps() {
-        Context context = THREAD_LOCAL_CONTEXT.get();
-        if (context == null) return new ArrayList<>();
-        return (List<String>) context.get(Constants.CURRENT_FOLLOW_APPS);
-    }
-
-    /**
-     * 设置关注应用列表
-     *
-     * @param followApps 关注应用列表
-     */
-    public static void setFollowApps(List<String> followApps) {
-        Context context = THREAD_LOCAL_CONTEXT.get();
-        if (context == null) {
-            context = new Context();
-            THREAD_LOCAL_CONTEXT.set(context);
-        }
-        context.put(Constants.CURRENT_FOLLOW_APPS, followApps);
-    }
-
-    /**
-     * 移除关注应用列表
-     */
-    public static void removeFollowApps() {
+    public static void removeValue(String key) {
         Context context = THREAD_LOCAL_CONTEXT.get();
         if (context == null) return;
-        context.remove(Constants.CURRENT_FOLLOW_APPS);
-    }
-
-    /**
-     * 填充线程上下文
-     * 1. 填充用户信息
-     * 2. 填充租户信息
-     *
-     * @param httpRequest HTTP请求
-     */
-    public static void fillContext(HttpServletRequest httpRequest) {
-        Context context = THREAD_LOCAL_CONTEXT.get();
-        if (context == null) {
-            context = new Context();
-            THREAD_LOCAL_CONTEXT.set(context);
-        }
-        context.put(Constants.CURRENT_USER, SessionUtils.getUser(httpRequest));
+        context.remove(key);
     }
 
     /**

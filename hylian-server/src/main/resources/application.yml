@@ -19,7 +19,12 @@ spring:
       filters: stat,wall,slf4j,config
 
 server:
-  port: 8080
+  port: 9001
+  insecure-port: 9000
+  ssl:
+    key-store: classpath:manong.xin.jks
+    key-store-type: jks
+    key-password: xmjjyhy28p
   jetty:
     threads:
       acceptors: 2
@@ -27,4 +32,4 @@ server:
       min: 8
       max: 200
     max-http-form-post-size: 1048576
-  address: 192.168.3.43
+  address: 0.0.0.0

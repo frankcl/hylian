@@ -25,7 +25,7 @@ const formRules = reactive({
 const submit = async formEl => {
   if (!await submitForm(formEl, roleForm, asyncAddRole,
     '新增角色成功', '新增角色失败')) return
-  emits('close')
+  model.value = false
 }
 </script>
 

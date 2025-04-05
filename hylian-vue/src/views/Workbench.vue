@@ -35,9 +35,9 @@ const handleCommand = async command => {
 <template>
   <el-container class="workbench-container">
     <el-header class="workbench-header">
-      <update-password v-model="openPasswordDialog" @close="openPasswordDialog = false"></update-password>
-      <edit-user v-model="openEditDialog" :id="userStore.id" @close="openEditDialog = false"></edit-user>
-      <bind-user v-model="openBindDialog" :id="userStore.id" @close="openBindDialog = false"></bind-user>
+      <update-password v-model="openPasswordDialog"></update-password>
+      <edit-user v-model="openEditDialog" :id="userStore.id"></edit-user>
+      <bind-user v-model="openBindDialog" :id="userStore.id"></bind-user>
       <el-row style="margin-top: 5px" align="middle" justify="end">
         <user-profile></user-profile>&nbsp;&nbsp;
         <el-dropdown trigger="click" @command="handleCommand">

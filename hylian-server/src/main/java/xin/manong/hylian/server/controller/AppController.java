@@ -7,10 +7,11 @@ import jakarta.ws.rs.core.MediaType;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
+import xin.manong.hylian.client.common.Constants;
 import xin.manong.hylian.client.core.ContextManager;
 import xin.manong.hylian.model.AppUser;
 import xin.manong.hylian.model.User;
-import xin.manong.hylian.server.aspect.EnableAppFollowAspect;
+import xin.manong.hylian.server.aspect.EnableAppInjectAspect;
 import xin.manong.hylian.server.controller.request.BatchAppUserRequest;
 import xin.manong.hylian.server.controller.response.ViewUser;
 import xin.manong.hylian.server.service.AppUserService;
@@ -124,7 +125,7 @@ public class AppController {
     @Path("update")
     @PostMapping("update")
     @EnableWebLogAspect
-    @EnableAppFollowAspect
+    @EnableAppInjectAspect
     public boolean update(@RequestBody AppUpdateRequest appRequest) {
         if (appRequest == null) throw new BadRequestException("应用信息为空");
         appRequest.check();
@@ -158,7 +159,7 @@ public class AppController {
     @Path("delete")
     @DeleteMapping("delete")
     @EnableWebLogAspect
-    @EnableAppFollowAspect
+    @EnableAppInjectAspect
     public boolean delete(@QueryParam("id") @RequestParam("id") String id) {
         PermissionValidator.validateAppPermission(id);
         return appService.delete(id);
@@ -178,7 +179,7 @@ public class AppController {
     @Path("batchUpdateAppUser")
     @PostMapping("batchUpdateAppUser")
     @EnableWebLogAspect
-    @EnableAppFollowAspect
+    @EnableAppInjectAspect
     public boolean batchUpdateAppUser(@RequestBody BatchAppUserRequest request) {
         if (request == null) throw new BadRequestException("批量更新请求为空");
         request.check();
@@ -199,18 +200,19 @@ public class AppController {
      * @param searchRequest 搜索请求
      * @return 应用分页列表
      */
+    @SuppressWarnings("unchecked")
     @GET
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @Path("search")
     @GetMapping("search")
     @EnableWebLogAspect
-    @EnableAppFollowAspect
+    @EnableAppInjectAspect
     public Pager<App> search(@BeanParam AppSearchRequest searchRequest) {
         User currentUser = ContextManager.getUser();
         assert currentUser != null;
         searchRequest.appIds = currentUser.superAdmin || searchRequest.ignoreCheck ?
-                null : ContextManager.getFollowApps();
+                null : ContextManager.getValue(Constants.CURRENT_APPS, List.class);
         return searchRequest.appIds != null && searchRequest.appIds.isEmpty() ?
                 Pager.empty(searchRequest.current, searchRequest.size) : appService.search(searchRequest);
     }

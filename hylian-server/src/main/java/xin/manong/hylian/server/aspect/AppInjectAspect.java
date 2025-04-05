@@ -10,6 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
+import xin.manong.hylian.client.common.Constants;
 import xin.manong.hylian.client.core.ContextManager;
 import xin.manong.hylian.model.AppUser;
 import xin.manong.hylian.model.User;
@@ -20,7 +21,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * 关注应用切面
+ * 应用注入切面
  * 注入用户关注（有权限操作）应用列表
  *
  * @author frankcl
@@ -29,14 +30,14 @@ import java.util.stream.Collectors;
 @Component
 @Aspect
 @Order(1001)
-public class AppFollowAspect {
+public class AppInjectAspect {
 
-    private static final Logger logger = LoggerFactory.getLogger(AppFollowAspect.class);
+    private static final Logger logger = LoggerFactory.getLogger(AppInjectAspect.class);
 
     @Resource
     protected AppUserService appUserService;
 
-    @Pointcut("@annotation(xin.manong.hylian.server.aspect.EnableAppFollowAspect) && execution(public * *(..))")
+    @Pointcut("@annotation(xin.manong.hylian.server.aspect.EnableAppInjectAspect) && execution(public * *(..))")
     public void intercept() {
     }
 
@@ -56,12 +57,13 @@ public class AppFollowAspect {
         if (!user.superAdmin) {
             List<AppUser> appUsers = appUserService.getByUserId(user.getId());
             if (appUsers == null) appUsers = new ArrayList<>();
-            ContextManager.setFollowApps(appUsers.stream().map(appUser -> appUser.appId).collect(Collectors.toList()));
+            ContextManager.setValue(Constants.CURRENT_APPS, appUsers.stream().map(
+                    appUser -> appUser.appId).collect(Collectors.toList()));
         }
         try {
             return joinPoint.proceed();
         } finally {
-            ContextManager.removeFollowApps();
+            ContextManager.removeValue(Constants.CURRENT_APPS);
         }
     }
 }

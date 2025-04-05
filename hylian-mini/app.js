@@ -50,7 +50,7 @@ App({
     })
   },
   globalData: {
-    serverBaseURL: 'http://192.168.3.43:8080',
+    serverBaseURL: 'http://192.168.3.43:9000',
     userInfo: null
   }
 })

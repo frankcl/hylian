@@ -20,7 +20,7 @@ const formRules = reactive({
 const submit = async formEl => {
   if (!await submitForm(formEl, tenantForm, asyncAddTenant,
     '新增租户成功', '新增租户失败')) return
-  emits('close')
+  model.value = false
 }
 </script>
 

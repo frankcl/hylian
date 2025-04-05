@@ -7,9 +7,10 @@ import jakarta.ws.rs.core.MediaType;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
+import xin.manong.hylian.client.common.Constants;
 import xin.manong.hylian.client.core.ContextManager;
 import xin.manong.hylian.model.*;
-import xin.manong.hylian.server.aspect.EnableAppFollowAspect;
+import xin.manong.hylian.server.aspect.EnableAppInjectAspect;
 import xin.manong.hylian.server.model.Pager;
 import xin.manong.hylian.server.converter.Converter;
 import xin.manong.hylian.server.controller.request.BatchRolePermissionRequest;
@@ -79,7 +80,7 @@ public class RoleController {
     @Path("add")
     @PutMapping("add")
     @EnableWebLogAspect
-    @EnableAppFollowAspect
+    @EnableAppInjectAspect
     public boolean add(@RequestBody RoleRequest roleRequest) {
         if (roleRequest == null) throw new BadRequestException("角色信息为空");
         roleRequest.check();
@@ -102,7 +103,7 @@ public class RoleController {
     @Path("update")
     @PostMapping("update")
     @EnableWebLogAspect
-    @EnableAppFollowAspect
+    @EnableAppInjectAspect
     public boolean update(@RequestBody RoleUpdateRequest roleUpdateRequest) {
         if (roleUpdateRequest == null) throw new BadRequestException("角色信息为空");
         roleUpdateRequest.check();
@@ -126,7 +127,7 @@ public class RoleController {
     @Path("addRolePermission")
     @PutMapping("addRolePermission")
     @EnableWebLogAspect
-    @EnableAppFollowAspect
+    @EnableAppInjectAspect
     public boolean addRolePermission(@RequestBody RolePermissionRequest request) {
         if (request == null) throw new BadRequestException("角色权限关系为空");
         request.check();
@@ -149,7 +150,7 @@ public class RoleController {
     @Path("removeRolePermission")
     @DeleteMapping("removeRolePermission")
     @EnableWebLogAspect
-    @EnableAppFollowAspect
+    @EnableAppInjectAspect
     public boolean removeRolePermission(@QueryParam("id") @RequestParam("id") Long id) {
         RolePermission rolePermission = rolePermissionService.get(id);
         if (rolePermission == null) throw new NotFoundException("角色权限关系不存在");
@@ -173,7 +174,7 @@ public class RoleController {
     @Path("batchUpdateRolePermission")
     @PostMapping("batchUpdateRolePermission")
     @EnableWebLogAspect
-    @EnableAppFollowAspect
+    @EnableAppInjectAspect
     public boolean batchUpdateRolePermission(@RequestBody BatchRolePermissionRequest request) {
         if (request == null) throw new BadRequestException("批量更新请求为空");
         request.check();
@@ -201,7 +202,7 @@ public class RoleController {
     @Path("delete")
     @DeleteMapping("delete")
     @EnableWebLogAspect
-    @EnableAppFollowAspect
+    @EnableAppInjectAspect
     public boolean delete(@QueryParam("id") @RequestParam("id") String id) {
         Role role = roleService.get(id);
         if (role == null) throw new NotFoundException("角色不存在");
@@ -215,18 +216,19 @@ public class RoleController {
      * @param searchRequest 搜索请求
      * @return 角色分页列表
      */
+    @SuppressWarnings("unchecked")
     @GET
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @Path("search")
     @GetMapping("search")
     @EnableWebLogAspect
-    @EnableAppFollowAspect
+    @EnableAppInjectAspect
     public Pager<ViewRole> search(@BeanParam RoleSearchRequest searchRequest) {
         User currentUser = ContextManager.getUser();
         assert currentUser != null;
         searchRequest.appIds = currentUser.superAdmin || searchRequest.ignoreCheck ?
-                null : ContextManager.getFollowApps();
+                null : ContextManager.getValue(Constants.CURRENT_APPS, List.class);
         Pager<Role> pager = searchRequest.appIds != null && searchRequest.appIds.isEmpty() ?
                 Pager.empty(searchRequest.current, searchRequest.size) : roleService.search(searchRequest);
         Pager<ViewRole> viewPager = new Pager<>();

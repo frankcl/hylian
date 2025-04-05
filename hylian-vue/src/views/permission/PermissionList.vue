@@ -211,7 +211,7 @@ watch(query, () => search(), { immediate: true })
     <el-pagination background layout="prev, pager, next" :total="total"
                    v-model:page-size="query.size" v-model:current-page="query.current" />
   </el-row>
-  <add-permission v-model="openAddDialog" @close="openAddDialog = false; search()"></add-permission>
+  <add-permission v-model="openAddDialog" @close="search()"></add-permission>
 </template>
 
 <style scoped>

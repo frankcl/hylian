@@ -1,11 +1,13 @@
 package xin.manong.hylian.client.filter;
 
 import com.alibaba.fastjson2.JSON;
+import jakarta.ws.rs.NotAuthorizedException;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import xin.manong.hylian.client.common.Constants;
 import xin.manong.hylian.client.common.URLPattern;
+import xin.manong.hylian.client.core.CookieSweeper;
 import xin.manong.hylian.client.core.HylianShield;
 import xin.manong.hylian.client.core.ContextManager;
 import xin.manong.hylian.client.util.HTTPUtils;
@@ -13,6 +15,8 @@ import xin.manong.hylian.client.util.HTTPUtils;
 import jakarta.servlet.*;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import xin.manong.hylian.client.util.SessionUtils;
+
 import java.io.IOException;
 import java.util.List;
 import java.util.regex.Pattern;
@@ -24,7 +28,7 @@ import java.util.regex.Pattern;
  * @author frankcl
  * @date 2023-09-04 14:34:57
  */
-public class HylianGuard implements Filter {
+public class HylianGuard extends CookieSweeper implements Filter {
 
     private static final Logger logger = LoggerFactory.getLogger(HylianGuard.class);
 
@@ -72,9 +76,13 @@ public class HylianGuard implements Filter {
         String requestPath = HTTPUtils.getRequestPath(httpRequest);
         if (matchExcludePath(requestPath) || shield.shelter(httpRequest, httpResponse)) {
             try {
-                ContextManager.fillContext(httpRequest);
+                ContextManager.setUser(SessionUtils.getUser(httpRequest));
                 chain.doFilter(request, response);
+            } catch (NotAuthorizedException e) {
+                sweepCookies(httpRequest, httpResponse);
+                throw e;
             } finally {
+                ContextManager.removeUser();
                 ContextManager.sweepContext();
             }
         }

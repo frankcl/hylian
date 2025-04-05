@@ -27,15 +27,16 @@ export default defineConfig({
     environment: 'happy-dom'    // 使用 happy-dom 模拟 DOM
   },
   server: {
-    port: 9000,
+    port: 8089,
     host: '192.168.3.43',
+    cors: true,
     proxy: {
       '^/api': {
-        target: 'http://192.168.3.43:8080',
+        target: 'https://hylian.manong.xin:9001',
         changeOrigin: true,
         ws: true,
         https: true,
-        secure: true
+        secure: false
       },
     }
   }

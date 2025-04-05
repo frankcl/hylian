@@ -34,7 +34,7 @@ const refreshAppSecret = async appForm => appForm.secret = await asyncRandomSecr
 const submit = async formEl => {
   if (!await submitForm(formEl, appForm, asyncAddApp,
     '新增应用成功', '新增应用失败')) return
-  emits('close')
+  model.value = false
 }
 </script>
 

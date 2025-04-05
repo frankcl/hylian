@@ -1,5 +1,6 @@
 package xin.manong.hylian.server.aspect;
 
+import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.ws.rs.NotAuthorizedException;
 import org.aspectj.lang.JoinPoint;
@@ -8,7 +9,8 @@ import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
-import xin.manong.hylian.server.util.CookieUtils;
+import xin.manong.hylian.server.config.ServerConfig;
+import xin.manong.hylian.client.util.CookieUtils;
 import xin.manong.hylian.server.common.Constants;
 
 /**
@@ -21,6 +23,9 @@ import xin.manong.hylian.server.common.Constants;
 @Aspect
 @Order(2000)
 public class CookieSweepAspect {
+
+    @Resource
+    private ServerConfig serverConfig;
 
     @Pointcut("execution(public * xin.manong.hylian.server.controller.*.*(..))")
     public void intercept() {
@@ -37,8 +42,8 @@ public class CookieSweepAspect {
         if (throwable instanceof NotAuthorizedException) {
             HttpServletResponse httpResponse = ((ServletRequestAttributes) RequestContextHolder.
                     currentRequestAttributes()).getResponse();
-            CookieUtils.removeCookie(Constants.COOKIE_TOKEN, "/", httpResponse);
-            CookieUtils.removeCookie(Constants.COOKIE_TICKET, "/", httpResponse);
+            CookieUtils.removeCookie(Constants.COOKIE_TOKEN, "/", serverConfig.domain, httpResponse);
+            CookieUtils.removeCookie(Constants.COOKIE_TICKET, "/", serverConfig.domain, httpResponse);
         }
     }
 }

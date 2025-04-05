@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.*;
 import xin.manong.hylian.client.aspect.EnableACLAspect;
 import xin.manong.hylian.client.util.SessionUtils;
 import xin.manong.hylian.model.*;
-import xin.manong.hylian.server.aspect.EnableAppFollowAspect;
+import xin.manong.hylian.server.aspect.EnableAppInjectAspect;
 import xin.manong.hylian.server.config.ServerConfig;
 import xin.manong.hylian.server.controller.request.*;
 import xin.manong.hylian.server.controller.response.ViewTenant;
@@ -240,7 +240,7 @@ public class UserController {
     @Path("batchUpdateUserRole")
     @PostMapping("batchUpdateUserRole")
     @EnableWebLogAspect
-    @EnableAppFollowAspect
+    @EnableAppInjectAspect
     public boolean batchUpdateUserRole(@RequestBody BatchUserRoleRequest request) {
         if (request == null) throw new BadRequestException("批量更新请求为空");
         request.check();

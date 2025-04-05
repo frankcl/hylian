@@ -1,6 +1,6 @@
 <script setup>
 import { ref } from 'vue'
-import {ElDialog, ElIcon, ElNotification, ElRow} from 'element-plus'
+import { ElDialog, ElIcon, ElNotification, ElRow } from 'element-plus'
 import { Refresh } from '@element-plus/icons-vue'
 import { asyncForceRefresh, asyncGenerateQRCode } from '@/common/service'
 import { refreshUser } from '@/common/assortment'
@@ -33,7 +33,7 @@ const refreshQRCode = async () => {
       prompt.value = '成功绑定'
       ElNotification.success('成功绑定')
       this.close()
-      emits('close')
+      model.value = false
     }
   }
 }

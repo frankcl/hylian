@@ -2,11 +2,14 @@ package xin.manong.hylian.client.interceptor;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.ws.rs.NotAuthorizedException;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.web.servlet.HandlerInterceptor;
 import xin.manong.hylian.client.config.HylianClientConfig;
+import xin.manong.hylian.client.core.CookieSweeper;
 import xin.manong.hylian.client.core.HylianShield;
 import xin.manong.hylian.client.core.ContextManager;
+import xin.manong.hylian.client.util.SessionUtils;
 
 /**
  * Hylian拦截器：负责安全拦截
@@ -14,7 +17,7 @@ import xin.manong.hylian.client.core.ContextManager;
  * @author frankcl
  * @date 2023-09-05 19:34:12
  */
-public class HylianInterceptor implements HandlerInterceptor {
+public class HylianInterceptor extends CookieSweeper implements HandlerInterceptor {
 
     private final HylianShield shield;
 
@@ -34,11 +37,16 @@ public class HylianInterceptor implements HandlerInterceptor {
     public boolean preHandle(@NotNull HttpServletRequest httpRequest,
                              @NotNull HttpServletResponse httpResponse,
                              @NotNull Object handler) throws Exception {
-        if (shield.shelter(httpRequest, httpResponse)) {
-            ContextManager.fillContext(httpRequest);
-            return true;
+        try {
+            if (shield.shelter(httpRequest, httpResponse)) {
+                ContextManager.setUser(SessionUtils.getUser(httpRequest));
+                return true;
+            }
+            return false;
+        } catch (NotAuthorizedException e) {
+            sweepCookies(httpRequest, httpResponse);
+            throw e;
         }
-        return false;
     }
 
     /**
@@ -53,6 +61,7 @@ public class HylianInterceptor implements HandlerInterceptor {
     public void afterCompletion(@NotNull HttpServletRequest httpRequest,
                                 @NotNull HttpServletResponse httpResponse,
                                 @NotNull Object handler, Exception e) throws Exception {
+        ContextManager.removeUser();
         ContextManager.sweepContext();
     }
 }

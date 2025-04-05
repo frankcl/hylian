@@ -35,7 +35,7 @@ public class ActivityServiceImpl implements ActivityService {
     @Override
     public boolean add(Activity activity) {
         LambdaQueryWrapper<Activity> query = new LambdaQueryWrapper<>();
-        query.eq(Activity::getSessionId, activity.sessionId).eq(Activity::getAppId, activity.appId);
+        query.eq(Activity::getTicketId, activity.ticketId).eq(Activity::getAppId, activity.appId);
         if (activityMapper.selectCount(query) > 0) throw new IllegalStateException("活动记录已存在");
         return activityMapper.insert(activity) > 0;
     }

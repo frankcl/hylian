@@ -8,6 +8,7 @@ import xin.manong.hylian.client.annotation.EnableCORSFilter;
 import xin.manong.hylian.client.annotation.EnableHylianGuard;
 import xin.manong.hylian.client.aspect.EnableACLAspect;
 import xin.manong.weapon.spring.boot.annotation.EnableEtcdClient;
+import xin.manong.weapon.spring.boot.annotation.EnableJettySupportSSL;
 import xin.manong.weapon.spring.boot.annotation.EnableOSSClient;
 import xin.manong.weapon.spring.boot.annotation.EnableRedisClient;
 import xin.manong.weapon.spring.boot.aspect.EnableWebLogAspect;
@@ -29,6 +30,7 @@ import xin.manong.weapon.spring.boot.io.EtcdPropertySourceFactory;
 @EnableHylianGuard
 @EnableACLAspect
 @EnableWebLogAspect
+@EnableJettySupportSSL
 @ServletComponentScan
 @PropertySource(name="default", value = "application-${spring.profiles.active}.yml", factory = EtcdPropertySourceFactory.class)
 @SpringBootApplication(scanBasePackages = { "xin.manong.hylian.server" })

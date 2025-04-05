@@ -33,7 +33,7 @@ hylian:
   client:
     appId: hylian
     appSecret: 123456
-    serverURL: http://192.168.3.43:8080/
+    serverURL: https://hylian.manong.xin/
   filter:
     guard:
       excludePatterns:
@@ -47,6 +47,7 @@ hylian:
 app:
   server:
     name: hylian
+    domain: .manong.xin
     aspectLogFile: ./log/aspect/web.log
     jwt-config:
       secretHS256: ${hylian/jwt/secret}

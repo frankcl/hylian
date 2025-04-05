@@ -22,7 +22,7 @@ const save = async () => {
   permissions.value.forEach(id => request.permission_ids.push(id))
   if (!await submitForm(undefined, request, asyncBatchUpdateRolePermissions,
     '分配角色权限成功', '分配角色权限失败')) return
-  emits('close')
+  model.value = false
 }
 
 watch(() => [props.appId, props.roleId], async() => {

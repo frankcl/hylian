@@ -58,6 +58,7 @@ public class HylianShield {
             httpResponse.sendRedirect(String.format("%s%s?%s=%s&%s=%s", serverURL,
                     Constants.SERVER_PATH_LOGOUT, Constants.PARAM_APP_ID, appId,
                     Constants.PARAM_APP_SECRET, appSecret));
+            SessionManager.invalidate(httpRequest.getSession().getId());
             return false;
         } else if (path != null && path.equals(Constants.CLIENT_PATH_SWEEP)) {
             sweepSession(httpRequest);
@@ -80,7 +81,7 @@ public class HylianShield {
             return false;
         }
         String requestURL = HTTPUtils.removeQueries(HTTPUtils.getRequestURL(httpRequest),
-                new HashSet<String>() {{ add(Constants.PARAM_CODE); }});
+                new HashSet<>() {{ add(Constants.PARAM_CODE); }});
         ReentrantLock sessionLock = SessionUtils.getLock(httpRequest);
         try {
             if (sessionLock != null) sessionLock.lock();

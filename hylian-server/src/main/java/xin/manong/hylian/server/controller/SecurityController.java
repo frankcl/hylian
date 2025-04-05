@@ -18,7 +18,7 @@ import xin.manong.hylian.server.controller.request.*;
 import xin.manong.hylian.server.converter.Converter;
 import xin.manong.hylian.server.model.Pager;
 import xin.manong.hylian.server.model.UserProfile;
-import xin.manong.hylian.server.util.CookieUtils;
+import xin.manong.hylian.client.util.CookieUtils;
 import xin.manong.hylian.client.util.SessionUtils;
 import xin.manong.hylian.server.service.request.UserSearchRequest;
 import xin.manong.hylian.server.common.Constants;
@@ -304,6 +304,30 @@ public class SecurityController {
     }
 
     /**
+     * 获取所有启用用户列表
+     *
+     * @param request 请求
+     * @return 用户列表
+     */
+    @POST
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("getAllUsers")
+    @PostMapping("getAllUsers")
+    @EnableWebLogAspect
+    public List<User> getAllUsers(@RequestBody SecurityRequest request) {
+        if (request == null) throw new BadRequestException("获取用户列表安全请求为空");
+        request.check();
+        appService.verifyApp(request.appId, request.appSecret);
+        UserSearchRequest searchRequest = new UserSearchRequest();
+        searchRequest.disabled = false;
+        searchRequest.current = 1;
+        searchRequest.size = 500;
+        Pager<User> pager = userService.search(searchRequest);
+        return pager.records == null ? new ArrayList<>() : pager.records;
+    }
+
+    /**
      * 应用注销
      *
      * @param appId 应用ID
@@ -323,14 +347,14 @@ public class SecurityController {
         appService.verifyApp(appId, appSecret);
         String ticket = CookieUtils.getCookie(httpRequest, Constants.COOKIE_TICKET);
         if (StringUtils.isEmpty(ticket)) {
-            CookieUtils.removeCookie(Constants.COOKIE_TOKEN, "/", httpResponse);
+            CookieUtils.removeCookie(Constants.COOKIE_TOKEN, "/", serverConfig.domain, httpResponse);
             logger.error("ticket is not found from cookies");
             throw new IllegalStateException("尚未登录");
         }
         removeTicketResources(ticket);
         SessionUtils.removeResources(httpRequest);
-        CookieUtils.removeCookie(Constants.COOKIE_TOKEN, "/", httpResponse);
-        CookieUtils.removeCookie(Constants.COOKIE_TICKET, "/", httpResponse);
+        CookieUtils.removeCookie(Constants.COOKIE_TOKEN, "/", serverConfig.domain, httpResponse);
+        CookieUtils.removeCookie(Constants.COOKIE_TICKET, "/", serverConfig.domain, httpResponse);
         UserProfile userProfile = jwtService.decodeProfile(ticket);
         if (userProfile != null) activityService.remove(userProfile.id);
         return true;
@@ -381,8 +405,8 @@ public class SecurityController {
         userProfile.setId(RandomID.build()).setUserId(user.id);
         ticket = ticketService.buildTicket(userProfile, Constants.COOKIE_TICKET_EXPIRED_TIME_MS);
         ticketService.putTicket(userProfile.id, ticket);
-        CookieUtils.setCookie(Constants.COOKIE_TICKET, ticket, "/", true, httpRequest, httpResponse);
-        CookieUtils.setCookie(Constants.COOKIE_TOKEN, RandomID.build(), "/", false, httpRequest, httpResponse);
+        CookieUtils.setCookie(Constants.COOKIE_TICKET, ticket, "/", serverConfig.domain, true, httpRequest, httpResponse);
+        CookieUtils.setCookie(Constants.COOKIE_TOKEN, RandomID.build(), "/", serverConfig.domain, false, httpRequest, httpResponse);
         return true;
     }
 

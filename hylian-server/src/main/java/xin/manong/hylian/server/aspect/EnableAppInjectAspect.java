@@ -5,7 +5,7 @@ import org.springframework.context.annotation.Import;
 import java.lang.annotation.*;
 
 /**
- * 启动应用关注切面
+ * 启动应用注入切面
  *
  * @author frankcl
  * @date 2024-10-13 17:47:37
@@ -13,6 +13,6 @@ import java.lang.annotation.*;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE, ElementType.METHOD})
 @Documented
-@Import({ AppFollowAspect.class })
-public @interface EnableAppFollowAspect {
+@Import({ AppInjectAspect.class })
+public @interface EnableAppInjectAspect {
 }

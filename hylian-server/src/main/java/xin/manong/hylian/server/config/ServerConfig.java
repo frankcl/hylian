@@ -22,6 +22,7 @@ import xin.manong.weapon.base.log.JSONLogger;
 public class ServerConfig implements InitializingBean {
 
     public String name;
+    public String domain;
     public String aspectLogFile;
     public String ossRegion = "cn-hangzhou";
     public String ossBucket = "hylian";

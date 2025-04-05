@@ -153,4 +153,20 @@ public class UserServiceSupport {
         List<Permission> permissions = HTTPExecutor.executeAndUnwrapList(httpRequest, Permission.class);
         return permissions == null ? new ArrayList<>() : permissions;
     }
+
+    /**
+     * 获取所有用户信息
+     *
+     * @return 用户列表
+     */
+    public List<User> getAllUsers() {
+        String requestURL = String.format("%s%s", clientConfig.serverURL,
+                Constants.SERVER_PATH_GET_ALL_USERS);
+        Map<String, Object> requestBody = new HashMap<>();
+        requestBody.put(Constants.PARAM_APP_ID, clientConfig.appId);
+        requestBody.put(Constants.PARAM_APP_SECRET, clientConfig.appSecret);
+        HttpRequest httpRequest = HttpRequest.buildPostRequest(requestURL, RequestFormat.JSON, requestBody);
+        List<User> users = HTTPExecutor.executeAndUnwrapList(httpRequest, User.class);
+        return users == null ? new ArrayList<>() : users;
+    }
 }

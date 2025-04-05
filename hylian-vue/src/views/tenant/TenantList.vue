@@ -74,7 +74,7 @@ watch(query, () => search(), { immediate: true })
 </script>
 
 <template>
-  <add-tenant v-model="openAddDialog" @close="openAddDialog = false; search()"></add-tenant>
+  <add-tenant v-model="openAddDialog" @close="search()"></add-tenant>
   <el-row align="middle">
     <el-breadcrumb :separator-icon="ArrowRight">
       <el-breadcrumb-item>账号管理</el-breadcrumb-item>

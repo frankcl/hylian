@@ -179,9 +179,8 @@ watch(query, () => search(), { immediate: true })
     <el-pagination background layout="prev, pager, next" :total="total"
                    v-model:page-size="query.size" v-model:current-page="query.current" />
   </el-row>
-  <add-role v-model="openAddDialog" @close="openAddDialog = false; search()"></add-role>
-  <allocate-permission v-bind="role" v-model="openAllocateDialog"
-                       @close="openAllocateDialog = false"></allocate-permission>
+  <add-role v-model="openAddDialog" @close="search()"></add-role>
+  <allocate-permission v-bind="role" v-model="openAllocateDialog"></allocate-permission>
 </template>
 
 <style scoped>

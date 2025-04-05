@@ -27,7 +27,7 @@ const save = async () => {
   appUsers.value.forEach(id => request.user_ids.push(id))
   if (!await submitForm(undefined, request, asyncBatchUpdateAppUsers,
     '分配管理员成功', '分配管理员失败')) return
-  emits('close')
+  model.value = false
 }
 
 watch(() => props.appId, async() => {

@@ -29,7 +29,7 @@ const formRules = reactive({
 const submit = async formEl => {
   if (!await submitForm(formEl, permissionForm, asyncAddPermission,
     '新增权限成功', '新增权限失败')) return
-  emits('close')
+  model.value = false
 }
 </script>
 

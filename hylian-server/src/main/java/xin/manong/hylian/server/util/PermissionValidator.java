@@ -2,6 +2,7 @@ package xin.manong.hylian.server.util;
 
 import jakarta.ws.rs.ForbiddenException;
 import jakarta.ws.rs.NotAuthorizedException;
+import xin.manong.hylian.client.common.Constants;
 import xin.manong.hylian.client.core.ContextManager;
 import xin.manong.hylian.model.User;
 
@@ -21,11 +22,12 @@ public class PermissionValidator {
      *
      * @param appId 应用ID
      */
+    @SuppressWarnings("unchecked")
     public static void validateAppPermission(String appId) {
         User currentUser = ContextManager.getUser();
         if (currentUser == null) throw new NotAuthorizedException("用户尚未登录");
         if (currentUser.superAdmin) return;
-        List<String> appIds = ContextManager.getFollowApps();
+        List<String> appIds = ContextManager.getValue(Constants.CURRENT_APPS, List.class);
         if (appIds == null || !appIds.contains(appId)) throw new ForbiddenException("无权操作数据");
     }
 }

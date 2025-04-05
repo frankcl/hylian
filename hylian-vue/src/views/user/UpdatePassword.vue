@@ -33,7 +33,7 @@ const formRules = {
 const submit = async formEl => {
   if (!await submitForm(formEl, passwordForm, asyncChangePassword,
     '修改密码成功', '修改密码失败')) return
-  emits('close')
+  model.value = false
 }
 </script>
 

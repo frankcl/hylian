@@ -24,7 +24,7 @@ const save = async () => {
   roles.value.forEach(roleId => request.role_ids.push(roleId))
   if (!await submitForm(undefined, request, asyncBatchUpdateUserRoles,
     '分配用户角色成功', '分配用户角色失败')) return
-  emits('close')
+  model.value = false
 }
 
 watch(() => [props.id, appId.value], async() => {

@@ -28,7 +28,7 @@ const formRules = { ... baseRules }
 const submit = async formEl => {
   if (!await submitForm(formEl, userForm, asyncUpdateUser,
     '编辑用户成功', '编辑用户失败')) return
-  emits('close')
+  model.value = false
 }
 
 watchEffect(async () => {

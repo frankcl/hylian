@@ -22,7 +22,7 @@ import xin.manong.hylian.server.config.ServerConfig;
 import xin.manong.hylian.server.model.UserProfile;
 import xin.manong.hylian.server.service.TicketService;
 import xin.manong.hylian.server.util.AvatarUtils;
-import xin.manong.hylian.server.util.CookieUtils;
+import xin.manong.hylian.client.util.CookieUtils;
 import xin.manong.hylian.server.websocket.QRCodeWebSocket;
 import xin.manong.hylian.server.wechat.*;
 import xin.manong.hylian.server.controller.response.WechatLoginResponse;
@@ -339,8 +339,8 @@ public class WechatController extends WatchValueDisposableBean {
             userProfile.setId(RandomID.build()).setUserId(user.id);
             String ticket = ticketService.buildTicket(userProfile, Constants.COOKIE_TICKET_EXPIRED_TIME_MS);
             ticketService.putTicket(userProfile.id, ticket);
-            CookieUtils.setCookie(Constants.COOKIE_TICKET, ticket, "/", true, httpRequest, httpResponse);
-            CookieUtils.setCookie(Constants.COOKIE_TOKEN, RandomID.build(), "/", false, httpRequest, httpResponse);
+            CookieUtils.setCookie(Constants.COOKIE_TICKET, ticket, "/", serverConfig.domain, true, httpRequest, httpResponse);
+            CookieUtils.setCookie(Constants.COOKIE_TOKEN, RandomID.build(), "/", serverConfig.domain, false, httpRequest, httpResponse);
             return true;
         } catch (Exception e) {
             qrCode.status = QRCode.STATUS_ERROR;
