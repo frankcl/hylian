@@ -4,6 +4,8 @@ import xin.manong.hylian.server.model.Pager;
 import xin.manong.hylian.model.Tenant;
 import xin.manong.hylian.server.service.request.TenantSearchRequest;
 
+import java.util.List;
+
 /**
  * 租户服务接口定义
  *
@@ -43,6 +45,13 @@ public interface TenantService {
      * @return 成功返回true，否则返回false
      */
     boolean delete(String id);
+
+    /**
+     * 获取所有租户
+     *
+     * @return 租户列表
+     */
+    List<Tenant> getTenants();
 
     /**
      * 搜索租户信息

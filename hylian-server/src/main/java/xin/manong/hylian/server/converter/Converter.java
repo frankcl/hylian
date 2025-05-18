@@ -34,8 +34,8 @@ public class Converter {
         if (page == null) return null;
         Pager<T> pager = new Pager<>();
         pager.records = page.getRecords();
-        pager.current = page.getCurrent();
-        pager.size = page.getSize();
+        pager.pageNum = page.getCurrent();
+        pager.pageSize = page.getSize();
         pager.total = page.getTotal();
         return pager;
     }

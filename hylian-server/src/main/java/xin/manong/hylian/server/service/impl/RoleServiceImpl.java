@@ -111,17 +111,24 @@ public class RoleServiceImpl implements RoleService {
     }
 
     @Override
+    public List<Role> getAppRoles(String appId) {
+        LambdaQueryWrapper<Role> query = new LambdaQueryWrapper<>();
+        query.eq(Role::getAppId, appId);
+        return roleMapper.selectList(query);
+    }
+
+    @Override
     public Pager<Role> search(RoleSearchRequest searchRequest) {
         if (searchRequest == null) searchRequest = new RoleSearchRequest();
-        if (searchRequest.current == null || searchRequest.current < 1) searchRequest.current = Constants.DEFAULT_CURRENT;
-        if (searchRequest.size == null || searchRequest.size <= 0) searchRequest.size = Constants.DEFAULT_PAGE_SIZE;
+        if (searchRequest.pageNum == null || searchRequest.pageNum < 1) searchRequest.pageNum = Constants.DEFAULT_PAGE_NUM;
+        if (searchRequest.pageSize == null || searchRequest.pageSize <= 0) searchRequest.pageSize = Constants.DEFAULT_PAGE_SIZE;
         ModelValidator.validateOrderBy(Role.class, searchRequest);
         QueryWrapper<Role> query = new QueryWrapper<>();
         searchRequest.prepareOrderBy(query);
         if (!StringUtils.isEmpty(searchRequest.name)) query.like("name", searchRequest.name);
         if (!StringUtils.isEmpty(searchRequest.appId)) query.eq("app_id", searchRequest.appId);
         if (searchRequest.appIds != null) query.in("app_id", searchRequest.appIds);
-        IPage<Role> page = roleMapper.selectPage(new Page<>(searchRequest.current, searchRequest.size), query);
+        IPage<Role> page = roleMapper.selectPage(new Page<>(searchRequest.pageNum, searchRequest.pageSize), query);
         return Converter.convert(page);
     }
 

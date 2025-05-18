@@ -16,7 +16,6 @@ import xin.manong.hylian.server.service.ActivityService;
 import xin.manong.hylian.server.service.AppService;
 import xin.manong.hylian.server.service.UserService;
 import xin.manong.hylian.server.service.request.ActivitySearchRequest;
-import xin.manong.weapon.spring.boot.aspect.EnableWebLogAspect;
 
 import java.util.ArrayList;
 
@@ -50,12 +49,11 @@ public class ActivityController {
     @Produces(MediaType.APPLICATION_JSON)
     @Path("search")
     @GetMapping("search")
-    @EnableWebLogAspect
     public Pager<ViewActivity> search(@BeanParam ActivitySearchRequest searchRequest) {
         Pager<Activity> pager = activityService.search(searchRequest);
         Pager<ViewActivity> viewPager = new Pager<>();
-        viewPager.current = pager.current;
-        viewPager.size = pager.size;
+        viewPager.pageNum = pager.pageNum;
+        viewPager.pageSize = pager.pageSize;
         viewPager.total = pager.total;
         viewPager.records = new ArrayList<>();
         for (Activity record : pager.records) viewPager.records.add(fillAndConvert(record));

@@ -23,6 +23,7 @@ import xin.manong.weapon.base.util.RandomID;
 import xin.manong.weapon.spring.boot.aspect.EnableWebLogAspect;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * 租户控制器
@@ -49,7 +50,6 @@ public class TenantController {
     @Produces(MediaType.APPLICATION_JSON)
     @Path("get")
     @GetMapping("get")
-    @EnableWebLogAspect
     public ViewTenant get(@QueryParam("id") @RequestParam("id") String id) {
         Tenant tenant = tenantService.get(id);
         if (tenant == null) throw new NotFoundException("租户不存在");
@@ -136,12 +136,11 @@ public class TenantController {
     @Produces(MediaType.APPLICATION_JSON)
     @Path("search")
     @GetMapping("search")
-    @EnableWebLogAspect
     public Pager<ViewTenant> search(@BeanParam TenantSearchRequest searchRequest) {
         Pager<Tenant> pager = tenantService.search(searchRequest);
         Pager<ViewTenant> viewPager = new Pager<>();
-        viewPager.current = pager.current;
-        viewPager.size = pager.size;
+        viewPager.pageNum = pager.pageNum;
+        viewPager.pageSize = pager.pageSize;
         viewPager.total = pager.total;
         viewPager.records = new ArrayList<>();
         for (Tenant tenant : pager.records) {
@@ -149,5 +148,18 @@ public class TenantController {
             viewPager.records.add(viewTenant);
         }
         return viewPager;
+    }
+
+    /**
+     * 获取所有租户
+     *
+     * @return 租户列表
+     */
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("getTenants")
+    @GetMapping("getTenants")
+    public List<Tenant> getTenants() {
+        return tenantService.getTenants();
     }
 }

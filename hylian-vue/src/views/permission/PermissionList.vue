@@ -1,46 +1,44 @@
 <script setup>
-import { format } from 'date-fns'
-import { reactive, ref, useTemplateRef, watch } from 'vue'
-import { ArrowRight, Check, Timer, Warning } from '@element-plus/icons-vue'
+import { IconAlertCircle, IconCircleCheck, IconClearAll, IconClock, IconPlus, IconTrash } from '@tabler/icons-vue'
+import { reactive, ref, useTemplateRef, watchEffect } from 'vue'
+import zhCn from 'element-plus/dist/locale/zh-cn.mjs'
 import {
-  ElBreadcrumb, ElBreadcrumbItem, ElButton, ElCol, ElForm, ElFormItem,
-  ElIcon, ElInput, ElPagination, ElPopover, ElRow, ElTable, ElTableColumn
+  ElBreadcrumb, ElBreadcrumbItem, ElButton, ElCol, ElConfigProvider, ElForm,
+  ElFormItem, ElInput, ElPagination, ElPopover, ElRow, ElTable, ElTableColumn
 } from 'element-plus'
+import { formatDate } from '@/common/Time'
 import {
-  asyncDeletePermission,
-  asyncSearchPermissions,
-  asyncUpdatePermission
-} from '@/common/service'
+  asyncRemovePermission,
+  asyncSearchPermission,
+  asyncUpdatePermission,
+  changeSearchQuerySort,
+  newSearchQuery,
+  newSearchRequest
+} from '@/common/AsyncRequest'
 import {
-  fillSearchQuerySort,
-  removeAfterConfirm,
-  searchQueryToRequest,
-  submitForm
-} from '@/common/assortment'
+  asyncExecuteAfterConfirming,
+  ERROR, showMessage, SUCCESS
+} from '@/common/Feedback'
 import AppSelect from '@/components/app/AppSelect'
 import AddPermission from '@/views/permission/AddPermission'
+import HylianCard from '@/components/data/Card'
+import TableHead from '@/components/data/TableHead'
 
-const formRef = useTemplateRef('formRef')
-const tableRef = useTemplateRef('tableRef')
+const formRef = useTemplateRef('form')
+const tableRef = useTemplateRef('table')
 const permissions = ref([])
 const total = ref(0)
-const openAddDialog = ref(false)
-const query = reactive({
-  current: 1,
-  size: 20,
-  name: null,
-  path: null,
-  app_id: null,
-  sort_field: null,
-  sort_order: null
-})
+const openAdd = ref(false)
+const query = reactive(newSearchQuery({}))
+
+const add = () => openAdd.value = true
 
 const search = async () => {
-  const request = searchQueryToRequest(query)
+  const request = newSearchRequest(query)
   if (query.name) request.name = query.name
   if (query.path) request.path = query.path
   if (query.app_id) request.app_id = query.app_id
-  const pager = await asyncSearchPermissions(request)
+  const pager = await asyncSearchPermission(request)
   total.value = pager.total
   permissions.value = pager.records
   permissions.value.forEach(permission => permission.prev = { name: permission.name,
@@ -48,37 +46,45 @@ const search = async () => {
 }
 
 const remove = async id => {
-  if (!await removeAfterConfirm(id, asyncDeletePermission, '删除提示', '确定删除权限信息？',
-    '删除权限成功', '删除权限失败')) return
+  const success = await asyncExecuteAfterConfirming(asyncRemovePermission, id)
+  if (success === undefined) return
+  if (!success) {
+    showMessage('删除权限失败', ERROR)
+    return
+  }
+  showMessage('删除权限成功', SUCCESS)
   await search()
 }
 
-const updateName = async row => {
-  if (!await submitForm(undefined, { id: row.id, name: row.name },
-    asyncUpdatePermission, '更新权限名成功', '更新权限名失败')) {
-    row.name = row.prev.name
+const updateName = async permission => {
+  if (!await asyncUpdatePermission({ id: permission.id, name: permission.name })) {
+    showMessage('更新权限名失败', ERROR)
+    permission.name = permission.prev.name
     return
   }
-  row.prev.name = row.name
+  showMessage('更新权限名成功', SUCCESS)
+  permission.prev.name = permission.name
 }
 
-const updatePath = async row => {
-  if (!await submitForm(undefined, { id: row.id, path: row.path },
-    asyncUpdatePermission, '更新资源路径成功', '更新资源路径失败')) {
-    row.path = row.prev.path
+const updatePath = async permission => {
+  if (!await asyncUpdatePermission({ id: permission.id, path: permission.path })) {
+    showMessage('更新资源路径失败', ERROR)
+    permission.path = permission.prev.path
     return
   }
-  row.prev.path = row.path
+  showMessage('更新资源路径成功', SUCCESS)
+  permission.prev.path = permission.path
 }
 
-const updateApp = async (row, app) => {
-  if (!await submitForm(undefined, { id: row.id, app_id: app.id },
-    asyncUpdatePermission, '更新应用成功', '更新应用失败')) {
-    row.app.id = row.prev.app.id
+const updateApp = async (permission, app) => {
+  if (!await asyncUpdatePermission({ id: permission.id, app_id: app.id })) {
+    showMessage('更新应用失败', ERROR)
+    permission.app.id = permission.prev.app.id
     return
   }
-  row.app = app
-  row.prev.app = JSON.parse(JSON.stringify(row.app))
+  showMessage('更新应用成功', SUCCESS)
+  permission.app = app
+  permission.prev.app = JSON.parse(JSON.stringify(permission.app))
 }
 
 const handleSelect = (selection, row) => {
@@ -91,127 +97,139 @@ const handleSelect = (selection, row) => {
 }
 
 const handleSelectAll = selection => {
-  const rows = selection.length === 0 ? tableRef.value.data : selection
-  rows.forEach(row => {
-    row.checked = selection.length !== 0
-    if (!row.checked) {
-      row.name = row.prev.name
-      row.path = row.prev.path
-      row.app.id = row.prev.app.id
-    }
-  })
+  const rows = tableRef.value.data
+  rows.forEach(row => handleSelect(selection, row))
 }
 
-watch(query, () => search(), { immediate: true })
+watchEffect(async () => await search())
 </script>
 
 <template>
-  <el-row>
-    <el-breadcrumb :separator-icon="ArrowRight">
-      <el-breadcrumb-item>授权管理</el-breadcrumb-item>
-      <el-breadcrumb-item>权限列表</el-breadcrumb-item>
-    </el-breadcrumb>
-  </el-row>
-  <div class="square-block">
-    <el-form :model="query" ref="formRef" label-width="auto" style="max-width: 600px">
-      <el-form-item label="应用选择" prop="app_id">
-        <app-select v-model="query.app_id" placeholder="全部"></app-select>
-      </el-form-item>
-      <el-form-item label="权限搜索">
-        <el-col :span="7">
-          <el-form-item prop="name">
+  <hylian-card>
+    <template #title>
+      <el-breadcrumb>
+        <el-breadcrumb-item>角色授权</el-breadcrumb-item>
+        <el-breadcrumb-item>权限管理</el-breadcrumb-item>
+      </el-breadcrumb>
+    </template>
+    <el-form :model="query" ref="form" label-width="80px" class="mb-4">
+      <el-row :gutter="20">
+        <el-col :span="16">
+          <el-form-item label="应用选择" prop="app_id">
+            <app-select v-model="query.app_id" placeholder="全部" />
+          </el-form-item>
+        </el-col>
+      </el-row>
+      <el-row :gutter="20">
+        <el-col :span="8">
+          <el-form-item label="权限搜索" prop="name">
             <el-input v-model="query.name" clearable placeholder="根据权限名搜索" />
           </el-form-item>
         </el-col>
-        <el-col :span="1">
-          <el-row align="middle" justify="center">-</el-row>
-        </el-col>
-        <el-col :span="7">
-          <el-form-item prop="path">
+        <el-col :span="8">
+          <el-form-item prop="path" label-position="top">
             <el-input v-model="query.path" clearable placeholder="根据资源路径搜索" />
           </el-form-item>
         </el-col>
-        <el-col :span="1"></el-col>
-        <el-col :span="8"><a @click="formRef.resetFields(); search()">清除所有筛选条件</a></el-col>
-      </el-form-item>
+        <el-col :span="8">
+          <el-button type="primary" plain @click="formRef.resetFields()">
+            <IconClearAll size="20" class="mr-1" />
+            <span>清除筛选</span>
+          </el-button>
+        </el-col>
+      </el-row>
     </el-form>
-  </div>
-  <el-table ref="tableRef" :data="permissions" max-height="850" table-layout="auto"
-            stripe @select="handleSelect" @select-all="handleSelectAll"
-            @sort-change="event => fillSearchQuerySort(event, query)">
-    <template #empty>没有权限数据</template>
-    <el-table-column type="selection" width="55" fixed="left" />
-    <el-table-column prop="name" label="权限名称" width="180" show-overflow-tooltip>
-      <template #default="scope">
-        <el-input v-if="scope.row.checked" v-model="scope.row.name">
-          <template #append>
-            <el-popover v-if="scope.row.name !== scope.row.prev.name" content="权限名变更，点击保存">
-              <template #reference>
-                <el-button @click="updateName(scope.row)">
-                  <el-icon color="#ff0000"><warning></warning></el-icon>
-                </el-button>
-              </template>
-            </el-popover>
-            <el-button v-else>
-              <el-icon color="#409eff"><check></check></el-icon>
-            </el-button>
-          </template>
-        </el-input>
-        <span v-else>{{ scope.row.name }}</span>
+    <table-head title="权限列表">
+      <template #right>
+        <el-button type="primary" @click="add">
+          <IconPlus size="20" class="mr-1" />
+          <span>新增</span>
+        </el-button>
       </template>
-    </el-table-column>
-    <el-table-column prop="path" label="资源路径" show-overflow-tooltip>
-      <template #default="scope">
-        <el-input v-if="scope.row.checked" v-model="scope.row.path">
-          <template #append>
-            <el-popover v-if="scope.row.path !== scope.row.prev.path" content="资源路径变更，点击保存">
-              <template #reference>
-                <el-button @click="updatePath(scope.row)">
-                  <el-icon color="#ff0000"><warning></warning></el-icon>
-                </el-button>
-              </template>
-            </el-popover>
-            <el-button v-else>
-              <el-icon color="#409eff"><check></check></el-icon>
-            </el-button>
-          </template>
-        </el-input>
-        <span v-else>{{ scope.row.path }}</span>
-      </template>
-    </el-table-column>
-    <el-table-column prop="app.name" label="所属应用" width="150" show-overflow-tooltip>
-      <template #default="scope">
-        <app-select v-if="scope.row.checked" v-model="scope.row.app.id"
-                    :clearable="false" @change="app => updateApp(scope.row, app)"></app-select>
-        <span v-else>{{ scope.row.app.name }}</span>
-      </template>
-    </el-table-column>
-    <el-table-column label="创建时间" prop="create_time" sortable="custom" width="140" show-overflow-tooltip>
-      <template #default="scope">
-        <el-icon><timer /></el-icon>
-        {{ format(new Date(scope.row['create_time']), 'yyyy-MM-dd HH:mm:ss') }}
-      </template>
-    </el-table-column>
-    <el-table-column label="更新时间" prop="update_time" sortable="custom" width="140" show-overflow-tooltip>
-      <template #default="scope">
-        <el-icon><timer /></el-icon>
-        {{ format(new Date(scope.row['update_time']), 'yyyy-MM-dd HH:mm:ss') }}
-      </template>
-    </el-table-column>
-    <el-table-column fixed="right" width="120">
-      <template #header>
-        <el-button @click="openAddDialog = true">新增权限</el-button>
-      </template>
-      <template #default="scope">
-        <a @click="remove(scope.row.id)">删除</a>
-      </template>
-    </el-table-column>
-  </el-table>
-  <el-row justify="center" align="middle">
-    <el-pagination background layout="prev, pager, next" :total="total"
-                   v-model:page-size="query.size" v-model:current-page="query.current" />
-  </el-row>
-  <add-permission v-model="openAddDialog" @close="search()"></add-permission>
+    </table-head>
+    <el-table ref="table" :data="permissions" max-height="650" table-layout="auto" stripe
+              class="mb-4" @select="handleSelect" @select-all="handleSelectAll"
+              @sort-change="e => changeSearchQuerySort(e.prop, e.order, query)">
+      <template #empty>暂无权限数据</template>
+      <el-table-column type="selection" width="55" fixed="left" />
+      <el-table-column prop="name" label="权限名称" show-overflow-tooltip>
+        <template #default="scope">
+          <el-input v-if="scope.row.checked" v-model="scope.row.name">
+            <template #append>
+              <el-popover v-if="scope.row.name !== scope.row.prev.name" content="权限名变更，点击保存">
+                <template #reference>
+                  <el-button @click="updateName(scope.row)" class="d-flex align-items-center">
+                    <IconAlertCircle color="#f56c6c" size="18" />
+                  </el-button>
+                </template>
+              </el-popover>
+              <el-button v-else class="d-flex align-items-center" >
+                <IconCircleCheck color="#67c23a" size="18" />
+              </el-button>
+            </template>
+          </el-input>
+          <span v-else>{{ scope.row.name }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column prop="path" label="资源路径" show-overflow-tooltip>
+        <template #default="scope">
+          <el-input v-if="scope.row.checked" v-model="scope.row.path">
+            <template #append>
+              <el-popover v-if="scope.row.path !== scope.row.prev.path" content="资源路径变更，点击保存">
+                <template #reference>
+                  <el-button @click="updatePath(scope.row)" class="d-flex align-items-center">
+                    <IconAlertCircle color="#f56c6c" size="18" />
+                  </el-button>
+                </template>
+              </el-popover>
+              <el-button v-else class="d-flex align-items-center" >
+                <IconCircleCheck color="#67c23a" size="18" />
+              </el-button>
+            </template>
+          </el-input>
+          <span v-else>{{ scope.row.path }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column prop="app.name" label="所属应用" width="150" show-overflow-tooltip>
+        <template #default="scope">
+          <app-select v-if="scope.row.checked" v-model="scope.row.app.id"
+                      :clearable="false" @change="app => updateApp(scope.row, app)" />
+          <span v-else>{{ scope.row.app.name }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="创建时间" prop="create_time" sortable="custom" width="200" show-overflow-tooltip>
+        <template #default="scope">
+          <div class="d-flex align-items-center">
+            <IconClock size="16" class="mr-1" />
+            <span>{{ formatDate(scope.row['create_time']) }}</span>
+          </div>
+        </template>
+      </el-table-column>
+      <el-table-column label="更新时间" prop="update_time" sortable="custom" width="200" show-overflow-tooltip>
+        <template #default="scope">
+          <div class="d-flex align-items-center">
+            <IconClock size="16" class="mr-1" />
+            <span>{{ formatDate(scope.row['update_time']) }}</span>
+          </div>
+        </template>
+      </el-table-column>
+      <el-table-column width="120">
+        <template #default="scope">
+          <el-button type="danger" @click="remove(scope.row.id)">
+            <IconTrash size="20" class="mr-2" />
+            <span>删除</span>
+          </el-button>
+        </template>
+      </el-table-column>
+    </el-table>
+    <el-row justify="center" align="middle">
+      <el-config-provider :locale="zhCn">
+        <el-pagination background layout="total, prev, pager, next, jumper" :total="total"
+                       v-model:page-size="query.page_size" v-model:current-page="query.page_num" />
+      </el-config-provider>
+    </el-row>
+  </hylian-card>
+  <add-permission v-model="openAdd" @close="search" />
 </template>
 
 <style scoped>

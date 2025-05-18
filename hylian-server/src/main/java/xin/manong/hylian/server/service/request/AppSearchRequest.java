@@ -19,4 +19,11 @@ public class AppSearchRequest extends SearchRequest {
     @JsonProperty("name")
     @QueryParam("name")
     public String name;
+
+    /**
+     * 应用ID
+     */
+    @JsonProperty("id")
+    @QueryParam("id")
+    public String id;
 }

@@ -1,250 +1,187 @@
 <script setup>
-import { format } from 'date-fns'
-import { reactive, ref, useTemplateRef, watch } from 'vue'
-import { ArrowRight, Check, CopyDocument, DocumentCopy, Timer, Warning } from '@element-plus/icons-vue'
 import {
-  ElBreadcrumb, ElBreadcrumbItem, ElButton, ElForm, ElFormItem, ElIcon, ElInput,
-  ElMessage, ElPagination, ElPopover, ElRow, ElTable, ElTableColumn
+  IconActivity, IconClock, IconCopy, IconCopyCheck, IconEdit, IconPlus, IconTrash, IconUserCog
+} from '@tabler/icons-vue'
+import { reactive, ref, watchEffect } from 'vue'
+import { useRouter } from 'vue-router'
+import zhCn from 'element-plus/dist/locale/zh-cn.mjs'
+import {
+  ElBreadcrumb, ElBreadcrumbItem, ElButton, ElCol, ElConfigProvider,
+  ElDropdown, ElDropdownItem, ElDropdownMenu, ElForm, ElFormItem,
+  ElInput, ElMessage, ElPagination, ElRow, ElTable, ElTableColumn
 } from 'element-plus'
 import { useUserStore } from '@/store'
+import { formatDate } from '@/common/Time'
 import {
-  asyncDeleteApp,
-  asyncSearchApps,
-  asyncUpdateApp
-} from '@/common/service'
+  asyncRemoveApp,
+  asyncSearchApp,
+  changeSearchQuerySort,
+  newSearchQuery,
+  newSearchRequest
+} from '@/common/AsyncRequest'
+import { writeClipboard } from '@/common/Clipboard'
 import {
-  copyToClipboard,
-  fillSearchQuerySort,
-  removeAfterConfirm,
-  searchQueryToRequest,
-  submitForm
-} from '@/common/assortment'
+  asyncExecuteAfterConfirming,
+  ERROR, showMessage, SUCCESS
+} from '@/common/Feedback'
+import HylianCard from '@/components/data/Card'
+import TableHead from '@/components/data/TableHead'
 import AddApp from '@/views/app/AddApp'
-import AllocateUser from '@/views/app/AllocateUser'
+import AppUser from '@/views/app/AppUser'
+import EditApp from '@/views/app/EditApp'
 
+const router = useRouter()
 const userStore = useUserStore()
-const tableRef = useTemplateRef('tableRef')
 const apps = ref([])
 const total = ref(0)
-const copyContent = ref()
-const openAddDialog = ref(false)
-const openAllocateDialog = ref(false)
+const copied = ref()
+const openAdd = ref(false)
+const openEdit = ref(false)
+const openAppUser = ref(false)
 const app = reactive({})
-const query = reactive({
-  current: 1,
-  size: 20,
-  name: null,
-  sort_field: null,
-  sort_order: null
-})
+const query = reactive(newSearchQuery( { name: null }))
 
 const search = async () => {
-  const request = searchQueryToRequest(query)
+  const request = newSearchRequest(query)
   if (query.name) request.name = query.name
-  const pager = await asyncSearchApps(request)
+  const pager = await asyncSearchApp(request)
   total.value = pager.total
   apps.value = pager.records
-  apps.value.forEach(app => app.prev = { name: app.name, secret: app.secret, description: app.description })
+}
+
+const add = () => openAdd.value = true
+
+const edit = id => {
+  app.id = id
+  openEdit.value = true
 }
 
 const remove = async id => {
-  if (!await removeAfterConfirm(id, asyncDeleteApp, '删除提示', '确定删除应用信息？',
-    '删除应用成功', '删除应用失败')) return
+  const success = await asyncExecuteAfterConfirming(asyncRemoveApp, id)
+  if (success === undefined) return
+  if (!success) {
+    showMessage('删除应用失败', ERROR)
+    return
+  }
+  showMessage('删除应用成功', SUCCESS)
   await search()
 }
 
-const allocate = row => {
-  app.appId = row.id
-  app.appName = row.name
-  openAllocateDialog.value = true
+const admin = row => {
+  app.id = row.id
+  app.name = row.name
+  openAppUser.value = true
 }
 
-const updateName = async row => {
-  if (!await submitForm(undefined, { id: row.id, name: row.name },
-    asyncUpdateApp, '更新应用名成功', '更新应用名失败')) {
-    row.name = row.prev.name
-    return
-  }
-  row.prev.name = row.name
-}
-
-const updateSecret = async row => {
-  if (!await submitForm(undefined, { id: row.id, secret: row.secret },
-    asyncUpdateApp, '更新应用秘钥成功', '更新应用秘钥失败')) {
-    row.secret = row.prev.secret
-    return
-  }
-  row.prev.secret = row.secret
-}
-
-const updateDescription = async row => {
-  if (!await submitForm(undefined, { id: row.id, description: row.description },
-    asyncUpdateApp, '更新应用描述成功', '更新应用描述失败')) {
-    row.description = row.prev.description
-    return
-  }
-  row.prev.description = row.description
-}
-
-const copyValue = (field, value, id) => {
-  copyToClipboard(value)
-  copyContent.value = `${field}#${id}`
+const copy = (id, value) => {
+  writeClipboard(value)
+  copied.value = `name#${id}`
   ElMessage.success('复制成功')
 }
 
-const handleSelect = (selection, row) => {
-  row.checked = selection.indexOf(row) !== -1
-  if (!row.checked) {
-    row.name = row.prev.name
-    row.secret = row.prev.secret
-    row.description = row.prev.description
+const handleCommand = async (command, app) => {
+  if (command === 'remove') {
+    await remove(app.id)
+  } else if (command === 'activity') {
+    await router.push({ path: '/workbench/activityList', query: { app_id: app.id } })
   }
 }
 
-const handleSelectAll = selection => {
-  const rows = selection.length === 0 ? tableRef.value.data : selection
-  rows.forEach(row => {
-    row.checked = selection.length !== 0
-    if (!row.checked) {
-      row.name = row.prev.name
-      row.secret = row.prev.secret
-      row.description = row.prev.description
-    }
-  })
-}
-
-watch(query, () => search(), { immediate: true })
+watchEffect(async () => await search())
 </script>
 
 <template>
-  <el-row>
-    <el-breadcrumb :separator-icon="ArrowRight">
-      <el-breadcrumb-item>应用管理</el-breadcrumb-item>
-      <el-breadcrumb-item>应用列表</el-breadcrumb-item>
-    </el-breadcrumb>
-  </el-row>
-  <div class="square-block">
-    <el-form :model="query" ref="formRef" label-width="auto" style="max-width: 400px">
-      <el-form-item label="应用搜索" prop="name">
-        <el-input v-model="query.name" clearable placeholder="根据应用名搜索" />
-      </el-form-item>
+  <hylian-card>
+    <template #title>
+      <el-breadcrumb>
+        <el-breadcrumb-item>应用活动</el-breadcrumb-item>
+        <el-breadcrumb-item>应用管理</el-breadcrumb-item>
+      </el-breadcrumb>
+    </template>
+    <el-form :model="query" label-width="80px" class="mb-4">
+      <el-row>
+        <el-col :span="12">
+          <el-form-item label="应用搜索" prop="name">
+            <el-input v-model="query.name" clearable placeholder="根据应用名搜索" />
+          </el-form-item>
+        </el-col>
+      </el-row>
     </el-form>
-  </div>
-  <el-table ref="tableRef" :data="apps" max-height="850" table-layout="auto"
-            stripe @select="handleSelect" @select-all="handleSelectAll"
-            @sort-change="event => fillSearchQuerySort(event, query)">
-    <template #empty>没有应用数据</template>
-    <el-table-column type="selection" width="55" fixed="left" />
-    <el-table-column prop="id" label="应用ID" width="120" show-overflow-tooltip>
-      <template #default="scope">
-        <el-icon v-if="copyContent === `name#${scope.row.id}`"><document-copy></document-copy></el-icon>
-        <el-popover v-else content="点击复制">
-          <template #reference>
-            <el-icon @click="copyValue('name', scope.row.id, scope.row.id)">
-              <copy-document></copy-document>
-            </el-icon>
-          </template>
-        </el-popover>
-        {{ scope.row.id }}
+    <table-head title="应用列表">
+      <template #right>
+        <el-button type="primary" @click="add" :disabled="!userStore.superAdmin">
+          <IconPlus size="20" class="mr-1" />
+          <span>新增</span>
+        </el-button>
       </template>
-    </el-table-column>
-    <el-table-column prop="name" label="应用名" width="120" show-overflow-tooltip>
-      <template #default="scope">
-        <el-input v-if="scope.row.checked" v-model="scope.row.name">
-          <template #append>
-            <el-popover v-if="scope.row.name !== scope.row.prev.name" content="应用名变更，点击保存">
-              <template #reference>
-                <el-button @click="updateName(scope.row)">
-                  <el-icon color="#ff0000"><warning></warning></el-icon>
-                </el-button>
-              </template>
-            </el-popover>
-            <el-button v-else>
-              <el-icon color="#409eff"><check></check></el-icon>
-            </el-button>
-          </template>
-        </el-input>
-        <span v-else>{{ scope.row.name }}</span>
-      </template>
-    </el-table-column>
-    <el-table-column prop="secret" label="应用秘钥" width="160" show-overflow-tooltip>
-      <template #default="scope">
-        <el-input v-if="scope.row.checked" v-model="scope.row.secret">
-          <template #append>
-            <el-popover v-if="scope.row.secret !== scope.row.prev.secret" content="秘钥变更，点击保存">
-              <template #reference>
-                <el-button @click="updateSecret(scope.row)">
-                  <el-icon color="#ff0000"><warning></warning></el-icon>
-                </el-button>
-              </template>
-            </el-popover>
-            <el-button v-else>
-              <el-icon color="#409eff"><check></check></el-icon>
-            </el-button>
-          </template>
-        </el-input>
-        <el-form v-else>
-          <span>
-            <el-icon v-if="copyContent === `secret#${scope.row.id}`"><document-copy></document-copy></el-icon>
-            <el-popover v-else content="点击复制">
-              <template #reference>
-                <el-icon @click="copyValue('secret', scope.row.secret, scope.row.id)">
-                  <copy-document></copy-document>
-                </el-icon>
-              </template>
-            </el-popover>
-            ********
+    </table-head>
+    <el-table :data="apps" max-height="650" table-layout="auto" stripe class="mb-4"
+              @sort-change="e => changeSearchQuerySort(e.prop, e.order, query)">
+      <template #empty>没有应用数据</template>
+      <el-table-column prop="id" label="应用ID" show-overflow-tooltip>
+        <template #default="scope">
+          <span class="d-flex align-items-center">
+            <IconCopyCheck v-if="copied === `name#${scope.row.id}`" class="flex-shrink-0" size="16" />
+            <IconCopy v-else class="flex-shrink-0" @click="copy(scope.row.id, scope.row.id)" size="16" />
+            <span class="ml-2">{{ scope.row.id }}</span>
           </span>
-        </el-form>
-      </template>
-    </el-table-column>
-    <el-table-column prop="description" label="应用描述" show-overflow-tooltip>
-      <template #default="scope">
-        <div v-if="scope.row.checked">
-          <el-input type="textarea" autosize v-model="scope.row.description"></el-input>
-          <el-popover v-if="scope.row.description !== scope.row.prev.description" content="应用描述变更，点击保存">
-            <template #reference>
-              <el-row style="margin-top: 5px" align="middle" justify="center">
-                <el-button size="small" @click="updateDescription(scope.row)">
-                  点击保存&nbsp;
-                  <el-icon color="#ff0000"><warning></warning></el-icon>
-                </el-button>
-              </el-row>
+        </template>
+      </el-table-column>
+      <el-table-column prop="name" label="应用名" show-overflow-tooltip>
+        <template #default="scope">{{ scope.row.name }}</template>
+      </el-table-column>
+      <el-table-column prop="description" label="应用描述" show-overflow-tooltip>
+        <template #default="scope">{{ scope.row.description }}</template>
+      </el-table-column>
+      <el-table-column label="创建时间" prop="create_time" sortable="custom" width="200" show-overflow-tooltip>
+        <template #default="scope">
+          <div class="d-flex align-items-center">
+            <IconClock size="16" class="mr-1" />
+            <span>{{ formatDate(scope.row['create_time']) }}</span>
+          </div>
+        </template>
+      </el-table-column>
+      <el-table-column width="360">
+        <template #default="scope">
+          <el-button type="primary" @click="edit(scope.row.id)" :disabled="!userStore.superAdmin">
+            <IconEdit size="20" class="mr-2" />
+            <span>编辑</span>
+          </el-button>
+          <el-button type="primary" plain @click="admin(scope.row)">
+            <IconUserCog size="20" class="mr-2" />
+            <span>管理员</span>
+          </el-button>
+          <el-dropdown trigger="click" placement="bottom-end" style="margin-left: 12px"
+                       @command="c => handleCommand(c, scope.row)">
+            <el-button color="#4F73D9" plain>
+              <span>更多操作</span>
+            </el-button>
+            <template #dropdown>
+              <el-dropdown-menu>
+                <el-dropdown-item command="activity">
+                  <IconActivity size="20" class="mr-2" />
+                  <span>活动记录</span>
+                </el-dropdown-item>
+                <el-dropdown-item command="remove" >
+                  <IconTrash size="20" class="mr-2" />
+                  <span>删除应用</span>
+                </el-dropdown-item>
+              </el-dropdown-menu>
             </template>
-          </el-popover>
-        </div>
-        <span v-else>{{ scope.row.description }}</span>
-      </template>
-    </el-table-column>
-    <el-table-column label="创建时间" prop="create_time" sortable="custom" width="140" show-overflow-tooltip>
-      <template #default="scope">
-        <el-icon><timer /></el-icon>
-        {{ format(new Date(scope.row['create_time']), 'yyyy-MM-dd HH:mm:ss') }}
-      </template>
-    </el-table-column>
-    <el-table-column label="更新时间" prop="update_time" sortable="custom" width="140" show-overflow-tooltip>
-      <template #default="scope">
-        <el-icon><timer /></el-icon>
-        {{ format(new Date(scope.row['update_time']), 'yyyy-MM-dd HH:mm:ss') }}
-      </template>
-    </el-table-column>
-    <el-table-column width="180" fixed="right">
-      <template #header>
-        <el-button v-if="userStore.superAdmin" @click="openAddDialog = true">增加应用</el-button>
-      </template>
-      <template #default="scope">
-        <RouterLink :to="{ name: 'ActivityList', query: { appId: scope.row.id } }">活跃记录</RouterLink>&nbsp;
-        <a @click="allocate(scope.row)">管理员</a>&nbsp;
-        <a @click="remove(scope.row.id)">删除</a>
-      </template>
-    </el-table-column>
-  </el-table>
-  <el-row justify="center" align="middle">
-    <el-pagination background layout="prev, pager, next" :total="total"
-                   v-model:page-size="query.size" v-model:current-page="query.current" />
-  </el-row>
-  <add-app v-model="openAddDialog" @close="search()"></add-app>
-  <allocate-user v-model="openAllocateDialog" v-bind="app" @close="search()"></allocate-user>
+          </el-dropdown>
+        </template>
+      </el-table-column>
+    </el-table>
+    <el-row justify="center" align="middle">
+      <el-config-provider :locale="zhCn">
+        <el-pagination background layout="total, prev, pager, next, jumper" :total="total"
+                       v-model:page-size="query.page_size" v-model:current-page="query.page_num" />
+      </el-config-provider>
+    </el-row>
+  </hylian-card>
+  <add-app v-model="openAdd" @close="search" />
+  <edit-app v-if="openEdit" v-model="openEdit" :id="app.id" @close="search" />
+  <app-user v-if="openAppUser" v-model="openAppUser" v-bind="app" @close="search" />
 </template>
 
 <style scoped>

@@ -25,6 +25,8 @@ import xin.manong.hylian.server.service.request.TenantSearchRequest;
 import xin.manong.hylian.server.service.UserService;
 import xin.manong.hylian.server.util.ModelValidator;
 
+import java.util.List;
+
 /**
  * 租户服务实现
  *
@@ -86,15 +88,20 @@ public class TenantServiceImpl implements TenantService {
     }
 
     @Override
+    public List<Tenant> getTenants() {
+        return tenantMapper.selectList(null);
+    }
+
+    @Override
     public Pager<Tenant> search(TenantSearchRequest searchRequest) {
         if (searchRequest == null) searchRequest = new TenantSearchRequest();
-        if (searchRequest.current == null || searchRequest.current < 1) searchRequest.current = Constants.DEFAULT_CURRENT;
-        if (searchRequest.size == null || searchRequest.size <= 0) searchRequest.size = Constants.DEFAULT_PAGE_SIZE;
+        if (searchRequest.pageNum == null || searchRequest.pageNum < 1) searchRequest.pageNum = Constants.DEFAULT_PAGE_NUM;
+        if (searchRequest.pageSize == null || searchRequest.pageSize <= 0) searchRequest.pageSize = Constants.DEFAULT_PAGE_SIZE;
         ModelValidator.validateOrderBy(Tenant.class, searchRequest);
         QueryWrapper<Tenant> query = new QueryWrapper<>();
         searchRequest.prepareOrderBy(query);
         if (!StringUtils.isEmpty(searchRequest.name)) query.like("name", searchRequest.name);
-        IPage<Tenant> page = tenantMapper.selectPage(new Page<>(searchRequest.current, searchRequest.size), query);
+        IPage<Tenant> page = tenantMapper.selectPage(new Page<>(searchRequest.pageNum, searchRequest.pageSize), query);
         return Converter.convert(page);
     }
 }

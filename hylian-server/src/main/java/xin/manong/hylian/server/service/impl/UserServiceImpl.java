@@ -2,6 +2,7 @@ package xin.manong.hylian.server.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import jakarta.annotation.Resource;
@@ -167,10 +168,20 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public boolean removeAvatar(String id) {
+        User user = get(id);
+        if (user == null) throw new NotFoundException("用户不存在");
+        deleteAvatar(user);
+        LambdaUpdateWrapper<User> updateWrapper = new LambdaUpdateWrapper<>();
+        updateWrapper.eq(User::getId, user.id).set(User::getAvatar, null);
+        return userMapper.update(updateWrapper) > 0;
+    }
+
+    @Override
     public Pager<User> search(UserSearchRequest searchRequest) {
         if (searchRequest == null) searchRequest = new UserSearchRequest();
-        if (searchRequest.current == null || searchRequest.current < 1) searchRequest.current = Constants.DEFAULT_CURRENT;
-        if (searchRequest.size == null || searchRequest.size <= 0) searchRequest.size = Constants.DEFAULT_PAGE_SIZE;
+        if (searchRequest.pageNum == null || searchRequest.pageNum < 1) searchRequest.pageNum = Constants.DEFAULT_PAGE_NUM;
+        if (searchRequest.pageSize == null || searchRequest.pageSize <= 0) searchRequest.pageSize = Constants.DEFAULT_PAGE_SIZE;
         ModelValidator.validateOrderBy(User.class, searchRequest);
         QueryWrapper<User> query = new QueryWrapper<>();
         searchRequest.prepareOrderBy(query);
@@ -185,8 +196,15 @@ public class UserServiceImpl implements UserService {
             if (searchRequest.bindWechat) query.isNotNull("wx_openid").ne("wx_openid", "");
             else query.and(wrapper -> wrapper.eq("wx_openid", "").or().isNull("wx_openid"));
         }
-        IPage<User> page = userMapper.selectPage(new Page<>(searchRequest.current, searchRequest.size), query);
+        IPage<User> page = userMapper.selectPage(new Page<>(searchRequest.pageNum, searchRequest.pageSize), query);
         return Converter.convert(page);
+    }
+
+    @Override
+    public List<User> getUsers() {
+        LambdaQueryWrapper<User> query = new LambdaQueryWrapper<>();
+        query.eq(User::getDisabled, false);
+        return userMapper.selectList(query);
     }
 
     @Override
@@ -205,7 +223,7 @@ public class UserServiceImpl implements UserService {
     private void removeUserProfile(User user) {
         ActivitySearchRequest request = new ActivitySearchRequest();
         request.userId = user.id;
-        request.size = 100;
+        request.pageSize = 100;
         Pager<Activity> pager = activityService.search(request);
         if (pager.records == null || pager.records.isEmpty()) return;
         Set<String> tickets = new HashSet<>();

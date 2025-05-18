@@ -1,78 +1,69 @@
 <script setup>
+import { IconArrowBackUp, IconRefresh, IconPlus } from '@tabler/icons-vue'
 import { reactive, useTemplateRef } from 'vue'
-import { ArrowRight, Refresh } from '@element-plus/icons-vue'
 import {
-  ElBreadcrumb, ElBreadcrumbItem, ElButton, ElCol,
-  ElDialog, ElForm, ElFormItem, ElIcon, ElInput, ElRow
+  ElButton, ElDialog, ElForm, ElFormItem, ElInput
 } from 'element-plus'
-import {
-  asyncAddApp,
-  asyncRandomSecret
-} from '@/common/service'
-import { submitForm } from '@/common/assortment'
+import { useUserStore } from '@/store'
+import { ERROR, showMessage, SUCCESS } from '@/common/Feedback'
+import { asyncAddApp, asyncAppSecret } from '@/common/AsyncRequest'
+import HylianCard from '@/components/data/Card'
+import { appFormRules } from '@/views/app/common'
 
-const model = defineModel()
+const open = defineModel()
 const emits = defineEmits(['close'])
-const formRef = useTemplateRef('formRef')
-const appForm = reactive({
+const userStore = useUserStore()
+const formRef = useTemplateRef('form')
+const app = reactive({
   name: null,
   secret: null,
   description: null
 })
-const formRules = reactive({
-  name: [
-    { required: true, message: '请输入应用名', trigger: 'change' }
-  ],
-  secret: [
-    { required: true, message: '请输入应用秘钥', trigger: 'change' },
-    { min: 8, message: '应用秘钥至少8位', trigger: 'change' }
-  ]
-})
 
-const refreshAppSecret = async appForm => appForm.secret = await asyncRandomSecret()
+const refreshAppSecret = async () => app.secret = await asyncAppSecret()
 
-const submit = async formEl => {
-  if (!await submitForm(formEl, appForm, asyncAddApp,
-    '新增应用成功', '新增应用失败')) return
-  model.value = false
+const add = async () => {
+  if (!await formRef.value.validate(valid => valid)) return
+  if (!await asyncAddApp(app)) {
+    showMessage('新增应用失败', ERROR)
+    return
+  }
+  showMessage('新增应用成功', SUCCESS)
+  open.value = false
 }
 </script>
 
 <template>
-  <el-dialog v-model="model" @close="emits('close')" width="480" align-center show-close>
-    <el-row>
-      <el-breadcrumb :separator-icon="ArrowRight">
-        <el-breadcrumb-item>应用管理</el-breadcrumb-item>
-        <el-breadcrumb-item>新增应用</el-breadcrumb-item>
-      </el-breadcrumb>
-    </el-row>
-    <el-form ref="formRef" :model="appForm" :rules="formRules"
-             label-width="auto" label-position="right">
-      <el-form-item label="应用名" prop="name">
-        <el-input v-model.trim="appForm.name" clearable></el-input>
-      </el-form-item>
-      <el-form-item label="应用秘钥" prop="secret">
-        <el-col :span="18">
-          <el-input v-model.trim="appForm.secret" clearable></el-input>
-        </el-col>
-        <el-col :span="1"></el-col>
-        <el-col :span="5">
-          <el-row justify="end">
-            <el-button @click="refreshAppSecret(appForm)">
-              刷新&nbsp;
-              <el-icon><Refresh /></el-icon>
+  <el-dialog v-model="open" @close="emits('close')" align-center show-close>
+    <hylian-card title="新增应用">
+      <el-form ref="form" :model="app" :rules="appFormRules" label-width="80px" label-position="top">
+        <el-form-item label="应用名" prop="name">
+          <el-input v-model="app.name" clearable />
+        </el-form-item>
+        <el-form-item label="应用秘钥" prop="secret">
+          <div class="d-flex flex-grow-1">
+            <el-input class="mr-4" v-model="app.secret" clearable />
+            <el-button type="primary" plain @click="refreshAppSecret">
+              <IconRefresh size="20" class="mr-2" />
+              <span>刷新</span>
             </el-button>
-          </el-row>
-        </el-col>
-      </el-form-item>
-      <el-form-item label="应用描述" prop="description">
-        <el-input v-model="appForm.description" type="textarea" rows="5" placeholder="请输入应用描述"></el-input>
-      </el-form-item>
-      <el-form-item>
-        <el-button @click="submit(formRef)">新增</el-button>
-        <el-button @click="formRef.resetFields()">重置</el-button>
-      </el-form-item>
-    </el-form>
+          </div>
+        </el-form-item>
+        <el-form-item label="应用描述" prop="description">
+          <el-input v-model="app.description" type="textarea" rows="5" placeholder="请输入应用描述" />
+        </el-form-item>
+        <el-form-item>
+          <el-button type="primary" @click="add" :disabled="!userStore.superAdmin">
+            <IconPlus size="20" class="mr-1" />
+            <span>新增</span>
+          </el-button>
+          <el-button type="info" @click="formRef.resetFields()">
+            <IconArrowBackUp size="20" class="mr-1" />
+            <span>重置</span>
+          </el-button>
+        </el-form-item>
+      </el-form>
+    </hylian-card>
   </el-dialog>
 </template>
 

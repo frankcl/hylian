@@ -61,7 +61,6 @@ public class RoleController {
     @Produces(MediaType.APPLICATION_JSON)
     @Path("get")
     @GetMapping("get")
-    @EnableWebLogAspect
     public Role get(@QueryParam("id") @RequestParam("id") String id) {
         Role role = roleService.get(id);
         if (role == null) throw new NotFoundException("角色不存在");
@@ -216,28 +215,42 @@ public class RoleController {
      * @param searchRequest 搜索请求
      * @return 角色分页列表
      */
-    @SuppressWarnings("unchecked")
     @GET
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @Path("search")
     @GetMapping("search")
-    @EnableWebLogAspect
     @EnableAppInjectAspect
+    @SuppressWarnings("unchecked")
     public Pager<ViewRole> search(@BeanParam RoleSearchRequest searchRequest) {
         User currentUser = ContextManager.getUser();
         assert currentUser != null;
         searchRequest.appIds = currentUser.superAdmin || searchRequest.ignoreCheck ?
                 null : ContextManager.getValue(Constants.CURRENT_APPS, List.class);
         Pager<Role> pager = searchRequest.appIds != null && searchRequest.appIds.isEmpty() ?
-                Pager.empty(searchRequest.current, searchRequest.size) : roleService.search(searchRequest);
+                Pager.empty(searchRequest.pageNum, searchRequest.pageSize) : roleService.search(searchRequest);
         Pager<ViewRole> viewPager = new Pager<>();
-        viewPager.current = pager.size;
-        viewPager.size = pager.size;
+        viewPager.pageNum = pager.pageNum;
+        viewPager.pageSize = pager.pageSize;
         viewPager.total = pager.total;
         viewPager.records = new ArrayList<>();
         for (Role role : pager.records) viewPager.records.add(fillAndConvert(role));
         return viewPager;
+    }
+
+    /**
+     * 获取应用角色
+     *
+     * @param appId 应用ID
+     * @return 角色列表
+     */
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("getAppRoles")
+    @GetMapping("getAppRoles")
+    public List<ViewRole> getAppRoles(@QueryParam("app_id") String appId) {
+        List<Role> roles = roleService.getAppRoles(appId);
+        return roles.stream().map(this::fillAndConvert).toList();
     }
 
     /**
@@ -251,7 +264,6 @@ public class RoleController {
     @Produces(MediaType.APPLICATION_JSON)
     @Path("getRolePermissions")
     @GetMapping("getRolePermissions")
-    @EnableWebLogAspect
     public List<Permission> getRolePermissions(@QueryParam("role_id") String roleId) {
         if (StringUtils.isEmpty(roleId)) throw new BadRequestException("角色ID为空");
         return rolePermissionService.getPermissionsByRoleId(roleId);

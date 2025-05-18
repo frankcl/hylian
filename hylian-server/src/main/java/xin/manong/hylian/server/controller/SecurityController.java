@@ -25,7 +25,6 @@ import xin.manong.hylian.server.common.Constants;
 import xin.manong.hylian.server.service.*;
 import xin.manong.hylian.server.service.request.RolePermissionSearchRequest;
 import xin.manong.weapon.base.util.RandomID;
-import xin.manong.weapon.spring.boot.aspect.EnableWebLogAspect;
 
 import java.io.IOException;
 import java.net.URL;
@@ -92,7 +91,6 @@ public class SecurityController {
     @Produces(MediaType.APPLICATION_JSON)
     @Path("applyCode")
     @GetMapping("applyCode")
-    @EnableWebLogAspect
     public String applyCode(@QueryParam("app_id")  @RequestParam("app_id") String appId,
                             @QueryParam("app_secret") @RequestParam("app_secret") String appSecret,
                             @QueryParam("redirect_url") @RequestParam("redirect_url") String redirectURL,
@@ -119,7 +117,6 @@ public class SecurityController {
     @Produces(MediaType.APPLICATION_JSON)
     @Path("acquireToken")
     @GetMapping("acquireToken")
-    @EnableWebLogAspect
     public String acquireToken(@BeanParam AcquireTokenRequest request) {
         if (request == null) throw new BadRequestException("获取token请求为空");
         request.check();
@@ -160,7 +157,6 @@ public class SecurityController {
     @Produces(MediaType.APPLICATION_JSON)
     @Path("getUser")
     @GetMapping("getUser")
-    @EnableWebLogAspect
     public User getUser(@QueryParam("token") @RequestParam("token") String token,
                         @QueryParam("app_id") @RequestParam("app_id") String appId,
                         @QueryParam("app_secret") @RequestParam("app_secret") String appSecret) {
@@ -194,7 +190,6 @@ public class SecurityController {
     @Produces(MediaType.APPLICATION_JSON)
     @Path("refreshToken")
     @PostMapping("refreshToken")
-    @EnableWebLogAspect
     public String refreshToken(@RequestBody RefreshTokenRequest request) {
         if (request == null) throw new BadRequestException("刷新token请求为空");
         request.check();
@@ -226,7 +221,6 @@ public class SecurityController {
     @Produces(MediaType.APPLICATION_JSON)
     @Path("removeActivity")
     @PostMapping("removeActivity")
-    @EnableWebLogAspect
     public boolean removeActivity(@RequestBody RemoveActivityRequest request) {
         if (request == null) throw new BadRequestException("移除活动记录请求为空");
         request.check();
@@ -246,7 +240,6 @@ public class SecurityController {
     @Produces(MediaType.APPLICATION_JSON)
     @Path("getAppUserRoles")
     @GetMapping("getAppUserRoles")
-    @EnableWebLogAspect
     public List<Role> getAppUserRoles(@QueryParam("user_id") @RequestParam("user_id") String userId,
                                       @QueryParam("app_id") @RequestParam("app_id") String appId,
                                       @QueryParam("app_secret") @RequestParam("app_secret") String appSecret) {
@@ -267,7 +260,6 @@ public class SecurityController {
     @Produces(MediaType.APPLICATION_JSON)
     @Path("isAppAdmin")
     @GetMapping("isAppAdmin")
-    @EnableWebLogAspect
     public boolean isAppAdmin(@QueryParam("user_id") @RequestParam("user_id") String userId,
                               @QueryParam("app_id") @RequestParam("app_id") String appId,
                               @QueryParam("app_secret") @RequestParam("app_secret") String appSecret) {
@@ -287,15 +279,14 @@ public class SecurityController {
     @Produces(MediaType.APPLICATION_JSON)
     @Path("getAppRolePermissions")
     @PostMapping("getAppRolePermissions")
-    @EnableWebLogAspect
     public List<Permission> getAppRolePermissions(@RequestBody AppRolePermissionsRequest request) {
         if (request == null) throw new BadRequestException("角色权限请求为空");
         request.check();
         appService.verifyApp(request.appId, request.appSecret);
         RolePermissionSearchRequest searchRequest = new RolePermissionSearchRequest();
         searchRequest.roleIds = request.roleIds;
-        searchRequest.current = Constants.DEFAULT_CURRENT;
-        searchRequest.size = 100;
+        searchRequest.pageNum = Constants.DEFAULT_PAGE_NUM;
+        searchRequest.pageSize = 100;
         Pager<RolePermission> pager = rolePermissionService.search(searchRequest);
         if (pager == null || pager.records == null) return new ArrayList<>();
         List<String> permissionIds = pager.records.stream().map(r -> r.permissionId).
@@ -314,17 +305,11 @@ public class SecurityController {
     @Produces(MediaType.APPLICATION_JSON)
     @Path("getAllUsers")
     @PostMapping("getAllUsers")
-    @EnableWebLogAspect
     public List<User> getAllUsers(@RequestBody SecurityRequest request) {
         if (request == null) throw new BadRequestException("获取用户列表安全请求为空");
         request.check();
         appService.verifyApp(request.appId, request.appSecret);
-        UserSearchRequest searchRequest = new UserSearchRequest();
-        searchRequest.disabled = false;
-        searchRequest.current = 1;
-        searchRequest.size = 500;
-        Pager<User> pager = userService.search(searchRequest);
-        return pager.records == null ? new ArrayList<>() : pager.records;
+        return userService.getUsers();
     }
 
     /**
@@ -339,7 +324,6 @@ public class SecurityController {
     @Produces(MediaType.APPLICATION_JSON)
     @Path("logout")
     @GetMapping("logout")
-    @EnableWebLogAspect
     public boolean logout(@QueryParam("app_id") @RequestParam("app_id") String appId,
                           @QueryParam("app_secret") @RequestParam("app_secret") String appSecret,
                           @Context HttpServletRequest httpRequest,
@@ -372,7 +356,6 @@ public class SecurityController {
     @Produces(MediaType.APPLICATION_JSON)
     @Path("passwordLogin")
     @PostMapping("passwordLogin")
-    @EnableWebLogAspect
     public boolean passwordLogin(@RequestBody LoginRequest request,
                                  @Context HttpServletRequest httpRequest,
                                  @Context HttpServletResponse httpResponse) {
@@ -385,8 +368,8 @@ public class SecurityController {
         verifyCaptcha(request.captcha, httpRequest);
         UserSearchRequest searchRequest = new UserSearchRequest();
         searchRequest.username = request.username.trim();
-        searchRequest.current = 1;
-        searchRequest.size = 1;
+        searchRequest.pageNum = 1;
+        searchRequest.pageSize = 1;
         Pager<User> pager = userService.search(searchRequest);
         if (pager == null || pager.total < 1 || pager.records.isEmpty()) {
             logger.error("user is not found for username[{}]", request.username);
@@ -422,7 +405,6 @@ public class SecurityController {
     @Produces(MediaType.APPLICATION_JSON)
     @Path("register")
     @PostMapping("register")
-    @EnableWebLogAspect
     public boolean register(@RequestBody RegisterRequest request,
                             @Context HttpServletRequest httpRequest) {
         if (request == null) throw new BadRequestException("注册请求为空");
@@ -446,7 +428,6 @@ public class SecurityController {
     @Produces(MediaType.APPLICATION_JSON)
     @Path("forceRefresh")
     @PostMapping("forceRefresh")
-    @EnableWebLogAspect
     public boolean forceRefresh(@Context HttpServletRequest httpRequest) {
         SessionUtils.setRefreshUser(httpRequest);
         return true;

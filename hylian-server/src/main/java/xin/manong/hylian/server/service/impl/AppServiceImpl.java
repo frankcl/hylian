@@ -24,6 +24,8 @@ import xin.manong.hylian.server.service.RoleService;
 import xin.manong.hylian.server.service.request.AppSearchRequest;
 import xin.manong.hylian.server.util.ModelValidator;
 
+import java.util.List;
+
 /**
  * 应用服务实现
  *
@@ -86,16 +88,22 @@ public class AppServiceImpl implements AppService {
     }
 
     @Override
+    public List<App> getApps() {
+        return appMapper.selectList(null);
+    }
+
+    @Override
     public Pager<App> search(AppSearchRequest searchRequest) {
         if (searchRequest == null) searchRequest = new AppSearchRequest();
-        if (searchRequest.current == null || searchRequest.current < 1) searchRequest.current = Constants.DEFAULT_CURRENT;
-        if (searchRequest.size == null || searchRequest.size <= 0) searchRequest.size = Constants.DEFAULT_PAGE_SIZE;
+        if (searchRequest.pageNum == null || searchRequest.pageNum < 1) searchRequest.pageNum = Constants.DEFAULT_PAGE_NUM;
+        if (searchRequest.pageSize == null || searchRequest.pageSize <= 0) searchRequest.pageSize = Constants.DEFAULT_PAGE_SIZE;
         ModelValidator.validateOrderBy(App.class, searchRequest);
         QueryWrapper<App> query = new QueryWrapper<>();
         searchRequest.prepareOrderBy(query);
         if (!StringUtils.isEmpty(searchRequest.name)) query.like("name", searchRequest.name);
+        if (!StringUtils.isEmpty(searchRequest.id)) query.eq("id", searchRequest.id);
         if (searchRequest.appIds != null) query.in("id", searchRequest.appIds);
-        IPage<App> page = appMapper.selectPage(new Page<>(searchRequest.current, searchRequest.size), query);
+        IPage<App> page = appMapper.selectPage(new Page<>(searchRequest.pageNum, searchRequest.pageSize), query);
         return Converter.convert(page);
     }
 

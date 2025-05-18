@@ -13,7 +13,7 @@ export const useUserStore = defineStore(
     const superAdmin = ref()
     const roles = ref()
 
-    const injected = computed(() => username.value !== undefined)
+    const injected = computed(() => id.value !== undefined)
 
     const inject = user => {
       if (!user) return
@@ -27,7 +27,7 @@ export const useUserStore = defineStore(
       roles.value = user.roles
     }
 
-    const clear = () => {
+    const $reset = () => {
       id.value = undefined
       username.value = undefined
       name.value = undefined
@@ -38,12 +38,12 @@ export const useUserStore = defineStore(
       roles.value = undefined
     }
 
-    return { id, username, name, openid, avatar, superAdmin, tenant, roles, injected, inject, clear }
+    return { id, username, name, openid, avatar, superAdmin, tenant, roles, injected, inject, $reset }
   },
   {
     persist: {
       storage: sessionStorage,
-      omit: ['inject', 'clear', 'injected']
+      omit: ['inject', '$reset', 'injected']
     }
   }
 )

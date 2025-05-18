@@ -87,8 +87,8 @@ public class ActivityServiceImpl implements ActivityService {
     @Override
     public Pager<Activity> search(ActivitySearchRequest searchRequest) {
         if (searchRequest == null) searchRequest = new ActivitySearchRequest();
-        if (searchRequest.current == null || searchRequest.current < 1) searchRequest.current = Constants.DEFAULT_CURRENT;
-        if (searchRequest.size == null || searchRequest.size <= 0) searchRequest.size = Constants.DEFAULT_PAGE_SIZE;
+        if (searchRequest.pageNum == null || searchRequest.pageNum < 1) searchRequest.pageNum = Constants.DEFAULT_PAGE_NUM;
+        if (searchRequest.pageSize == null || searchRequest.pageSize <= 0) searchRequest.pageSize = Constants.DEFAULT_PAGE_SIZE;
         ModelValidator.validateOrderBy(Activity.class, searchRequest);
         QueryWrapper<Activity> query = new QueryWrapper<>();
         searchRequest.prepareOrderBy(query);
@@ -96,7 +96,7 @@ public class ActivityServiceImpl implements ActivityService {
         if (StringUtils.isNotEmpty(searchRequest.userId)) query.eq("user_id", searchRequest.userId);
         if (StringUtils.isNotEmpty(searchRequest.sessionId)) query.eq("session_id", searchRequest.sessionId);
         if (searchRequest.appIds != null) query.in("app_id", searchRequest.appIds);
-        IPage<Activity> page = activityMapper.selectPage(new Page<>(searchRequest.current, searchRequest.size), query);
+        IPage<Activity> page = activityMapper.selectPage(new Page<>(searchRequest.pageNum, searchRequest.pageSize), query);
         return Converter.convert(page);
     }
 }

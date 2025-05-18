@@ -9,7 +9,6 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import xin.manong.hylian.client.util.SessionUtils;
 import xin.manong.hylian.server.service.CaptchaService;
-import xin.manong.weapon.spring.boot.aspect.EnableWebLogAspect;
 
 /**
  * 验证码控制器
@@ -35,7 +34,6 @@ public class CaptchaController {
     @Produces(MediaType.APPLICATION_JSON)
     @Path("apply")
     @GetMapping("apply")
-    @EnableWebLogAspect
     public String create(@Context HttpServletRequest httpRequest) {
         String sessionId = SessionUtils.getSessionID(httpRequest);
         return captchaService.create(sessionId);

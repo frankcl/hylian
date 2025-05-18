@@ -64,7 +64,7 @@ public class UserRoleServiceImplTest {
             Pager<UserRole> pager = userRoleService.search(searchRequest);
             Assert.assertNotNull(pager);
             Assert.assertEquals(2L, pager.total.longValue());
-            Assert.assertEquals(Constants.DEFAULT_PAGE_SIZE, pager.size.longValue());
+            Assert.assertEquals(Constants.DEFAULT_PAGE_SIZE, pager.pageSize.longValue());
             Assert.assertEquals(2, pager.records.size());
             Assert.assertEquals("user_xxx", pager.records.get(0).userId);
             Assert.assertEquals("role_yyy", pager.records.get(0).roleId);
@@ -78,7 +78,7 @@ public class UserRoleServiceImplTest {
             Pager<UserRole> pager = userRoleService.search(searchRequest);
             Assert.assertNotNull(pager);
             Assert.assertEquals(2L, pager.total.longValue());
-            Assert.assertEquals(Constants.DEFAULT_PAGE_SIZE, pager.size.longValue());
+            Assert.assertEquals(Constants.DEFAULT_PAGE_SIZE, pager.pageSize.longValue());
             Assert.assertEquals(2, pager.records.size());
             Assert.assertEquals("user_yyy", pager.records.get(0).userId);
             Assert.assertEquals("role_xxx", pager.records.get(0).roleId);

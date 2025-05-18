@@ -53,4 +53,4 @@ app:
       secretHS256: ${hylian/jwt/secret}
     oss-region: cn-hangzhou
     oss-base-directory: test
-    default-tenant: t_123456
+    default-tenant: e9c2227a9d7da6c1241b8c6782061b7f

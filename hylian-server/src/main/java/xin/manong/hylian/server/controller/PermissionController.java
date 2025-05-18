@@ -53,7 +53,6 @@ public class PermissionController {
     @Produces(MediaType.APPLICATION_JSON)
     @Path("get")
     @GetMapping("get")
-    @EnableWebLogAspect
     public Permission get(@QueryParam("id") @RequestParam("id") String id) {
         Permission permission = permissionService.get(id);
         if (permission == null) throw new NotFoundException("权限不存在");
@@ -71,7 +70,6 @@ public class PermissionController {
     @Produces(MediaType.APPLICATION_JSON)
     @Path("batchGet")
     @PostMapping("batchGet")
-    @EnableWebLogAspect
     public List<Permission> batchGet(@RequestBody List<String> ids) {
         if (ids == null || ids.isEmpty()) return new ArrayList<>();
         return permissionService.batchGet(ids);
@@ -151,28 +149,42 @@ public class PermissionController {
      * @param searchRequest 搜索请求
      * @return 权限分页列表
      */
-    @SuppressWarnings("unchecked")
     @GET
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @Path("search")
     @GetMapping("search")
-    @EnableWebLogAspect
     @EnableAppInjectAspect
+    @SuppressWarnings("unchecked")
     public Pager<ViewPermission> search(@BeanParam PermissionSearchRequest searchRequest) {
         User currentUser = ContextManager.getUser();
         assert currentUser != null;
         searchRequest.appIds = currentUser.superAdmin || searchRequest.ignoreCheck ?
                 null : ContextManager.getValue(Constants.CURRENT_APPS, List.class);
         Pager<Permission> pager = searchRequest.appIds != null && searchRequest.appIds.isEmpty() ?
-                Pager.empty(searchRequest.current, searchRequest.size) : permissionService.search(searchRequest);
+                Pager.empty(searchRequest.pageNum, searchRequest.pageSize) : permissionService.search(searchRequest);
         Pager<ViewPermission> viewPager = new Pager<>();
-        viewPager.current = pager.current;
-        viewPager.size = pager.size;
+        viewPager.pageNum = pager.pageNum;
+        viewPager.pageSize = pager.pageSize;
         viewPager.total = pager.total;
         viewPager.records = new ArrayList<>();
         for (Permission permission : pager.records) viewPager.records.add(fillAndConvert(permission));
         return viewPager;
+    }
+
+    /**
+     * 获取应用权限
+     *
+     * @param appId 应用ID
+     * @return 权限列表
+     */
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("getAppPermissions")
+    @GetMapping("getAppPermissions")
+    public List<ViewPermission> getAppPermissions(@QueryParam("app_id") String appId) {
+        List<Permission> permissions = permissionService.getAppPermissions(appId);
+        return permissions.stream().map(this::fillAndConvert).toList();
     }
 
     /**

@@ -1,11 +1,11 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import { ElMessage } from 'element-plus'
 import { useUserStore } from '@/store'
-import { isLogin, refreshUser } from '@/common/assortment'
-import Home from '@/views/Home'
-import Workbench from '@/views/Workbench'
-import PasswordLogin from '@/views/login/PasswordLogin'
-import WechatLogin from '@/views/login/WechatLogin'
+import { showMessage, WARNING } from '@/common/Feedback'
+import { checkLogin } from '@/common/Permission'
+import Home from '@/views/home/Main'
+import Workbench from '@/views/workbench/Main'
+import PasswordLogin from '@/views/home/PasswordLogin.vue'
+import WechatLogin from '@/views/home/WechatLogin.vue'
 import UserList from '@/views/user/UserList'
 import TenantList from '@/views/tenant/TenantList'
 import RoleList from '@/views/role/RoleList'
@@ -16,11 +16,12 @@ import ActivityList from '@/views/activity/ActivityList'
 const routes = [
   {
     path: '/',
-    redirect: '/home/passwordLogin' },
+    redirect: '/home'
+  },
   {
     path: '/home',
     name: 'Home',
-    redirect: '/home/passwordLogin',
+    redirect: '/home/wechatLogin',
     component: Home,
     children: [
       {
@@ -38,8 +39,9 @@ const routes = [
   {
     path: '/workbench',
     name: 'Workbench',
+    redirect: '/workbench/userList',
     component: Workbench,
-    meta: { requireAuth: true },
+    meta: { auth: true },
     children: [
       {
         path: 'userList',
@@ -79,15 +81,14 @@ const router = createRouter({
   routes
 })
 
-router.beforeEach(async to => {
-  if (isLogin()) await refreshUser()
-  if (to.meta.requireAuth && !isLogin()) {
-    const userStore = useUserStore()
-    userStore.clear()
-    ElMessage.error('请重新登录')
+router.beforeEach(async routeLocation => {
+  if (routeLocation.meta.auth && !checkLogin()) {
+    useUserStore().$reset()
+    showMessage('尚未登录', WARNING)
     return '/'
+  } else if (!routeLocation.meta.auth && checkLogin()) {
+    return '/workbench'
   }
-  if (isLogin() && to.path.startsWith('/home')) return '/workbench'
 })
 
 export default router

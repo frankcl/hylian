@@ -62,6 +62,14 @@ public interface RoleService {
     void deleteByApp(String appId);
 
     /**
+     * 获取应用角色
+     *
+     * @param appId 应用ID
+     * @return 角色列表
+     */
+    List<Role> getAppRoles(String appId);
+
+    /**
      * 搜索角色信息
      *
      * @param searchRequest 搜索请求

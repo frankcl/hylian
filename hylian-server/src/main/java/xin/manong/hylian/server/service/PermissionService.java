@@ -62,6 +62,14 @@ public interface PermissionService {
     void deleteByApp(String appId);
 
     /**
+     * 获取应用权限
+     *
+     * @param appId 应用ID
+     * @return 权限列表
+     */
+    List<Permission> getAppPermissions(String appId);
+
+    /**
      * 搜索权限信息
      *
      * @param searchRequest 搜索请求

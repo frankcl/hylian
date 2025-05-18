@@ -1,59 +1,65 @@
 <script setup>
-import { format } from 'date-fns'
-import { reactive, ref, useTemplateRef, watch } from 'vue'
-import { ArrowRight, Check, Timer, Warning } from '@element-plus/icons-vue'
+import { IconAlertCircle, IconCircleCheck, IconClock, IconPlus, IconTrash } from '@tabler/icons-vue'
+import { reactive, ref, useTemplateRef, watchEffect } from 'vue'
+import zhCn from 'element-plus/dist/locale/zh-cn.mjs'
 import {
-  ElBreadcrumb, ElBreadcrumbItem, ElButton, ElForm,
-  ElFormItem, ElIcon, ElInput, ElPagination, ElPopover, ElRow, ElTable, ElTableColumn
+  ElBreadcrumb, ElBreadcrumbItem, ElButton, ElCol, ElConfigProvider, ElForm,
+  ElFormItem, ElInput, ElPagination, ElPopover, ElRow, ElTable, ElTableColumn
 } from 'element-plus'
 import { useUserStore } from '@/store'
+import { formatDate } from '@/common/Time'
 import {
-  asyncDeleteTenant,
-  asyncSearchTenants,
-  asyncUpdateTenant
-} from '@/common/service'
+  asyncRemoveTenant,
+  asyncSearchTenant,
+  asyncUpdateTenant,
+  changeSearchQuerySort,
+  newSearchQuery,
+  newSearchRequest
+} from '@/common/AsyncRequest'
 import {
-  fillSearchQuerySort,
-  removeAfterConfirm,
-  searchQueryToRequest,
-  submitForm
-} from '@/common/assortment'
+  asyncExecuteAfterConfirming,
+  ERROR, showMessage, SUCCESS
+} from '@/common/Feedback'
+import HylianCard from '@/components/data/Card'
+import TableHead from '@/components/data/TableHead'
 import AddTenant from '@/views/tenant/AddTenant'
 
 const userStore = useUserStore()
-const tableRef = useTemplateRef('tableRef')
-const openAddDialog = ref(false)
+const tableRef = useTemplateRef('table')
+const openAdd = ref(false)
 const total = ref(0)
 const tenants = ref([])
-const query = reactive({
-  current: 1,
-  size: 20,
-  name: null,
-  sort_field: null,
-  sort_order: null
-})
+const query = reactive(newSearchQuery())
 
 const search = async () => {
-  const request = searchQueryToRequest(query)
+  const request = newSearchRequest(query)
   if (query.name) request.name = query.name
-  const pager = await asyncSearchTenants(request)
+  const pager = await asyncSearchTenant(request)
   total.value = pager.total
   tenants.value = pager.records
   tenants.value.forEach(tenant => tenant.prev = { name: tenant.name })
 }
 
-const update = async row => {
-  if (!await submitForm(undefined, { id: row.id, name: row.name },
-    asyncUpdateTenant, '更新租户名成功', '更新租户名失败')) {
-    row.name = row.prev.name
+const add = () => openAdd.value = true
+
+const update = async tenant => {
+  if (!await asyncUpdateTenant({ id: tenant.id, name: tenant.name })) {
+    showMessage('更新租户名失败', ERROR)
+    tenant.name = tenant.prev.name
     return
   }
-  row.prev.name = row.name
+  showMessage('更新权限名成功', SUCCESS)
+  tenant.prev.name = tenant.name
 }
 
 const remove = async id => {
-  if (!await removeAfterConfirm(id, asyncDeleteTenant, '删除提示', '确定删除租户信息？',
-    '删除租户成功', '删除租户失败')) return
+  const success = await asyncExecuteAfterConfirming(asyncRemoveTenant, id)
+  if (success === undefined) return
+  if (!success) {
+    showMessage('删除租户失败', ERROR)
+    return
+  }
+  showMessage('删除租户成功', SUCCESS)
   await search()
 }
 
@@ -63,80 +69,93 @@ const handleSelect = (selection, row) => {
 }
 
 const handleSelectAll = selection => {
-  const rows = selection.length === 0 ? tableRef.value.data : selection
-  rows.forEach(row => {
-    row.checked = selection.length !== 0
-    if (!row.checked) row.name = row.prev.name
-  })
+  const rows = tableRef.value.data
+  rows.forEach(row => handleSelect(selection, row))
 }
 
-watch(query, () => search(), { immediate: true })
+watchEffect(async () => await search())
 </script>
 
 <template>
-  <add-tenant v-model="openAddDialog" @close="search()"></add-tenant>
-  <el-row align="middle">
-    <el-breadcrumb :separator-icon="ArrowRight">
-      <el-breadcrumb-item>账号管理</el-breadcrumb-item>
-      <el-breadcrumb-item>租户列表</el-breadcrumb-item>
-    </el-breadcrumb>
-  </el-row>
-  <div class="square-block">
-    <el-form :model="query" label-width="auto" style="max-width: 400px">
-      <el-form-item label="租户搜索" prop="user_id">
-        <el-input v-model="query.name" clearable placeholder="根据租户名搜索"></el-input>
+  <add-tenant v-model="openAdd" @close="search" />
+  <hylian-card>
+    <template #title>
+      <el-breadcrumb>
+        <el-breadcrumb-item>账号管理</el-breadcrumb-item>
+        <el-breadcrumb-item>租户管理</el-breadcrumb-item>
+      </el-breadcrumb>
+    </template>
+    <el-form :model="query" label-width="80px" class="mb-4">
+      <el-form-item label="租户搜索">
+        <el-col :span="10">
+          <el-input v-model="query.name" clearable placeholder="根据租户名搜索" />
+        </el-col>
       </el-form-item>
     </el-form>
-  </div>
-  <el-table ref="tableRef" :data="tenants" max-height="850" table-layout="auto"
-            stripe @select="handleSelect" @select-all="handleSelectAll"
-            @sort-change="event => fillSearchQuerySort(event, query)">
-    <template #empty>没有租户数据</template>
-    <el-table-column v-if="userStore.superAdmin" type="selection" width="55" fixed="left" />
-    <el-table-column prop="name" label="租户名" show-overflow-tooltip>
-      <template #default="scope">
-        <el-input v-if="scope.row.checked" v-model="scope.row.name">
-          <template #append>
-            <el-popover v-if="scope.row.name !== scope.row.prev.name" content="租户名变更，点击保存">
-              <template #reference>
-                <el-button @click="update(scope.row)">
-                  <el-icon color="#ff0000"><warning></warning></el-icon>
-                </el-button>
-              </template>
-            </el-popover>
-            <el-button v-else>
-              <el-icon color="#409eff"><check></check></el-icon>
-            </el-button>
-          </template>
-        </el-input>
-        <span v-else>{{ scope.row.name }}</span>
+    <table-head title="租户列表">
+      <template #right>
+        <el-button type="primary" @click="add" :disabled="!userStore.superAdmin">
+          <IconPlus size="20" class="mr-1" />
+          <span>新增</span>
+        </el-button>
       </template>
-    </el-table-column>
-    <el-table-column prop="create_time" label="创建时间" sortable="custom" show-overflow-tooltip>
-      <template #default="scope">
-        <el-icon><timer /></el-icon>
-        {{ format(new Date(scope.row['create_time']), 'yyyy-MM-dd HH:mm:ss') }}
-      </template>
-    </el-table-column>
-    <el-table-column prop="update_time" label="更新时间" sortable="custom" show-overflow-tooltip>
-      <template #default="scope">
-        <el-icon><timer /></el-icon>
-        {{ format(new Date(scope.row['update_time']), 'yyyy-MM-dd HH:mm:ss') }}
-      </template>
-    </el-table-column>
-    <el-table-column fixed="right" width="120">
-      <template #header>
-        <el-button v-if="userStore.superAdmin" @click="openAddDialog = true">新增租户</el-button>
-      </template>
-      <template #default="scope">
-        <a v-if="userStore.superAdmin" @click="remove(scope.row.id)">删除</a>
-      </template>
-    </el-table-column>
-  </el-table>
-  <el-row justify="center" align="middle">
-    <el-pagination background layout="prev, pager, next" :total="total"
-                   v-model:page-size="query.size" v-model:current-page="query.current"/>
-  </el-row>
+    </table-head>
+    <el-table ref="table" :data="tenants" max-height="650" table-layout="auto" stripe
+              class="mb-4" @select="handleSelect" @select-all="handleSelectAll"
+              @sort-change="e => changeSearchQuerySort(e.prop, e.order, query)">
+      <template #empty>暂无租户数据</template>
+      <el-table-column v-if="userStore.superAdmin" type="selection" width="55" fixed="left" />
+      <el-table-column prop="name" label="租户名" show-overflow-tooltip>
+        <template #default="scope">
+          <el-input v-if="scope.row.checked" v-model="scope.row.name">
+            <template #append>
+              <el-popover v-if="scope.row.name !== scope.row.prev.name" content="租户名变更，点击保存">
+                <template #reference>
+                  <el-button @click="update(scope.row)" class="d-flex align-items-center">
+                    <IconAlertCircle color="#f56c6c" size="18" />
+                  </el-button>
+                </template>
+              </el-popover>
+              <el-button v-else class="d-flex align-items-center" >
+                <IconCircleCheck color="#67c23a" size="18" />
+              </el-button>
+            </template>
+          </el-input>
+          <span v-else>{{ scope.row.name }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column prop="create_time" label="创建时间" sortable="custom" show-overflow-tooltip>
+        <template #default="scope">
+          <div class="d-flex align-items-center">
+            <IconClock size="16" class="mr-1" />
+            <span>{{ formatDate(scope.row['create_time']) }}</span>
+          </div>
+        </template>
+      </el-table-column>
+      <el-table-column prop="update_time" label="更新时间" sortable="custom" show-overflow-tooltip>
+        <template #default="scope">
+          <div class="d-flex align-items-center">
+            <IconClock size="16" class="mr-1" />
+            <span>{{ formatDate(scope.row['update_time']) }}</span>
+          </div>
+        </template>
+      </el-table-column>
+      <el-table-column width="120">
+        <template #default="scope">
+          <el-button type="danger" :disabled="!userStore.superAdmin" @click="remove(scope.row.id)">
+            <IconTrash size="20" class="mr-2" />
+            <span>删除</span>
+          </el-button>
+        </template>
+      </el-table-column>
+    </el-table>
+    <el-row justify="center" align="middle">
+      <el-config-provider :locale="zhCn">
+        <el-pagination background layout="total, prev, pager, next, jumper" :total="total"
+                       v-model:page-size="query.page_size" v-model:current-page="query.page_num"/>
+      </el-config-provider>
+    </el-row>
+  </hylian-card>
 </template>
 
 <style scoped>

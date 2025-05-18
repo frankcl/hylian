@@ -62,7 +62,6 @@ public class AppController {
     @Produces(MediaType.APPLICATION_JSON)
     @Path("get")
     @GetMapping("get")
-    @EnableWebLogAspect
     public App get(@QueryParam("id") @RequestParam("id") String id) {
         if (StringUtils.isEmpty(id)) throw new BadRequestException("应用ID为空");
         App app = appService.get(id);
@@ -80,7 +79,6 @@ public class AppController {
     @Produces(MediaType.APPLICATION_JSON)
     @Path("getAppUsers")
     @GetMapping("getAppUsers")
-    @EnableWebLogAspect
     public List<ViewUser> getAppUsers(@QueryParam("app_id") @RequestParam("app_id") String appId) {
         if (StringUtils.isEmpty(appId)) throw new BadRequestException("应用ID为空");
         List<User> users = appUserService.getUsersByApp(appId);
@@ -143,7 +141,6 @@ public class AppController {
     @Produces(MediaType.APPLICATION_JSON)
     @Path("randomSecret")
     @GetMapping("randomSecret")
-    @EnableWebLogAspect
     public String randomSecret() {
         return AppSecretUtils.buildSecret(APP_SECRET_LEN);
     }
@@ -200,20 +197,41 @@ public class AppController {
      * @param searchRequest 搜索请求
      * @return 应用分页列表
      */
-    @SuppressWarnings("unchecked")
     @GET
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @Path("search")
     @GetMapping("search")
-    @EnableWebLogAspect
     @EnableAppInjectAspect
+    @SuppressWarnings("unchecked")
     public Pager<App> search(@BeanParam AppSearchRequest searchRequest) {
         User currentUser = ContextManager.getUser();
         assert currentUser != null;
         searchRequest.appIds = currentUser.superAdmin || searchRequest.ignoreCheck ?
                 null : ContextManager.getValue(Constants.CURRENT_APPS, List.class);
         return searchRequest.appIds != null && searchRequest.appIds.isEmpty() ?
-                Pager.empty(searchRequest.current, searchRequest.size) : appService.search(searchRequest);
+                Pager.empty(searchRequest.pageNum, searchRequest.pageSize) : appService.search(searchRequest);
+    }
+
+    /**
+     * 获取所有应用
+     *
+     * @return 应用列表
+     */
+    @GET
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("getApps")
+    @GetMapping("getApps")
+    @EnableAppInjectAspect
+    @SuppressWarnings("unchecked")
+    public List<App> getApps() {
+        User currentUser = ContextManager.getUser();
+        assert currentUser != null;
+        List<App> apps = appService.getApps();
+        List<String> myAppIds = currentUser.superAdmin ?
+                null : ContextManager.getValue(Constants.CURRENT_APPS, List.class);
+        if (myAppIds == null) return apps;
+        return apps.stream().filter(app -> myAppIds.contains(app.id)).collect(Collectors.toList());
     }
 }

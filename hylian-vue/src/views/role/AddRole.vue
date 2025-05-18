@@ -1,55 +1,54 @@
 <script setup>
+import { IconArrowBackUp, IconPlus } from '@tabler/icons-vue'
 import { reactive, useTemplateRef } from 'vue'
-import { ArrowRight } from '@element-plus/icons-vue'
-import { ElBreadcrumb, ElBreadcrumbItem, ElButton, ElDialog, ElForm, ElFormItem, ElInput, ElRow } from 'element-plus'
-import { asyncAddRole } from '@/common/service'
-import { submitForm } from '@/common/assortment'
+import { ElButton, ElDialog, ElForm, ElFormItem, ElInput } from 'element-plus'
+import { ERROR, showMessage, SUCCESS } from '@/common/Feedback'
+import { asyncAddRole } from '@/common/AsyncRequest'
 import AppSelect from '@/components/app/AppSelect'
+import HylianCard from '@/components/data/Card'
 
-const model = defineModel()
+const open = defineModel()
 const emits = defineEmits(['close'])
-const formRef = useTemplateRef('formRef')
-const roleForm = reactive({
-  name: '',
-  app_id: ''
-})
+const formRef = useTemplateRef('form')
+const role = reactive({})
 const formRules = reactive({
-  name: [
-    { required: true, message: '请输入角色名称', trigger: 'change' }
-  ],
-  app_id: [
-    { required: true, message: '请选择应用', trigger: 'change' },
-  ]
+  name: [{ required: true, message: '请输入角色名称', trigger: 'change' }],
+  app_id: [{ required: true, message: '请选择应用', trigger: 'change' }]
 })
 
-const submit = async formEl => {
-  if (!await submitForm(formEl, roleForm, asyncAddRole,
-    '新增角色成功', '新增角色失败')) return
-  model.value = false
+const add = async () => {
+  if (!await formRef.value.validate(valid => valid)) return
+  if (!await asyncAddRole(role)) {
+    showMessage('新增角色失败', ERROR)
+    return
+  }
+  showMessage('新增角色成功', SUCCESS)
+  open.value = false
 }
 </script>
 
 <template>
-  <el-dialog v-model="model" @close="emits('close')" width="450" align-center show-close>
-    <el-row>
-      <el-breadcrumb :separator-icon="ArrowRight">
-        <el-breadcrumb-item>授权管理</el-breadcrumb-item>
-        <el-breadcrumb-item>新增角色</el-breadcrumb-item>
-      </el-breadcrumb>
-    </el-row>
-    <el-form ref="formRef" :model="roleForm" :rules="formRules"
-             label-width="auto" label-position="right">
-      <el-form-item label="所属应用" prop="app_id">
-        <app-select v-model="roleForm.app_id" placeholder="请选择"></app-select>
-      </el-form-item>
-      <el-form-item label="角色名称" prop="name">
-        <el-input v-model.trim="roleForm.name" clearable></el-input>
-      </el-form-item>
-      <el-form-item>
-        <el-button @click="submit(formRef)">新增</el-button>
-        <el-button @click="formRef.resetFields()">重置</el-button>
-      </el-form-item>
-    </el-form>
+  <el-dialog v-model="open" @close="emits('close')" align-center show-close>
+    <hylian-card title="新增角色">
+      <el-form ref="form" :model="role" :rules="formRules" label-width="80px" label-position="top">
+        <el-form-item label="所属应用" prop="app_id">
+          <app-select v-model="role.app_id" placeholder="请选择" />
+        </el-form-item>
+        <el-form-item label="角色名称" prop="name">
+          <el-input v-model.trim="role.name" clearable />
+        </el-form-item>
+        <el-form-item>
+          <el-button type="primary" @click="add">
+            <IconPlus size="20" class="mr-1" />
+            <span>新增</span>
+          </el-button>
+          <el-button type="info" @click="formRef.resetFields()">
+            <IconArrowBackUp size="20" class="mr-1" />
+            <span>重置</span>
+          </el-button>
+        </el-form-item>
+      </el-form>
+    </hylian-card>
   </el-dialog>
 </template>
 

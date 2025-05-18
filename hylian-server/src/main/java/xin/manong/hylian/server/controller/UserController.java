@@ -274,6 +274,20 @@ public class UserController {
     }
 
     /**
+     * 获取所有用户信息
+     *
+     * @return 用户列表
+     */
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("getUsers")
+    @GetMapping("getUsers")
+    @EnableWebLogAspect
+    public List<User> getUsers() {
+        return userService.getUsers();
+    }
+
+    /**
      * 搜索用户
      *
      * @param searchRequest 搜索请求
@@ -288,8 +302,8 @@ public class UserController {
     public Pager<ViewUser> search(@BeanParam UserSearchRequest searchRequest) {
         Pager<User> pager = userService.search(searchRequest);
         Pager<ViewUser> viewPager = new Pager<>();
-        viewPager.current = pager.current;
-        viewPager.size = pager.size;
+        viewPager.pageNum = pager.pageNum;
+        viewPager.pageSize = pager.pageSize;
         viewPager.total = pager.total;
         viewPager.records = new ArrayList<>();
         for (User user : pager.records) {
@@ -342,6 +356,23 @@ public class UserController {
         updateUser.id = user.id;
         updateUser.password = request.newPassword.trim();
         return userService.update(updateUser);
+    }
+
+    /**
+     * 移除头像
+     *
+     * @return 成功返回true，否则返回false
+     */
+    @DELETE
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("removeAvatar")
+    @DeleteMapping("removeAvatar")
+    @EnableACLAspect
+    @EnableWebLogAspect
+    public boolean removeAvatar() {
+        User user = ContextManager.getUser();
+        assert user != null;
+        return userService.removeAvatar(user.id);
     }
 
     /**

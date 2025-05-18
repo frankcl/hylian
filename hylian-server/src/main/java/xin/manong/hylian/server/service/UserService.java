@@ -71,12 +71,27 @@ public interface UserService {
     boolean delete(String id);
 
     /**
+     * 删除用户头像
+     *
+     * @param id 用户ID
+     * @return 成功返回true，否则返回false
+     */
+    boolean removeAvatar(String id);
+
+    /**
      * 搜索用户信息
      *
      * @param searchRequest 搜索请求
      * @return 用户分页列表
      */
     Pager<User> search(UserSearchRequest searchRequest);
+
+    /**
+     * 获取所有用户信息
+     *
+     * @return 用户列表
+     */
+    List<User> getUsers();
 
     /**
      * 移除用户登录信息

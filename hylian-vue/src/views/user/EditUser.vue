@@ -1,81 +1,99 @@
 <script setup>
-import { reactive, useTemplateRef, watchEffect } from 'vue'
-import { ArrowRight } from '@element-plus/icons-vue'
+import { IconArrowBackUp, IconEdit } from '@tabler/icons-vue'
+import { ref, useTemplateRef, watch } from 'vue'
 import {
-  ElBreadcrumb, ElBreadcrumbItem, ElButton, ElCol,
-  ElDialog, ElForm, ElFormItem, ElInput, ElRow,
+  ElButton, ElCol, ElDialog, ElForm, ElFormItem, ElInput, ElRow
 } from 'element-plus'
-import { asyncGetUser, asyncUpdateUser } from '@/common/service'
-import { submitForm } from '@/common/assortment'
+import {
+  asyncForceRefresh,
+  asyncGetUser,
+  asyncRefreshUser,
+  asyncRemoveAvatar,
+  asyncUpdateUser
+} from '@/common/AsyncRequest'
+import {asyncExecuteAfterConfirming, ERROR, showMessage, SUCCESS} from '@/common/Feedback'
 import AvatarUpload from '@/components/user/AvatarUpload'
 import TenantSelect from '@/components/tenant/TenantSelect'
-import { baseRules } from '@/views/user/common'
+import { appFormRules } from '@/views/user/common'
+import HylianCard from '@/components/data/Card'
 
 const props = defineProps(['id'])
 const emits = defineEmits(['close'])
-const model = defineModel()
-const formRef = useTemplateRef('formRef')
-const userForm = reactive({
-  id: '',
-  username: '',
-  name: '',
-  tenant_id: '',
-  disabled: false,
-  avatar: null,
-})
-const formRules = { ... baseRules }
+const open = defineModel()
+const formRef = useTemplateRef('form')
+const user = ref({})
 
-const submit = async formEl => {
-  if (!await submitForm(formEl, userForm, asyncUpdateUser,
-    '编辑用户成功', '编辑用户失败')) return
-  model.value = false
+const reset = async () => {
+  if (props.id) {
+    user.value = await asyncGetUser(props.id)
+    user.value.tenant_id = user.value.tenant.id
+  }
 }
 
-watchEffect(async () => {
-  if (!props.id) return
-  const user = await asyncGetUser(props.id)
-  userForm.id = user.id
-  userForm.name = user.name
-  userForm.username = user.username
-  userForm.tenant_id = user.tenant.id
-  userForm.disabled = user.disabled
-  userForm.avatar = user.avatar
-})
+const update = async () => {
+  if (!await formRef.value.validate(valid => valid)) return
+  if (!await asyncUpdateUser(user.value)) {
+    showMessage('编辑用户失败', ERROR)
+    return
+  }
+  showMessage('编辑用户成功', SUCCESS)
+  await asyncForceRefresh()
+  await asyncRefreshUser()
+  open.value = false
+}
+
+const removeAvatar = async () => {
+  const success = await asyncExecuteAfterConfirming(asyncRemoveAvatar)
+  if (success === undefined) return
+  if (!success) {
+    showMessage('删除用户头像失败', ERROR)
+    return
+  }
+  showMessage('删除用户头像成功', SUCCESS)
+  user.value.avatar = null
+  await asyncForceRefresh()
+  await asyncRefreshUser()
+}
+
+watch(() => [props.id, open.value], async () => {
+  if (open.value) await reset()
+}, { immediate: true })
 </script>
 
 <template>
-  <el-dialog v-model="model" @close="emits('close')" width="650" align-center show-close>
-    <el-row>
-      <el-breadcrumb :separator-icon="ArrowRight">
-        <el-breadcrumb-item>账号管理</el-breadcrumb-item>
-        <el-breadcrumb-item>编辑用户</el-breadcrumb-item>
-      </el-breadcrumb>
-    </el-row>
-    <el-form ref="formRef" :model="userForm" :rules="formRules" label-width="auto" label-position="right">
-      <el-row>
-        <el-col :span="16">
-          <el-form-item label="用户名" prop="username">
-            <el-input v-model.trim="userForm.username" clearable></el-input>
-          </el-form-item>
-          <el-form-item label="用户名称" prop="name">
-            <el-input v-model.trim="userForm.name" clearable></el-input>
-          </el-form-item>
-          <el-form-item label="租户" prop="tenant_id">
-            <tenant-select v-model="userForm.tenant_id" placeholder="请选择"></tenant-select>
-          </el-form-item>
-          <el-form-item>
-            <el-button @click="submit(formRef)">保存</el-button>
-            <el-button @click="formRef.resetFields()">重置</el-button>
-          </el-form-item>
-        </el-col>
-        <el-col :span="6" :offset="1">
-          <el-row justify="center" style="margin-bottom: 10px">
-            <avatar-upload v-model="userForm.avatar" :size="150"></avatar-upload>
-          </el-row>
-          <el-row justify="center">上传头像</el-row>
-        </el-col>
-      </el-row>
-    </el-form>
+  <el-dialog v-model="open" @close="emits('close')" align-center show-close>
+    <hylian-card title="编辑用户">
+      <el-form ref="form" :model="user" :rules="appFormRules" label-width="80px" label-position="top">
+        <el-row :gutter="50">
+          <el-col :span="18">
+            <el-form-item label="用户名" prop="username">
+              <el-input v-model.trim="user.username" clearable></el-input>
+            </el-form-item>
+            <el-form-item label="用户昵称" prop="name">
+              <el-input v-model.trim="user.name" clearable></el-input>
+            </el-form-item>
+            <el-form-item label="所属租户" prop="tenant_id">
+              <tenant-select v-model="user.tenant_id" placeholder="请选择" />
+            </el-form-item>
+            <el-form-item>
+              <el-button type="primary" @click="update">
+                <IconEdit size="20" class="mr-1" />
+                <span>编辑</span>
+              </el-button>
+              <el-button type="info" @click="reset">
+                <IconArrowBackUp size="20" class="mr-1" />
+                <span>重置</span>
+              </el-button>
+            </el-form-item>
+          </el-col>
+          <el-col :span="6">
+            <el-form-item label="用户头像" prop="avatar">
+              <avatar-upload v-model="user.avatar" :size="150" @remove="removeAvatar" />
+            </el-form-item>
+          </el-col>
+        </el-row>
+      </el-form>
+    </hylian-card>
   </el-dialog>
 </template>
 

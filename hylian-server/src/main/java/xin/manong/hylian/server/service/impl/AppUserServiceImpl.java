@@ -122,14 +122,14 @@ public class AppUserServiceImpl implements AppUserService {
     @Override
     public Pager<AppUser> search(AppUserSearchRequest searchRequest) {
         if (searchRequest == null) searchRequest = new AppUserSearchRequest();
-        if (searchRequest.current == null || searchRequest.current < 1) searchRequest.current = Constants.DEFAULT_CURRENT;
-        if (searchRequest.size == null || searchRequest.size <= 0) searchRequest.size = Constants.DEFAULT_PAGE_SIZE;
+        if (searchRequest.pageNum == null || searchRequest.pageNum < 1) searchRequest.pageNum = Constants.DEFAULT_PAGE_NUM;
+        if (searchRequest.pageSize == null || searchRequest.pageSize <= 0) searchRequest.pageSize = Constants.DEFAULT_PAGE_SIZE;
         ModelValidator.validateOrderBy(AppUser.class, searchRequest);
         QueryWrapper<AppUser> query = new QueryWrapper<>();
         searchRequest.prepareOrderBy(query);
         if (!StringUtils.isEmpty(searchRequest.appId)) query.eq("app_id", searchRequest.appId);
         if (!StringUtils.isEmpty(searchRequest.userId)) query.eq("user_id", searchRequest.userId);
-        IPage<AppUser> page = appUserMapper.selectPage(new Page<>(searchRequest.current, searchRequest.size), query);
+        IPage<AppUser> page = appUserMapper.selectPage(new Page<>(searchRequest.pageNum, searchRequest.pageSize), query);
         return Converter.convert(page);
     }
 }

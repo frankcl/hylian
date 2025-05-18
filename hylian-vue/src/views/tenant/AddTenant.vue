@@ -1,47 +1,51 @@
 <script setup>
+import { IconArrowBackUp, IconPlus } from '@tabler/icons-vue'
 import { reactive, useTemplateRef } from 'vue'
-import { ArrowRight } from '@element-plus/icons-vue'
-import { ElBreadcrumb, ElBreadcrumbItem, ElButton, ElDialog, ElForm, ElFormItem, ElInput, ElRow } from 'element-plus'
-import { asyncAddTenant } from '@/common/service'
-import { submitForm } from '@/common/assortment'
+import { ElButton, ElDialog, ElForm, ElFormItem, ElInput } from 'element-plus'
+import { useUserStore } from '@/store'
+import { ERROR, showMessage, SUCCESS } from '@/common/Feedback'
+import { asyncAddTenant } from '@/common/AsyncRequest'
+import HylianCard from '@/components/data/Card'
 
 const emits = defineEmits(['close'])
-const model = defineModel()
-const formRef = useTemplateRef('formRef')
-const tenantForm = reactive({
-  name: ''
-})
+const open = defineModel()
+const userStore = useUserStore()
+const formRef = useTemplateRef('form')
+const tenant = reactive({})
 const formRules = reactive({
-  name: [
-    { required: true, message: '请输入租户', trigger: 'change' }
-  ]
+  name: [{ required: true, message: '请输入租户', trigger: 'change' }]
 })
 
-const submit = async formEl => {
-  if (!await submitForm(formEl, tenantForm, asyncAddTenant,
-    '新增租户成功', '新增租户失败')) return
-  model.value = false
+const add = async () => {
+  if (!await formRef.value.validate(valid => valid)) return
+  if (!await asyncAddTenant(tenant)) {
+    showMessage('新增角色失败', ERROR)
+    return
+  }
+  showMessage('新增角色成功', SUCCESS)
+  open.value = false
 }
 </script>
 
 <template>
-  <el-dialog v-model="model" @close="emits('close')" width="450" align-center show-close>
-    <el-row>
-      <el-breadcrumb :separator-icon="ArrowRight">
-        <el-breadcrumb-item>账号管理</el-breadcrumb-item>
-        <el-breadcrumb-item>新增租户</el-breadcrumb-item>
-      </el-breadcrumb>
-    </el-row>
-    <el-form ref="formRef" :model="tenantForm" :rules="formRules"
-             label-width="auto" label-position="right">
-      <el-form-item label="租户名" prop="name">
-        <el-input v-model.trim="tenantForm.name" clearable></el-input>
-      </el-form-item>
-      <el-form-item>
-        <el-button @click="submit(formRef)">新增</el-button>
-        <el-button @click="formRef.resetFields()">重置</el-button>
-      </el-form-item>
-    </el-form>
+  <el-dialog v-model="open" @close="emits('close')" align-center show-close>
+    <hylian-card title="新增租户">
+      <el-form ref="form" :model="tenant" :rules="formRules" label-width="80px" label-position="top">
+        <el-form-item label="租户名" prop="name">
+          <el-input v-model="tenant.name" clearable />
+        </el-form-item>
+        <el-form-item>
+          <el-button type="primary" @click="add" :disabled="!userStore.superAdmin">
+            <IconPlus size="20" class="mr-1" />
+            <span>新增</span>
+          </el-button>
+          <el-button type="info" @click="formRef.resetFields()">
+            <IconArrowBackUp size="20" class="mr-1" />
+            <span>重置</span>
+          </el-button>
+        </el-form-item>
+      </el-form>
+    </hylian-card>
   </el-dialog>
 </template>
 

@@ -4,6 +4,8 @@ import xin.manong.hylian.server.model.Pager;
 import xin.manong.hylian.model.App;
 import xin.manong.hylian.server.service.request.AppSearchRequest;
 
+import java.util.List;
+
 /**
  * 应用服务接口定义
  *
@@ -43,6 +45,13 @@ public interface AppService {
      * @return 成功返回true，否则返回false
      */
     boolean delete(String id);
+
+    /**
+     * 获取所有应用
+     *
+     * @return 应用列表
+     */
+    List<App> getApps();
 
     /**
      * 搜索应用信息

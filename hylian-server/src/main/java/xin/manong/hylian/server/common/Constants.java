@@ -8,7 +8,7 @@ package xin.manong.hylian.server.common;
  */
 public class Constants {
 
-    public static final int DEFAULT_CURRENT = 1;
+    public static final int DEFAULT_PAGE_NUM = 1;
     public static final int DEFAULT_PAGE_SIZE = 20;
 
     public static final int LOCAL_CACHE_CAPACITY_CODE = 200;

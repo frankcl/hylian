@@ -22,13 +22,13 @@ public class Pager<T> implements Serializable {
     /**
      * 页码：从1开始
      */
-    @JsonProperty("current")
-    public Long current;
+    @JsonProperty("page_num")
+    public Long pageNum;
     /**
      * 分页数量
      */
-    @JsonProperty("size")
-    public Long size;
+    @JsonProperty("page_size")
+    public Long pageSize;
     /**
      * 总数
      */
@@ -43,15 +43,15 @@ public class Pager<T> implements Serializable {
     /**
      * 创建空分页
      *
-     * @param current 页码
-     * @param size 分页数量
+     * @param pageNum 页码
+     * @param pageSize 分页数量
      * @return 空分页
      * @param <T> 数据类型
      */
-    public static <T> Pager<T> empty(long current, long size) {
+    public static <T> Pager<T> empty(long pageNum, long pageSize) {
         Pager<T> pager = new Pager<>();
-        pager.current = current > 0 ? current : 1L;
-        pager.size = size > 0 ? size : 20L;
+        pager.pageNum = pageNum > 0 ? pageNum : 1L;
+        pager.pageSize = pageSize > 0 ? pageSize : 20L;
         pager.total = 0L;
         pager.records = new ArrayList<>();
         return pager;

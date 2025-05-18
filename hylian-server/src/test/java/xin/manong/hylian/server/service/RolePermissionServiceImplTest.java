@@ -61,7 +61,7 @@ public class RolePermissionServiceImplTest {
             Pager<RolePermission> pager = rolePermissionService.search(searchRequest);
             Assert.assertNotNull(pager);
             Assert.assertEquals(2L, pager.total.longValue());
-            Assert.assertEquals(Constants.DEFAULT_PAGE_SIZE, pager.size.longValue());
+            Assert.assertEquals(Constants.DEFAULT_PAGE_SIZE, pager.pageSize.longValue());
             Assert.assertEquals(2, pager.records.size());
             Assert.assertEquals("role_xxx", pager.records.get(0).roleId);
             Assert.assertEquals("permission_yyy", pager.records.get(0).permissionId);
@@ -74,7 +74,7 @@ public class RolePermissionServiceImplTest {
             Pager<RolePermission> pager = rolePermissionService.search(searchRequest);
             Assert.assertNotNull(pager);
             Assert.assertEquals(2L, pager.total.longValue());
-            Assert.assertEquals(Constants.DEFAULT_PAGE_SIZE, pager.size.longValue());
+            Assert.assertEquals(Constants.DEFAULT_PAGE_SIZE, pager.pageSize.longValue());
             Assert.assertEquals(2, pager.records.size());
             Assert.assertEquals("role_yyy", pager.records.get(0).roleId);
             Assert.assertEquals("permission_xxx", pager.records.get(0).permissionId);

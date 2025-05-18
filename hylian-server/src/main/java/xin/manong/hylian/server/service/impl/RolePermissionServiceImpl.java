@@ -112,14 +112,14 @@ public class RolePermissionServiceImpl implements RolePermissionService {
     @Override
     public Pager<RolePermission> search(RolePermissionSearchRequest searchRequest) {
         if (searchRequest == null) searchRequest = new RolePermissionSearchRequest();
-        if (searchRequest.current == null || searchRequest.current < 1) searchRequest.current = Constants.DEFAULT_CURRENT;
-        if (searchRequest.size == null || searchRequest.size <= 0) searchRequest.size = Constants.DEFAULT_PAGE_SIZE;
+        if (searchRequest.pageNum == null || searchRequest.pageNum < 1) searchRequest.pageNum = Constants.DEFAULT_PAGE_NUM;
+        if (searchRequest.pageSize == null || searchRequest.pageSize <= 0) searchRequest.pageSize = Constants.DEFAULT_PAGE_SIZE;
         ModelValidator.validateOrderBy(RolePermission.class, searchRequest);
         QueryWrapper<RolePermission> query = new QueryWrapper<>();
         searchRequest.prepareOrderBy(query);
         if (searchRequest.roleIds != null && !searchRequest.roleIds.isEmpty()) query.in("role_id", searchRequest.roleIds);
         if (!StringUtils.isEmpty(searchRequest.permissionId)) query.eq("permission_id", searchRequest.permissionId);
-        IPage<RolePermission> page = rolePermissionMapper.selectPage(new Page<>(searchRequest.current, searchRequest.size), query);
+        IPage<RolePermission> page = rolePermissionMapper.selectPage(new Page<>(searchRequest.pageNum, searchRequest.pageSize), query);
         return Converter.convert(page);
     }
 }

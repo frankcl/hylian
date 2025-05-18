@@ -1,5 +1,0 @@
-<!--pages/bind/index.wxml-->
-<view class="container">
-  <image class="logo" src="/images/logo.jpg"></image>
-  <button class="button-bind" loading="{{ showLoading }}" bind:tap="bind">绑定微信账号</button>
-</view>
