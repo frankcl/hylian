@@ -26,10 +26,7 @@ public class CookieUtils {
      */
     public static String getCookie(HttpServletRequest httpRequest, String name) {
         Cookie[] cookies = httpRequest.getCookies();
-        if (cookies == null || cookies.length == 0) {
-            logger.warn("cookie[{}] is not found", name);
-            return null;
-        }
+        if (cookies == null || cookies.length == 0) return null;
         for (Cookie cookie : cookies) {
             if (cookie.getName().equals(name)) return cookie.getValue();
         }

@@ -27,7 +27,6 @@ const batchUpdate = async () => {
     role_ids: []
   }
   roles.value.forEach(id => request.role_ids.push(id))
-  console.log(request)
   if (!await asyncBatchUpdateUserRole(request)) {
     showMessage('更新用户角色失败', ERROR)
     return

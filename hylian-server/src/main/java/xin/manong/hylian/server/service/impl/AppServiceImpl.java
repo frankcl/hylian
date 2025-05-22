@@ -9,6 +9,8 @@ import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.NotAuthorizedException;
 import jakarta.ws.rs.NotFoundException;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -34,6 +36,8 @@ import java.util.List;
  */
 @Service
 public class AppServiceImpl implements AppService {
+
+    private static final Logger logger = LoggerFactory.getLogger(AppServiceImpl.class);
 
     @Resource
     protected AppMapper appMapper;
@@ -109,10 +113,22 @@ public class AppServiceImpl implements AppService {
 
     @Override
     public void verifyApp(String appId, String appSecret) {
-        if (StringUtils.isEmpty(appId)) throw new NotAuthorizedException("应用ID为空");
-        if (StringUtils.isEmpty(appSecret)) throw new NotAuthorizedException("应用秘钥为空");
+        if (StringUtils.isEmpty(appId)) {
+            logger.error("app id is empty");
+            throw new NotAuthorizedException("应用ID为空");
+        }
+        if (StringUtils.isEmpty(appSecret)) {
+            logger.error("app secret is empty");
+            throw new NotAuthorizedException("应用秘钥为空");
+        }
         App app = get(appId);
-        if (app == null) throw new NotAuthorizedException("应用不存在");
-        if (!app.secret.equals(appSecret)) throw new NotAuthorizedException("应用秘钥不匹配");
+        if (app == null) {
+            logger.error("app is not found for id:{}", appId);
+            throw new NotAuthorizedException("应用不存在");
+        }
+        if (!app.secret.equals(appSecret)) {
+            logger.error("not matched app secret:{}", appSecret);
+            throw new NotAuthorizedException("应用秘钥不匹配");
+        }
     }
 }

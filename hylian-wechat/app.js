@@ -50,7 +50,7 @@ App({
     })
   },
   globalData: {
-    serverBaseURL: 'http://192.168.3.43:9000',
+    serverBaseURL: 'https://hylian.manong.xin',
     userInfo: null
   }
 })

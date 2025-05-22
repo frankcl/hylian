@@ -2,7 +2,7 @@
 import { IconRefresh } from '@tabler/icons-vue'
 import { onMounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
-import { ElLink, ElRow } from 'element-plus'
+import { ElLink, ElLoading, ElRow } from 'element-plus'
 import {
   asyncGenerateQRCode,
   asyncRefreshUser,
@@ -11,10 +11,12 @@ import {
 import { afterLogin } from '@/views/home/common'
 
 let websocket = undefined
+const vLoading = ElLoading.directive
 const route = useRoute()
 const error = ref(false)
 const prompt = ref('')
 const QRCode = ref()
+const loading = ref(false)
 
 const buildWebsocket = async key => {
   if (websocket !== undefined) websocket.close()
@@ -37,10 +39,12 @@ const buildWebsocket = async key => {
 }
 
 const refreshQRCode = async () => {
+  loading.value = true
   error.value = false
   prompt.value = '请用微信扫一扫登录'
   const response = await asyncGenerateQRCode({ category: 1 })
   QRCode.value = response.image
+  loading.value = false
   await buildWebsocket(response.key)
 }
 
@@ -48,7 +52,7 @@ onMounted(() => refreshQRCode())
 </script>
 
 <template>
-  <el-row justify="center" class="mb-4">
+  <el-row v-loading="loading" justify="center" class="mb-4">
     <img v-if="QRCode" :src="QRCode" alt="微信小程序码" class="mini-code" />
   </el-row>
   <el-row class="login-prompt" justify="center">

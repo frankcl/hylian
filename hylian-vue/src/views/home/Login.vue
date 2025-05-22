@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElCol, ElRow } from 'element-plus'
 
@@ -12,6 +12,8 @@ const handleChange = path => {
   if (route.query.redirect) router.push({ path: path, query: { redirect: route.query.redirect }})
   else router.push({ path: path })
 }
+
+watch(() => route.path, () => currentPath.value = route.path)
 </script>
 
 <template>

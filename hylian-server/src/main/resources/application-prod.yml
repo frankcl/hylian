@@ -1,0 +1,56 @@
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:3306/hylian?useUnicode=true&characterEncoding=utf-8
+    username: root
+    password: ${weapon/mysql/password}
+    druid:
+      public-key: ${weapon/mysql/public-key}
+      connection-properties: druid.stat.mergeSql=true;druid.stat.slowSqlMillis=5000;config.decrypt=true;config.decrypt.key=${spring.datasource.druid.public-key}
+
+weapon:
+  common:
+    etcd:
+      client:
+        username: root
+        password: xmjjyhy28p
+        endpoints:
+          - http://localhost:2379
+    redis:
+      client:
+        mode: single
+        connection-pool-size: 200
+        password: ${weapon/redis/password}
+        address: localhost:6379
+        db: 0
+  aliyun:
+    oss:
+      client:
+        endpoint: https://oss-cn-hangzhou-internal.aliyuncs.com
+        socket-timeout-ms: 3000
+        connection-timeout-ms: 3000
+        retry-cnt: 3
+hylian:
+  client:
+    appId: 9a478c039ff674264bcacf902ee8b9b2
+    appSecret: 5lewSA3fa
+    serverURL: https://hylian.manong.xin/
+  filter:
+    guard:
+      excludePatterns:
+      - api/security/*
+      - api/wechat/*
+      - api/health/*
+      - api/captcha/*
+      - api/ws/qrcode
+      - favicon.ico
+
+app:
+  server:
+    name: hylian
+    domain: .manong.xin
+    aspectLogFile: ./log/aspect/web.log
+    jwt-config:
+      secretHS256: ${hylian/jwt/secret}
+    oss-region: cn-hangzhou
+    oss-base-directory: prod
+    default-tenant: e9c2227a9d7da6c1241b8c6782061b7f

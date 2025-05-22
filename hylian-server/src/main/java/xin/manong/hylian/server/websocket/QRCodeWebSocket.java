@@ -57,8 +57,8 @@ public class QRCodeWebSocket {
 
     @OnWebSocketError
     public void onError(Throwable throwable) {
-        logger.error("websocket error: {}", throwable.getMessage());
-        logger.error(throwable.getMessage(), throwable);
+        logger.debug("websocket error: {}", throwable.getMessage());
+        logger.debug(throwable.getMessage(), throwable);
     }
 
     @OnWebSocketMessage
