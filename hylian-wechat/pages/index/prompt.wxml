@@ -1,7 +1,7 @@
 <!--pages/login/prompt.wxml-->
 <view class="container">
-  <image class="prompt-image" wx:if="{{ success === true }}" src="/images/success.jpg"></image>
-  <image class="prompt-image" wx:else="{{ success === false }}" src="/images/warning.jpg"></image>
+  <image class="prompt-image" wx:if="{{ success === true }}" src="/images/success.svg"></image>
+  <image class="prompt-image" wx:else="{{ success === false }}" src="/images/warning.svg"></image>
   <view class="prompt-text">
     <span wx:if="{{ success === true }}">{{ message }}</span>
     <span wx:else style="color: #ff0000">{{ message }}</span>
