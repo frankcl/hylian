@@ -24,7 +24,7 @@
     <dependencySets>
         <dependencySet>
             <useProjectArtifact>true</useProjectArtifact>
-            <outputDirectory>jars/</outputDirectory>
+            <outputDirectory>lib/</outputDirectory>
         </dependencySet>
     </dependencySets>
 </assembly>

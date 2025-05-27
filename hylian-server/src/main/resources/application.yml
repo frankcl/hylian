@@ -31,3 +31,23 @@ server:
       max: 200
     max-http-form-post-size: 1048576
   address: 0.0.0.0
+
+hylian:
+  client:
+    serverURL: https://hylian.manong.xin/
+  filter:
+    guard:
+      excludePatterns:
+        - api/security/*
+        - api/wechat/*
+        - api/health/*
+        - api/captcha/*
+        - api/ws/qrcode
+        - favicon.ico
+
+app:
+  server:
+    name: hylian
+    domain: .manong.xin
+    jwt-config:
+      secretHS256: ${hylian/jwt/secret}

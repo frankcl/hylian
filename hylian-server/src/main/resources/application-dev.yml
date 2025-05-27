@@ -33,24 +33,10 @@ hylian:
   client:
     appId: hylian
     appSecret: 123456
-    serverURL: https://hylian.manong.xin/
-  filter:
-    guard:
-      excludePatterns:
-      - api/security/*
-      - api/wechat/*
-      - api/health/*
-      - api/captcha/*
-      - api/ws/qrcode
-      - favicon.ico
 
 app:
   server:
-    name: hylian
-    domain: .manong.xin
     aspectLogFile: ./log/aspect/web.log
-    jwt-config:
-      secretHS256: ${hylian/jwt/secret}
     oss-region: cn-hangzhou
     oss-base-directory: test
     default-tenant: e9c2227a9d7da6c1241b8c6782061b7f
