@@ -367,7 +367,6 @@ public class UserController {
     @Produces(MediaType.APPLICATION_JSON)
     @Path("removeAvatar")
     @DeleteMapping("removeAvatar")
-    @EnableACLAspect
     @EnableWebLogAspect
     public boolean removeAvatar() {
         User user = ContextManager.getUser();
