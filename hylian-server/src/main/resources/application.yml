@@ -20,9 +20,9 @@ server:
   port: 9001
   insecure-port: 9000
   ssl:
-    key-store: classpath:manong.xin.jks
+    key-store: classpath:hylian.manong.xin.jks
     key-store-type: jks
-    key-password: xmjjyhy28p
+    key-password: 3earfy8r
   jetty:
     threads:
       acceptors: 2
