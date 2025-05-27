@@ -82,7 +82,6 @@ public class WechatController extends WatchValueDisposableBean {
     private static final String WX_LOGIN_PAGE = "pages/login/index";
     private static final String WX_BIND_PAGE = "pages/bind/index";
     private static final String WX_SCENE_FORMAT = "key=%s";
-    private static final String WX_VERSION = "develop";
     private static final String DEFAULT_PASSWORD = "123456";
 
     protected AccessToken accessToken;
@@ -124,7 +123,7 @@ public class WechatController extends WatchValueDisposableBean {
                 QRCodeGenerateRequest.CATEGORY_LOGIN ? WX_LOGIN_PAGE : WX_BIND_PAGE);
         requestBody.put(PARAM_KEY_CHECK_PATH, false);
         requestBody.put(PARAM_KEY_SCENE, String.format(WX_SCENE_FORMAT, qrCodeKey));
-        requestBody.put(PARAM_KEY_VERSION, WX_VERSION);
+        requestBody.put(PARAM_KEY_VERSION, serverConfig.wxVersion);
         HttpRequest httpRequest = HttpRequest.buildPostRequest(requestURL, RequestFormat.JSON, requestBody);
         byte[] bytes = HTTPExecutor.executeRaw(httpRequest);
         if (bytes == null) throw new InternalServerErrorException("生成小程序码错误");

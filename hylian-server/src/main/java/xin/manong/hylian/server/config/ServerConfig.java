@@ -28,6 +28,7 @@ public class ServerConfig implements InitializingBean {
     public String ossBucket = "hylian";
     public String ossBaseDirectory = "test/";
     public String defaultTenant;
+    public String wxVersion = "develop";
     public JWTConfig jwtConfig;
 
     /**
