@@ -2,7 +2,9 @@ package xin.manong.hylian.client.core;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.TypeReference;
+import okhttp3.MediaType;
 import okhttp3.Response;
+import okhttp3.ResponseBody;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import xin.manong.weapon.base.http.HttpClient;
@@ -34,9 +36,9 @@ public class HTTPExecutor {
      * @return 失败返回true，否则返回false
      */
     private static boolean failHttpResponse(HttpRequest httpRequest, Response httpResponse) {
-        if (httpResponse == null || !httpResponse.isSuccessful() || httpResponse.code() != HTTP_CODE_OK) {
+        if (!httpResponse.isSuccessful() || httpResponse.code() != HTTP_CODE_OK) {
             logger.error("execute http request failed for url[{}], http code[{}]",
-                    httpRequest.requestURL, httpResponse == null ? -1 : httpResponse.code());
+                    httpRequest.requestURL, httpResponse.code());
             return true;
         }
         return false;
@@ -53,6 +55,28 @@ public class HTTPExecutor {
             if (failHttpResponse(httpRequest, httpResponse)) return null;
             assert httpResponse.body() != null;
             return httpResponse.body().bytes();
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
+            return null;
+        }
+    }
+
+    /**
+     * 执行HTTP请求
+     *
+     * @param httpRequest HTTP请求
+     * @return HTTP响应
+     */
+    public static HTTPResponse executeRequest(HttpRequest httpRequest) {
+        try (Response httpResponse = httpClient.execute(httpRequest)) {
+            if (failHttpResponse(httpRequest, httpResponse)) return null;
+            assert httpResponse.body() != null;
+            HTTPResponse response = new HTTPResponse();
+            ResponseBody responseBody = httpResponse.body();
+            response.content = responseBody.bytes();
+            MediaType mediaType = responseBody.contentType();
+            if (mediaType != null) response.mimeType = String.format("%s/%s", mediaType.type(), mediaType.subtype());
+            return response;
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
             return null;

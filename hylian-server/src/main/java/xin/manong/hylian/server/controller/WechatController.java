@@ -16,6 +16,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import xin.manong.hylian.client.core.HTTPExecutor;
+import xin.manong.hylian.client.core.HTTPResponse;
 import xin.manong.hylian.model.User;
 import xin.manong.hylian.server.common.Constants;
 import xin.manong.hylian.server.config.ServerConfig;
@@ -44,6 +45,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
@@ -125,9 +127,14 @@ public class WechatController extends WatchValueDisposableBean {
         requestBody.put(PARAM_KEY_SCENE, String.format(WX_SCENE_FORMAT, qrCodeKey));
         requestBody.put(PARAM_KEY_VERSION, serverConfig.wxVersion);
         HttpRequest httpRequest = HttpRequest.buildPostRequest(requestURL, RequestFormat.JSON, requestBody);
-        byte[] bytes = HTTPExecutor.executeRaw(httpRequest);
-        if (bytes == null) throw new InternalServerErrorException("生成小程序码错误");
-        String image = String.format("data:image/png;base64,%s", Base64.getEncoder().encodeToString(bytes));
+        HTTPResponse httpResponse = HTTPExecutor.executeRequest(httpRequest);
+        if (httpResponse == null || !httpResponse.isImage()) {
+            logger.error("generate wechat mini code error: {}", httpResponse == null ?
+                    "未知" : new String(httpResponse.content, StandardCharsets.UTF_8));
+            throw new InternalServerErrorException("生成小程序码错误");
+        }
+        String image = String.format("data:image/png;base64,%s",
+                Base64.getEncoder().encodeToString(httpResponse.content));
         QRCode qrCode = new QRCode();
         qrCode.key = qrCodeKey;
         qrCode.status = QRCode.STATUS_WAIT;
