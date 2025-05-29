@@ -77,7 +77,7 @@ watchEffect(async () => await search())
       <el-table-column prop="session_id" label="会话ID" show-overflow-tooltip />
       <el-table-column prop="app.name" label="应用名" show-overflow-tooltip />
       <el-table-column prop="user.name" label="用户昵称" show-overflow-tooltip />
-      <el-table-column label="登录时间" prop="create_time" sortable="custom" width="200" show-overflow-tooltip>
+      <el-table-column label="登录时间" prop="create_time" sortable="custom" show-overflow-tooltip>
         <template #default="scope">
           <div class="d-flex align-items-center">
             <IconClock size="16" class="mr-1" />
@@ -85,7 +85,7 @@ watchEffect(async () => await search())
           </div>
         </template>
       </el-table-column>
-      <el-table-column label="更新时间" prop="update_time" sortable="custom" width="200" show-overflow-tooltip>
+      <el-table-column label="更新时间" prop="update_time" sortable="custom" show-overflow-tooltip>
         <template #default="scope">
           <div class="d-flex align-items-center">
             <IconClock size="16" class="mr-1" />

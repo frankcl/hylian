@@ -133,7 +133,7 @@ watchEffect(async () => await search())
       <el-table-column prop="description" label="应用描述" show-overflow-tooltip>
         <template #default="scope">{{ scope.row.description }}</template>
       </el-table-column>
-      <el-table-column label="创建时间" prop="create_time" sortable="custom" width="200" show-overflow-tooltip>
+      <el-table-column label="创建时间" prop="create_time" sortable="custom" show-overflow-tooltip>
         <template #default="scope">
           <div class="d-flex align-items-center">
             <IconClock size="16" class="mr-1" />

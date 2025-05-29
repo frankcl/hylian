@@ -7,8 +7,8 @@ import { reactive, ref, useTemplateRef, watchEffect } from 'vue'
 import { useRouter } from 'vue-router'
 import zhCn from 'element-plus/dist/locale/zh-cn.mjs'
 import {
-  ElBreadcrumb, ElBreadcrumbItem, ElButton, ElCol, ElConfigProvider, ElForm, ElFormItem,
-  ElPagination, ElRadioButton, ElRadioGroup, ElRow, ElSwitch, ElTable, ElTableColumn
+  ElAvatar, ElBreadcrumb, ElBreadcrumbItem, ElButton, ElCol, ElConfigProvider, ElForm,
+  ElFormItem, ElPagination, ElRadioButton, ElRadioGroup, ElRow, ElSwitch, ElTable, ElTableColumn
 } from 'element-plus'
 import { useUserStore } from '@/store'
 import { formatDate } from '@/common/Time'
@@ -30,6 +30,7 @@ import AddUser from '@/views/user/AddUser'
 import UserRole from '@/views/user/UserRole'
 import HylianCard from '@/components/data/Card'
 import TableHead from '@/components/data/TableHead'
+import ImageAvatar from '@/assets/avatar.jpg'
 
 const router = useRouter()
 const userStore = useUserStore()
@@ -180,7 +181,15 @@ watchEffect(async () => await search())
       <template #empty>暂无用户数据</template>
       <el-table-column v-if="userStore.superAdmin" type="selection" width="55" fixed="left" />
       <el-table-column prop="username" label="用户名" show-overflow-tooltip />
-      <el-table-column prop="name" label="用户昵称" show-overflow-tooltip />
+      <el-table-column prop="name" label="用户昵称" show-overflow-tooltip>
+        <template #default="scope">
+          <div class="d-flex align-items-center">
+            <el-avatar shape="circle" fit="cover" size="small" class="flex-shrink-0 mr-2"
+                       :src="scope.row.avatar ? scope.row.avatar : ImageAvatar" />
+            <span>{{ scope.row.name }}</span>
+          </div>
+        </template>
+      </el-table-column>
       <el-table-column prop="tenant.name" label="所属租户" show-overflow-tooltip>
         <template #default="scope">
           <tenant-select v-if="scope.row.checked" v-model="scope.row.tenant.id" :clearable="false"
@@ -217,7 +226,7 @@ watchEffect(async () => await search())
           </div>
         </template>
       </el-table-column>
-      <el-table-column label="创建时间" prop="create_time" width="200" show-overflow-tooltip sortable="custom">
+      <el-table-column label="创建时间" prop="create_time" show-overflow-tooltip sortable="custom">
         <template #default="scope">
           <div class="d-flex align-items-center">
             <IconClock size="16" class="mr-1" />
