@@ -41,7 +41,7 @@ public class UnbindUserRequest implements Serializable {
      */
     public void check() {
         if (StringUtils.isEmpty(id)) {
-            logger.error("user id is empty");
+            logger.error("User id is empty");
             throw new BadRequestException("用户ID为空");
         }
     }

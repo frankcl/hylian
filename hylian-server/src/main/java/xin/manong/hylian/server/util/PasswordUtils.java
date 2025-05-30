@@ -27,7 +27,7 @@ public class PasswordUtils {
     public static void checkPassword(String password) {
         password = password == null ? "" : password.trim();
         if (StringUtils.isEmpty(password) || password.length() < MIN_PASSWORD_LENGTH) {
-            logger.error("password length[{}] is invalid", password.length());
+            logger.error("Password length:{} is invalid", password.length());
             throw new BadRequestException(String.format("秘钥最小长度[%d]", password.length()));
         }
         int lowerCaseLetters = 0, upperCaseLetters = 0, digits = 0, others = 0;
@@ -39,7 +39,7 @@ public class PasswordUtils {
             else others++;
         }
         if (lowerCaseLetters == 0 || upperCaseLetters == 0 || digits == 0 || others == 0) {
-            logger.error("password security is weak");
+            logger.error("Password security is weak");
             throw new BadRequestException("密码安全性弱，建议包含大小写字母、数字及特殊符号");
         }
     }

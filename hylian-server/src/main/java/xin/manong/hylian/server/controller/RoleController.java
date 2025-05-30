@@ -45,11 +45,11 @@ import java.util.stream.Collectors;
 public class RoleController {
 
     @Resource
-    protected AppService appService;
+    private AppService appService;
     @Resource
-    protected RoleService roleService;
+    private RoleService roleService;
     @Resource
-    protected RolePermissionService rolePermissionService;
+    private RolePermissionService rolePermissionService;
 
     /**
      * 获取角色信息

@@ -39,7 +39,7 @@ public class RegisterRequest extends AuthorizeRequest {
     public void check() {
         super.check();
         if (user == null) {
-            logger.error("wechat user is null");
+            logger.error("Wechat user is null");
             throw new BadRequestException("微信账号信息为空");
         }
     }

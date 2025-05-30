@@ -46,11 +46,11 @@ public class Tenant extends BaseModel {
      */
     public void check() {
         if (StringUtils.isEmpty(id)) {
-            logger.error("tenant id is empty");
+            logger.error("Tenant id is empty");
             throw new BadRequestException("租户ID为空");
         }
         if (StringUtils.isEmpty(name)) {
-            logger.error("tenant name is empty");
+            logger.error("Tenant name is empty");
             throw new BadRequestException("租户名为空");
         }
     }

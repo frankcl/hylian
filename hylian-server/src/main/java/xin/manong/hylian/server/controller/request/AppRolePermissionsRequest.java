@@ -40,7 +40,7 @@ public class AppRolePermissionsRequest extends SecurityRequest {
     public void check() {
         super.check();
         if (roleIds == null || roleIds.isEmpty()) {
-            logger.error("role id list is empty");
+            logger.error("Role id list is empty");
             throw new BadRequestException("角色ID列表为空");
         }
     }

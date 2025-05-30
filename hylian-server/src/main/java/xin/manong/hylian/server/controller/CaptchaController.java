@@ -23,7 +23,7 @@ import xin.manong.hylian.server.service.CaptchaService;
 public class CaptchaController {
 
     @Resource
-    protected CaptchaService captchaService;
+    private CaptchaService captchaService;
 
     /**
      * 申请验证码

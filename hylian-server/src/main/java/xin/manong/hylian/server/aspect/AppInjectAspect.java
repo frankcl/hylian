@@ -51,7 +51,7 @@ public class AppInjectAspect {
     public Object aroundIntercept(ProceedingJoinPoint joinPoint) throws Throwable {
         User user = ContextManager.getUser();
         if (user == null) {
-            logger.error("user not login");
+            logger.error("User not login");
             throw new NotAuthorizedException("用户尚未登录");
         }
         if (!user.superAdmin) {

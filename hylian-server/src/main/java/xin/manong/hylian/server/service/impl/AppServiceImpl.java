@@ -114,20 +114,20 @@ public class AppServiceImpl implements AppService {
     @Override
     public void verifyApp(String appId, String appSecret) {
         if (StringUtils.isEmpty(appId)) {
-            logger.error("app id is empty");
+            logger.error("App id is empty");
             throw new NotAuthorizedException("应用ID为空");
         }
         if (StringUtils.isEmpty(appSecret)) {
-            logger.error("app secret is empty");
+            logger.error("App secret is empty");
             throw new NotAuthorizedException("应用秘钥为空");
         }
         App app = get(appId);
         if (app == null) {
-            logger.error("app is not found for id:{}", appId);
+            logger.error("App is not found for id:{}", appId);
             throw new NotAuthorizedException("应用不存在");
         }
         if (!app.secret.equals(appSecret)) {
-            logger.error("not matched app secret:{}", appSecret);
+            logger.error("Not matched app secret:{}", appSecret);
             throw new NotAuthorizedException("应用秘钥不匹配");
         }
     }

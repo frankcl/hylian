@@ -41,7 +41,7 @@ public class RemoveActivityRequest extends SecurityRequest {
     public void check() {
         super.check();
         if (StringUtils.isEmpty(sessionId)) {
-            logger.error("session id is empty");
+            logger.error("Session id is empty");
             throw new BadRequestException("会话ID为空");
         }
     }

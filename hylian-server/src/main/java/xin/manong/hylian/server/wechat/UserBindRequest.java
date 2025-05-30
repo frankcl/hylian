@@ -47,11 +47,11 @@ public class UserBindRequest implements Serializable {
      */
     public void check() {
         if (StringUtils.isEmpty(code)) {
-            logger.error("code is empty");
+            logger.error("Code is empty");
             throw new BadRequestException("微信小程序凭证code为空");
         }
         if (StringUtils.isEmpty(key)) {
-            logger.error("key is empty");
+            logger.error("Key is empty");
             throw new BadRequestException("微信小程序码key为空");
         }
     }

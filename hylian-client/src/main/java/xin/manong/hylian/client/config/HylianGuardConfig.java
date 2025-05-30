@@ -3,8 +3,6 @@ package xin.manong.hylian.client.config;
 import com.alibaba.fastjson.JSON;
 import jakarta.annotation.Resource;
 import lombok.Data;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
@@ -27,8 +25,6 @@ import java.util.List;
 @Configuration
 @ConfigurationProperties(prefix = "hylian.filter.guard")
 public class HylianGuardConfig {
-
-    private static final Logger logger = LoggerFactory.getLogger(HylianGuardConfig.class);
 
     @Resource
     public HylianClientConfig clientConfig;

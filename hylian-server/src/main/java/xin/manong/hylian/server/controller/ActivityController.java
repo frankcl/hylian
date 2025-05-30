@@ -32,11 +32,11 @@ import java.util.ArrayList;
 public class ActivityController {
 
     @Resource
-    protected ActivityService activityService;
+    private ActivityService activityService;
     @Resource
-    protected AppService appService;
+    private AppService appService;
     @Resource
-    protected UserService userService;
+    private UserService userService;
 
     /**
      * 搜索登录应用

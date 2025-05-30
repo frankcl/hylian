@@ -38,7 +38,7 @@ public class RefreshTokenRequest extends SecurityRequest {
     public void check() {
         super.check();
         if (StringUtils.isEmpty(token)) {
-            logger.error("refresh token is empty");
+            logger.error("Refresh token is empty");
             throw new BadRequestException("刷新token为空");
         }
     }

@@ -48,9 +48,9 @@ public class AppController {
     private static final int APP_SECRET_LEN = 8;
 
     @Resource
-    protected AppService appService;
+    private AppService appService;
     @Resource
-    protected AppUserService appUserService;
+    private AppUserService appUserService;
 
     /**
      * 获取应用信息

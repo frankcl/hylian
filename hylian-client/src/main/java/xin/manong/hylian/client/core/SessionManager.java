@@ -29,7 +29,7 @@ public class SessionManager {
     public static void put(HttpSession httpSession) {
         if (httpSession == null) return;
         sessionMap.put(httpSession.getId(), httpSession);
-        logger.debug("put session[{}] success", httpSession.getId());
+        logger.debug("Put session:{} success", httpSession.getId());
     }
 
     /**
@@ -40,7 +40,7 @@ public class SessionManager {
     public static void putTokenSession(HttpSession httpSession) {
         if (httpSession == null) return;
         tokenSessions.add(httpSession.getId());
-        logger.debug("put token session[{}] success", httpSession.getId());
+        logger.debug("Put token session:{} success", httpSession.getId());
     }
 
     /**
@@ -63,7 +63,7 @@ public class SessionManager {
         String sessionId = httpSession.getId();
         sessionMap.remove(sessionId);
         tokenSessions.remove(sessionId);
-        logger.debug("remove session[{}] success", httpSession.getId());
+        logger.debug("Remove session:{} success", httpSession.getId());
     }
 
     /**
@@ -74,10 +74,10 @@ public class SessionManager {
     public static void invalidate(String sessionId) {
         HttpSession httpSession = sessionMap.get(sessionId);
         if (httpSession == null) {
-            logger.warn("session[{}] is not found", sessionId);
+            logger.warn("Session:{} is not found", sessionId);
             return;
         }
         httpSession.invalidate();
-        logger.debug("session[{}] is invalidated", httpSession.getId());
+        logger.debug("Session:{} is invalidated", httpSession.getId());
     }
 }

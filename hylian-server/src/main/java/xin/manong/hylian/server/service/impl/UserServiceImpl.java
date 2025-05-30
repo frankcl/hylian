@@ -27,6 +27,7 @@ import xin.manong.hylian.server.dao.mapper.UserMapper;
 import xin.manong.hylian.server.model.Pager;
 import xin.manong.hylian.model.User;
 import xin.manong.hylian.server.util.ModelValidator;
+import xin.manong.hylian.server.wechat.NoticeUserAudit;
 import xin.manong.weapon.aliyun.oss.OSSClient;
 import xin.manong.weapon.aliyun.oss.OSSMeta;
 import xin.manong.weapon.base.util.FileUtil;
@@ -48,29 +49,32 @@ public class UserServiceImpl implements UserService {
     private static final Logger logger = LoggerFactory.getLogger(UserServiceImpl.class);
 
     @Resource
-    protected ServerConfig serverConfig;
+    private ServerConfig serverConfig;
     @Resource
-    protected OSSClient ossClient;
+    private OSSClient ossClient;
     @Resource
-    protected UserMapper userMapper;
+    private UserMapper userMapper;
     @Lazy
     @Resource
-    protected TenantService tenantService;
+    private TenantService tenantService;
     @Lazy
     @Resource
-    protected UserRoleService userRoleService;
+    private UserRoleService userRoleService;
     @Lazy
     @Resource
-    protected AppUserService appUserService;
+    private AppUserService appUserService;
     @Lazy
     @Resource
-    protected ActivityService activityService;
+    private ActivityService activityService;
     @Lazy
     @Resource
-    protected TicketService ticketService;
+    private TicketService ticketService;
     @Lazy
     @Resource
-    protected TokenService tokenService;
+    private TokenService tokenService;
+    @Lazy
+    @Resource
+    private WechatService wechatService;
 
     @Override
     public User get(String id) {
@@ -147,7 +151,14 @@ public class UserServiceImpl implements UserService {
         if (user.password != null) user.password = DigestUtils.md5Hex(user.password);
         boolean result = userMapper.updateById(user) > 0;
         if (StringUtils.isNotEmpty(user.avatar) && result) deleteAvatar(prevUser);
-        if (result && !prevUser.disabled && user.disabled != null && user.disabled) removeUserProfile(user);
+        if (result && !prevUser.disabled && user.disabled != null && user.disabled) {
+            removeUserProfile(user);
+            sendWechatNotice(prevUser, "账号禁用");
+        }
+        if (result && user.disabled != null && !user.disabled &&
+                prevUser.disabled != null && prevUser.disabled) {
+            sendWechatNotice(prevUser, "审核通过");
+        }
         return result;
     }
 
@@ -243,7 +254,7 @@ public class UserServiceImpl implements UserService {
         if (StringUtils.isEmpty(user.avatar)) return;
         OSSMeta meta = OSSClient.parseURL(user.avatar);
         if (meta != null) ossClient.deleteObject(meta.bucket, meta.key);
-        else logger.warn("avatar[{}] is invalid", user.avatar);
+        else logger.warn("Avatar:{} is invalid", user.avatar);
     }
 
     /**
@@ -255,19 +266,19 @@ public class UserServiceImpl implements UserService {
         if (StringUtils.isEmpty(user.avatar)) return;
         OSSMeta ossMeta = OSSClient.parseURL(user.avatar);
         if (ossMeta == null) {
-            logger.error("avatar URL[{}] is invalid", user.avatar);
+            logger.error("Avatar URL:{} is invalid", user.avatar);
             throw new BadRequestException("头像URL非法");
         }
         InputStream inputStream = ossClient.getObjectStream(ossMeta.bucket, ossMeta.key);
         if (inputStream == null) {
-            logger.error("reading avatar failed for {}", user.avatar);
+            logger.error("Reading avatar failed for {}", user.avatar);
             throw new BadRequestException("获取头像数据失败");
         }
         String suffix = FileUtil.getFileSuffix(ossMeta.key);
         String ossKey = String.format("%s%s%s", serverConfig.ossBaseDirectory, Constants.AVATAR_DIR, RandomID.build());
         if (StringUtils.isNotEmpty(suffix)) ossKey = String.format("%s.%s", ossKey, suffix);
         if (!ossClient.putObject(serverConfig.ossBucket, ossKey, inputStream)) {
-            logger.error("transfer avatar failed");
+            logger.error("Transfer avatar failed");
             throw new InternalServerErrorException("转存头像失败");
         }
         ossClient.deleteObject(ossMeta.bucket, ossMeta.key);
@@ -286,5 +297,24 @@ public class UserServiceImpl implements UserService {
         if (prevMeta == null) return;
         OSSMeta meta = OSSClient.parseURL(user.avatar);
         if (meta != null && meta.equals(prevMeta)) user.avatar = null;
+    }
+
+    /**
+     * 发送微信通知
+     *
+     * @param user 用户信息
+     * @param status 通知状态
+     */
+    private void sendWechatNotice(User user, String status) {
+        if (StringUtils.isEmpty(user.wxOpenid)) return;
+        String openid = user.wxOpenid;
+        if (openid.startsWith(WechatServiceImpl.OPENID_PREFIX)) {
+            openid = openid.substring(WechatServiceImpl.OPENID_PREFIX.length());
+        }
+        NoticeUserAudit noticeUserAudit = new NoticeUserAudit(user.name, status);
+        if (!wechatService.sendMessage(openid, WechatServiceImpl.TEMPLATE_ID_USER_AUDIT,
+                noticeUserAudit.toMap())) {
+            logger.warn("Send user audit notice failed for user:{}", user.name);
+        }
     }
 }

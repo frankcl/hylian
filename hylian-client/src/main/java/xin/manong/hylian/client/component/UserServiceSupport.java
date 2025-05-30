@@ -48,7 +48,7 @@ public class UserServiceSupport {
                     .concurrencyLevel(1)
                     .maximumSize(CACHE_CAPACITY)
                     .expireAfterWrite(2, TimeUnit.MINUTES)
-                    .removalListener(n -> logger.info("roles are removed from cache for user[{}]", n.getKey()));
+                    .removalListener(n -> logger.info("Roles are removed from cache for user:{}", n.getKey()));
             rolesCache = builder.build();
         }
         {
@@ -56,7 +56,7 @@ public class UserServiceSupport {
                     .concurrencyLevel(1)
                     .maximumSize(CACHE_CAPACITY)
                     .expireAfterWrite(2, TimeUnit.MINUTES)
-                    .removalListener(n -> logger.info("permissions are removed from cache for user[{}]", n.getKey()));
+                    .removalListener(n -> logger.info("Permissions are removed from cache for user:{}", n.getKey()));
             permissionsCache = builder.build();
         }
     }
@@ -70,7 +70,6 @@ public class UserServiceSupport {
      * @return 角色列表
      */
     public List<Role> getUserRoles(User user, HttpServletRequest httpRequest) {
-        if (httpRequest == null) throw new IllegalArgumentException("http request is null");
         List<Role> roles = SessionUtils.getRoles(httpRequest);
         if (roles != null && rolesCache.getIfPresent(user.id) != null) return roles;
         roles = getUserRoles(user);
@@ -88,7 +87,6 @@ public class UserServiceSupport {
      * @return 权限列表
      */
     public List<Permission> getUserPermissions(User user, HttpServletRequest httpRequest) {
-        if (httpRequest == null) throw new IllegalArgumentException("http request is null");
         List<Permission> permissions = SessionUtils.getPermissions(httpRequest);
         if (permissions != null && permissionsCache.getIfPresent(user.id) != null) return permissions;
         permissions = getUserPermissions(user);

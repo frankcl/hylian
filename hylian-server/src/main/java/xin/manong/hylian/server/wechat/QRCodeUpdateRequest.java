@@ -48,11 +48,11 @@ public class QRCodeUpdateRequest implements Serializable {
      */
     public void check() {
         if (StringUtils.isEmpty(key)) {
-            logger.error("key is empty");
+            logger.error("Key is empty");
             throw new BadRequestException("小程序码key为空");
         }
         if (status == null || status < QRCode.STATUS_ERROR || status > QRCode.STATUS_BIND) {
-            logger.error("status is invalid");
+            logger.error("Status is invalid");
             throw new BadRequestException("小程序码状态非法");
         }
     }

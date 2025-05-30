@@ -57,11 +57,11 @@ public class CodeServiceImpl implements CodeService {
             bucket = redisClient.getRedissonClient().getBucket(key);
         } while (bucket.get() != null);
         bucket.addListener((ExpiredObjectListener) name -> {
-            logger.info("code[{}] is expired", name);
+            logger.info("Code:{} is expired", name);
             removeLocalCache(name);
         });
         bucket.addListener((DeletedObjectListener) name -> {
-            logger.info("code[{}] is removed", name);
+            logger.info("Code:{} is removed", name);
             removeLocalCache(name);
         });
         bucket.set(ticket, Duration.ofMillis(Constants.CACHE_CODE_EXPIRED_TIME_MS));
@@ -102,6 +102,6 @@ public class CodeServiceImpl implements CodeService {
      */
     private void onRemoval(RemovalNotification<String, RBucket<String>> notification) {
         RemovalCause cause = notification.getCause();
-        logger.info("code[{}] is removed from local cache, cause[{}]", notification.getKey(), cause.name());
+        logger.info("Code:{} is removed from local cache, cause:{}", notification.getKey(), cause.name());
     }
 }

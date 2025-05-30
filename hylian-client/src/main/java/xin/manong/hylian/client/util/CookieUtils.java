@@ -30,7 +30,7 @@ public class CookieUtils {
         for (Cookie cookie : cookies) {
             if (cookie.getName().equals(name)) return cookie.getValue();
         }
-        logger.warn("cookie[{}] is not found", name);
+        logger.warn("Cookie:{} is not found", name);
         return null;
     }
 

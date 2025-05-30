@@ -78,27 +78,27 @@ public class UserRequest implements Serializable {
      */
     public void check() {
         if (StringUtils.isEmpty(username)) {
-            logger.error("username is empty");
+            logger.error("Username is empty");
             throw new BadRequestException("用户名为空");
         }
         if (StringUtils.isEmpty(name)) {
-            logger.error("real name is empty");
-            throw new BadRequestException("用户真实名称为空");
+            logger.error("Nickname is empty");
+            throw new BadRequestException("用户昵称为空");
         }
         if (StringUtils.isEmpty(tenantId)) {
-            logger.error("tenant id is empty");
+            logger.error("Tenant id is empty");
             throw new BadRequestException("租户ID为空");
         }
         if (StringUtils.isEmpty(password)) {
-            logger.error("password is empty");
+            logger.error("Password is empty");
             throw new BadRequestException("密码为空");
         }
         if (StringUtils.isEmpty(confirmPassword)) {
-            logger.error("confirmed password is empty");
+            logger.error("Confirmed password is empty");
             throw new BadRequestException("确认密码为空");
         }
         if (!password.equals(confirmPassword)) {
-            logger.error("password and confirmed password are not consistent");
+            logger.error("Password and confirmed password are not consistent");
             throw new BadRequestException("密码与确认密码不一致");
         }
         PasswordUtils.checkPassword(password);

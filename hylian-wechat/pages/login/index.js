@@ -10,6 +10,7 @@ Page({
     canUseGetUserProfile: wx.canIUse('getUserProfile'),
     canUseNicknameComp: wx.canIUse('input.type.nickname'),
     avatarUrl: defaultAvatarUrl,
+    items: [{ name: '订阅消息通知', checked: false }],
     nickName: ''
   },
   onLoad(options) {
@@ -36,6 +37,10 @@ Page({
   onInputChange(e) {
     this.setData({ nickName: e.detail.value })
   },
+  onCheckboxChange(e) {
+    this.data.items[0].checked = e.detail.value.length === 1
+    if (this.data.items[0].checked) this.subscribeMessage()
+  },
   isRegister() {
     const currentPage = this
     wx.login({
@@ -53,6 +58,15 @@ Page({
       }
     })
   },
+  subscribeMessage() {
+    wx.requestSubscribeMessage({
+      tmplIds: [
+        'B4E0XRqlSC3Nnc70NPTDxHAUVZl-iAPmvAZh-x2DvNs', 
+        '8BQJJagGrk2G8bwUZJ0p4v8xr3uXpCyut-B1U2pHAVw'
+      ],
+      success (res) {}
+    })
+  }, 
   registerWithUserProfile() {
     const currentPage = this
     wx.getUserProfile({

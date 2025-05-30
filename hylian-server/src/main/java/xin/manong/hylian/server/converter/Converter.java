@@ -292,7 +292,7 @@ public class Converter {
         viewUser.tenant = tenant;
         if (tenant != null) {
             if (!user.tenantId.equals(tenant.id)) {
-                logger.error("tenants are not consistent for user[{}] and tenant[{}]", user.tenantId, tenant.id);
+                logger.error("Tenants are not consistent for user:{} and tenant:{}", user.tenantId, tenant.id);
                 throw new IllegalStateException("租户ID不一致");
             }
         }

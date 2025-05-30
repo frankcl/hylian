@@ -38,7 +38,7 @@ import java.util.List;
 public class TenantController {
 
     @Resource
-    protected TenantService tenantService;
+    private TenantService tenantService;
 
     /**
      * 获取租户信息

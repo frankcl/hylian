@@ -29,6 +29,7 @@ public class ServerConfig implements InitializingBean {
     public String ossBaseDirectory = "test/";
     public String defaultTenant;
     public String wxVersion = "develop";
+    public String miniVersion = "developer";
     public JWTConfig jwtConfig;
 
     /**

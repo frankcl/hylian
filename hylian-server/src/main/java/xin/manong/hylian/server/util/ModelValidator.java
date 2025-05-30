@@ -59,10 +59,9 @@ public class ModelValidator {
     public static void validateOrderBy(Class<? extends BaseModel> model, SearchRequest searchRequest) {
         if (StringUtils.isEmpty(searchRequest.orderBy)) return;
         try {
-            searchRequest.orderByRequests = objectMapper.readValue(searchRequest.orderBy,
-                    new TypeReference<List<OrderByRequest>>() { });
+            searchRequest.orderByRequests = objectMapper.readValue(searchRequest.orderBy, new TypeReference<>() {});
         } catch (Exception e) {
-            logger.error("invalid order by[{}]", searchRequest.orderBy);
+            logger.error("Invalid order by:{}", searchRequest.orderBy);
             throw new BadRequestException("排序字段非法");
         }
         for (OrderByRequest orderBy : searchRequest.orderByRequests) {
@@ -81,9 +80,9 @@ public class ModelValidator {
     public static <T> List<T> validateListField(String fieldValue, Class<T> recordType) {
         try {
             if (StringUtils.isEmpty(fieldValue)) return null;
-            return objectMapper.readValue(fieldValue, new TypeReference<List<T>>() { });
+            return objectMapper.readValue(fieldValue, new TypeReference<>() { });
         } catch (Exception e) {
-            logger.error("invalid List field[{}] for record[{}]", fieldValue, recordType.getName());
+            logger.error("Invalid List field:{} for record:{}", fieldValue, recordType.getName());
             throw new BadRequestException("列表字段非法");
         }
     }

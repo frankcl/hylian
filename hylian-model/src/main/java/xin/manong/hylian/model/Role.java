@@ -62,15 +62,15 @@ public class Role extends BaseModel {
      */
     public void check() {
         if (StringUtils.isEmpty(id)) {
-            logger.error("role id is empty");
+            logger.error("Role id is empty");
             throw new BadRequestException("角色ID为空");
         }
         if (StringUtils.isEmpty(name)) {
-            logger.error("role name is empty");
+            logger.error("Role name is empty");
             throw new BadRequestException("角色名称为空");
         }
         if (StringUtils.isEmpty(appId)) {
-            logger.error("app id is empty");
+            logger.error("App id is empty");
             throw new BadRequestException("应用ID为空");
         }
     }

@@ -37,7 +37,7 @@ public class HTTPExecutor {
      */
     private static boolean failHttpResponse(HttpRequest httpRequest, Response httpResponse) {
         if (!httpResponse.isSuccessful() || httpResponse.code() != HTTP_CODE_OK) {
-            logger.error("execute http request failed for url[{}], http code[{}]",
+            logger.error("Execute http request failed for url:{}, http code:{}",
                     httpRequest.requestURL, httpResponse.code());
             return true;
         }
@@ -111,9 +111,9 @@ public class HTTPExecutor {
         String body = execute(httpRequest);
         if (body == null) return null;
         try {
-            return JSON.parseObject(body, new TypeReference<WebResponse<T>>(recordType) {});
+            return JSON.parseObject(body, new TypeReference<>(recordType) {});
         } catch (Exception e) {
-            logger.error("unexpected http response[{}] for {}", body, recordType.getName());
+            logger.error("Unexpected http response:{} for {}", body, recordType.getName());
             return null;
         }
     }
@@ -130,9 +130,9 @@ public class HTTPExecutor {
         String body = execute(httpRequest);
         if (body == null) return null;
         try {
-            return JSON.parseObject(body, new TypeReference<WebResponse<List<T>>>(recordType) {});
+            return JSON.parseObject(body, new TypeReference<>(recordType) {});
         } catch (Exception e) {
-            logger.error("unexpected http response[{}] for {} of List", body, recordType.getName());
+            logger.error("Unexpected http response:{} for {} of List", body, recordType.getName());
             return null;
         }
     }
@@ -152,9 +152,9 @@ public class HTTPExecutor {
         String body = execute(httpRequest);
         if (body == null) return null;
         try {
-            return JSON.parseObject(body, new TypeReference<WebResponse<Map<K, V>>>(keyType, valueType) {});
+            return JSON.parseObject(body, new TypeReference<>(keyType, valueType) {});
         } catch (Exception e) {
-            logger.error("unexpected http response[{}] for {} and {} of Map",
+            logger.error("Unexpected http response:{} for {} and {} of Map",
                     body, keyType.getName(), valueType.getName());
             return null;
         }
@@ -172,7 +172,7 @@ public class HTTPExecutor {
         WebResponse<T> response = execute(httpRequest, recordType);
         if (response == null) return null;
         if (!response.status) {
-            logger.error("execute and unwrap failed for url[{}], message[{}]",
+            logger.error("Execute and unwrap failed for url:{}, message:{}",
                     httpRequest.requestURL, response.message);
             return null;
         }
@@ -190,7 +190,7 @@ public class HTTPExecutor {
         WebResponse<List<T>> response = executeList(httpRequest, recordType);
         if (response == null) return null;
         if (!response.status) {
-            logger.error("execute and unwrap list failed for url[{}], message[{}]",
+            logger.error("Execute and unwrap list failed for url:{}, message:{}",
                     httpRequest.requestURL, response.message);
             return null;
         }
@@ -209,7 +209,7 @@ public class HTTPExecutor {
         WebResponse<Map<K, V>> response = executeMap(httpRequest, keyType, valueType);
         if (response == null) return null;
         if (!response.status) {
-            logger.error("execute and unwrap map failed for url[{}], message[{}]",
+            logger.error("Execute and unwrap map failed for url:{}, message:{}",
                     httpRequest.requestURL, response.message);
             return null;
         }

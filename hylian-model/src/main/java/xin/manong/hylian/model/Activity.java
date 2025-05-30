@@ -71,19 +71,19 @@ public class Activity extends BaseModel {
      */
     public void check() {
         if (StringUtils.isEmpty(sessionId)) {
-            logger.error("session id is empty");
+            logger.error("Session id is empty");
             throw new BadRequestException("session id为空");
         }
         if (StringUtils.isEmpty(ticketId)) {
-            logger.error("ticket id is empty");
+            logger.error("Ticket id is empty");
             throw new BadRequestException("ticket id为空");
         }
         if (StringUtils.isEmpty(userId)) {
-            logger.error("user id is empty");
+            logger.error("User id is empty");
             throw new BadRequestException("用户ID为空");
         }
         if (StringUtils.isEmpty(appId)) {
-            logger.error("app id is empty");
+            logger.error("App id is empty");
             throw new BadRequestException("应用ID为空");
         }
     }

@@ -98,7 +98,7 @@ public class PermissionServiceImpl implements PermissionService {
         LambdaQueryWrapper<Permission> query = new LambdaQueryWrapper<>();
         query.eq(Permission::getAppId, appId);
         int n = permissionMapper.delete(query);
-        logger.info("delete permission num[{}] for app[{}]", n, appId);
+        logger.info("Delete permission num:{} for app:{}", n, appId);
     }
 
     @Override

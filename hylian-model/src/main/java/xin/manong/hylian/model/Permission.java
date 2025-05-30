@@ -70,19 +70,19 @@ public class Permission extends BaseModel {
      */
     public void check() {
         if (StringUtils.isEmpty(id)) {
-            logger.error("permission id is empty");
+            logger.error("Permission id is empty");
             throw new BadRequestException("权限ID为空");
         }
         if (StringUtils.isEmpty(name)) {
-            logger.error("permission name is empty");
+            logger.error("Permission name is empty");
             throw new BadRequestException("权限名称为空");
         }
         if (StringUtils.isEmpty(path)) {
-            logger.error("path is empty");
+            logger.error("Path is empty");
             throw new BadRequestException("资源路径为空");
         }
         if (StringUtils.isEmpty(appId)) {
-            logger.error("app id is empty");
+            logger.error("App id is empty");
             throw new BadRequestException("应用ID为空");
         }
     }

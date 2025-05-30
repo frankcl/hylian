@@ -43,7 +43,7 @@ public class SessionListener implements HttpSessionListener {
         session.setAttribute(SessionConstants.LOCK, lock);
         SessionManager.put(session);
         session.setMaxInactiveInterval(MAX_SESSION_IDLE_TIME_SECONDS);
-        logger.debug("create session[{}] success", session.getId());
+        logger.debug("Create session:{} success", session.getId());
     }
 
     @Override
@@ -52,7 +52,7 @@ public class SessionListener implements HttpSessionListener {
         if (session == null) return;
         removeActivity(session.getId());
         SessionManager.remove(session);
-        logger.debug("destroy session[{}] success", session.getId());
+        logger.debug("Destroy session:{} success", session.getId());
     }
 
     /**
@@ -70,11 +70,11 @@ public class SessionListener implements HttpSessionListener {
         HttpRequest httpRequest = HttpRequest.buildPostRequest(requestURL, RequestFormat.JSON, body);
         Boolean success = HTTPExecutor.executeAndUnwrap(httpRequest, Boolean.class);
         if (success != null && success) {
-            logger.info("unregister activity success for app[{}] and session[{}]",
+            logger.info("Unregister activity success for app:{} and session:{}",
                     hylianClientConfig.appId, sessionId);
             return;
         }
-        logger.warn("unregister activity failed for app[{}] and session[{}]",
+        logger.warn("Unregister activity failed for app:{} and session:{}",
                 hylianClientConfig.appId, sessionId);
     }
 }

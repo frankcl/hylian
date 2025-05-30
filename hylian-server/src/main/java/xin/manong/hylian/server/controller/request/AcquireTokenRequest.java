@@ -50,11 +50,11 @@ public class AcquireTokenRequest extends SecurityRequest {
     public void check() {
         super.check();
         if (StringUtils.isEmpty(code)) {
-            logger.error("code is empty");
+            logger.error("Code is empty");
             throw new BadRequestException("安全码为空");
         }
         if (StringUtils.isEmpty(sessionId)) {
-            logger.error("app session id is empty");
+            logger.error("App session id is empty");
             throw new BadRequestException("应用会话ID为空");
         }
     }

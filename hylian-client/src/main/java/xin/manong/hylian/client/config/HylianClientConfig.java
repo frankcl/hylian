@@ -29,15 +29,15 @@ public class HylianClientConfig {
      */
     public void check() {
         if (StringUtils.isEmpty(appId)) {
-            logger.error("app id is empty");
+            logger.error("App id is empty");
             throw new IllegalArgumentException("应用ID为空");
         }
         if (StringUtils.isEmpty(appSecret)) {
-            logger.error("app secret is empty");
+            logger.error("App secret is empty");
             throw new IllegalArgumentException("应用秘钥为空");
         }
         if (StringUtils.isEmpty(serverURL)) {
-            logger.error("server url is empty");
+            logger.error("Server url is empty");
             throw new IllegalArgumentException("安全检测服务URL为空");
         }
     }

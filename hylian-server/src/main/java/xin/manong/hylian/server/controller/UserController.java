@@ -58,15 +58,15 @@ public class UserController {
     private static final Logger logger = LoggerFactory.getLogger(UserController.class);
 
     @Resource
-    protected ServerConfig serverConfig;
+    private ServerConfig serverConfig;
     @Resource
-    protected UserService userService;
+    private UserService userService;
     @Resource
-    protected TenantService tenantService;
+    private TenantService tenantService;
     @Resource
-    protected UserRoleService userRoleService;
+    private UserRoleService userRoleService;
     @Resource
-    protected OSSClient ossClient;
+    private OSSClient ossClient;
 
     /**
      * 获取用户信息
@@ -414,7 +414,7 @@ public class UserController {
         if (user == null || StringUtils.isEmpty(user.avatar)) return;
         OSSMeta ossMeta = OSSClient.parseURL(user.avatar);
         if (ossMeta == null) {
-            logger.warn("avatar[{}] is invalid", user.avatar);
+            logger.warn("Avatar:{} is invalid", user.avatar);
             return;
         }
         user.avatar = ossClient.sign(ossMeta.bucket, ossMeta.key);

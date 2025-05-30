@@ -32,7 +32,7 @@ public class QRCodeWebSocket {
     public void onOpen(Session session) {
         String key = getQueryKey(session);
         if (StringUtils.isEmpty(key)) {
-            logger.error("param key is missing");
+            logger.error("Param key is missing");
             session.close();
             throw new IllegalArgumentException("参数key为空");
         }
@@ -40,30 +40,30 @@ public class QRCodeWebSocket {
         if (prevWebSocket != null) {
             prevWebSocket.session.close();
             webSocketMap.remove(key);
-            logger.warn("session existed for key[{}], close it", key);
+            logger.warn("Session existed for key:{}, close it", key);
         }
         this.key = key;
         this.session = session;
         this.createTime = System.currentTimeMillis();
         webSocketMap.put(key, this);
-        logger.info("open session success for key[{}]", key);
+        logger.info("Open session success for key:{}", key);
     }
 
     @OnWebSocketClose
     public void onClose(int statusCode, String reason) {
         if (key != null) webSocketMap.remove(key);
-        logger.info("close session for key[{}], code[{}] and reason[{}]", key, statusCode, reason);
+        logger.info("Close session for key:{}, code:{} and reason:{}", key, statusCode, reason);
     }
 
     @OnWebSocketError
     public void onError(Throwable throwable) {
-        logger.debug("websocket error: {}", throwable.getMessage());
+        logger.debug("Websocket error: {}", throwable.getMessage());
         logger.debug(throwable.getMessage(), throwable);
     }
 
     @OnWebSocketMessage
     public void onMessage(String message) {
-        logger.info("receive message[{}]", message);
+        logger.info("Receive message:{}", message);
     }
 
     /**
@@ -76,7 +76,7 @@ public class QRCodeWebSocket {
     public static void sendMessage(String key, String message) throws IOException {
         QRCodeWebSocket webSocket = webSocketMap.get(key);
         if (webSocket == null) {
-            logger.error("websocket is not found for key[{}]", key);
+            logger.error("Websocket is not found for key:{}", key);
             throw new NotFoundException("WebSocket尚未建立");
         }
         webSocket.session.sendText(message, null);
@@ -94,7 +94,7 @@ public class QRCodeWebSocket {
             Map.Entry<String, QRCodeWebSocket> entry = iterator.next();
             QRCodeWebSocket webSocket = entry.getValue();
             if (webSocket.createTime < before) {
-                logger.info("websocket is expired for key[{}]", entry.getKey());
+                logger.info("Websocket is expired for key:{}", entry.getKey());
                 webSocket.session.close();
                 iterator.remove();
             }

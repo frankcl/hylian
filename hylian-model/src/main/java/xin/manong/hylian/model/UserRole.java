@@ -69,8 +69,7 @@ public class UserRole extends BaseModel {
 
     @Override
     public boolean equals(Object object) {
-        if (!(object instanceof UserRole)) return false;
-        UserRole userRole = (UserRole) object;
+        if (!(object instanceof UserRole userRole)) return false;
         return Objects.equals(userRole.userId, userId) && Objects.equals(userRole.roleId, roleId);
     }
 
@@ -85,15 +84,15 @@ public class UserRole extends BaseModel {
      */
     public void check() {
         if (StringUtils.isEmpty(userId)) {
-            logger.error("user id is empty");
+            logger.error("User id is empty");
             throw new BadRequestException("用户ID为空");
         }
         if (StringUtils.isEmpty(appId)) {
-            logger.error("app id is empty");
+            logger.error("App id is empty");
             throw new BadRequestException("应用ID为空");
         }
         if (StringUtils.isEmpty(roleId)) {
-            logger.error("role id is empty");
+            logger.error("Role id is empty");
             throw new BadRequestException("角色ID为空");
         }
     }

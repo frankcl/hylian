@@ -50,15 +50,15 @@ public class LoginRequest implements Serializable {
      */
     public void check() {
         if (StringUtils.isEmpty(username)) {
-            logger.error("username is empty");
+            logger.error("Username is empty");
             throw new BadRequestException("用户名为空");
         }
         if (StringUtils.isEmpty(password)) {
-            logger.error("password is empty");
+            logger.error("Password is empty");
             throw new BadRequestException("密码为空");
         }
         if (StringUtils.isEmpty(captcha)) {
-            logger.error("captcha is empty");
+            logger.error("Captcha is empty");
             throw new BadRequestException("验证码为空");
         }
     }

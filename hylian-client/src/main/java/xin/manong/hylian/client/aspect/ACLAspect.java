@@ -49,12 +49,12 @@ public class ACLAspect {
     public Object aroundIntercept(ProceedingJoinPoint joinPoint) throws Throwable {
         User user = ContextManager.getUser();
         if (user == null) {
-            logger.error("user not login");
+            logger.error("User not login");
             throw new NotAuthorizedException("用户尚未登录");
         }
         List<Permission> permissions = getUserPermissions(user);
         if (permissions.isEmpty() || !permissionAllow(permissions)) {
-            logger.error("permission are not allowed");
+            logger.error("Permission are not allowed");
             throw new ForbiddenException("无权操作");
         }
         return joinPoint.proceed();

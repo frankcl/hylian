@@ -40,7 +40,7 @@ public class TenantRequest implements Serializable {
      */
     public void check() {
         if (StringUtils.isEmpty(name)) {
-            logger.error("tenant name is empty");
+            logger.error("Tenant name is empty");
             throw new BadRequestException("租户名为空");
         }
     }

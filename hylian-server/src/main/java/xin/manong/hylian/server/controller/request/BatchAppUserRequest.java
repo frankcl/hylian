@@ -46,7 +46,7 @@ public class BatchAppUserRequest implements Serializable {
      */
     public void check() {
         if (StringUtils.isEmpty(appId)) {
-            logger.error("app id is empty");
+            logger.error("App id is empty");
             throw new BadRequestException("应用ID为空");
         }
     }

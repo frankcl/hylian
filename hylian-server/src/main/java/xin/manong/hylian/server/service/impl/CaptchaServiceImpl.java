@@ -64,6 +64,6 @@ public class CaptchaServiceImpl implements CaptchaService {
      */
     private void onRemoval(RemovalNotification<String, String> notification) {
         RemovalCause cause = notification.getCause();
-        logger.debug("captcha[{}] is removed for reason[{}]", notification.getValue(), cause.name());
+        logger.debug("Captcha:{} is removed for reason:{}", notification.getValue(), cause.name());
     }
 }

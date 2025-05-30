@@ -45,11 +45,11 @@ public class RolePermissionRequest implements Serializable {
      */
     public void check() {
         if (StringUtils.isEmpty(permissionId)) {
-            logger.error("permission id is empty");
+            logger.error("Permission id is empty");
             throw new BadRequestException("权限ID为空");
         }
         if (StringUtils.isEmpty(roleId)) {
-            logger.error("role id is empty");
+            logger.error("Role id is empty");
             throw new BadRequestException("角色ID为空");
         }
     }

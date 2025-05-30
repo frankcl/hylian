@@ -32,18 +32,18 @@ public class Sweeper implements Runnable {
      * 启动清理
      */
     public void start() {
-        logger.info("sweeper is starting ...");
+        logger.info("Sweeper is starting ...");
         running = true;
         runThread = new Thread(this, "sweeper");
         runThread.start();
-        logger.info("sweeper has been started");
+        logger.info("Sweeper has been started");
     }
 
     /**
      * 停止清理
      */
     public void stop() {
-        logger.info("sweeper is stopping ...");
+        logger.info("Sweeper is stopping ...");
         running = false;
         if (runThread.isAlive()) runThread.interrupt();
         try {
@@ -51,7 +51,7 @@ public class Sweeper implements Runnable {
         } catch (InterruptedException e) {
             logger.error(e.getMessage(), e);
         }
-        logger.info("sweeper has been stopped");
+        logger.info("Sweeper has been stopped");
     }
 
     /**
@@ -64,11 +64,11 @@ public class Sweeper implements Runnable {
             try {
                 Long maxUpdateTime = System.currentTimeMillis() - EXPIRED_INTERVAL_MS;
                 int n = activityService.removeExpires(maxUpdateTime);
-                logger.info("sweep {} expired activities", n);
+                logger.info("Sweep {} expired activities", n);
                 Long before = System.currentTimeMillis() - 60000L;
                 QRCodeWebSocket.removeExpires(before);
                 n = qrCodeService.deleteExpires(before);
-                logger.info("sweep {} expired QRCodes", n);
+                logger.info("Sweep {} expired QRCodes", n);
                 Thread.sleep(CHECK_INTERVAL_MS);
             } catch (Exception e) {
                 logger.error(e.getMessage(), e);

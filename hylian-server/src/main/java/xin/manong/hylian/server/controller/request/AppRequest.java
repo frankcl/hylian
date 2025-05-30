@@ -50,11 +50,11 @@ public class AppRequest implements Serializable {
      */
     public void check() {
         if (StringUtils.isEmpty(name)) {
-            logger.error("app name is empty");
+            logger.error("App name is empty");
             throw new BadRequestException("应用名为空");
         }
         if (StringUtils.isEmpty(secret) || secret.length() < 8) {
-            logger.error("app secret length is less than 8");
+            logger.error("App secret length is less than 8");
             throw new BadRequestException("应用秘钥至少8位");
         }
     }

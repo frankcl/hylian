@@ -51,7 +51,7 @@ public class TicketServiceImpl implements TicketService {
         if (decodedJWT == null) return false;
         Claim claim = decodedJWT.getHeaderClaim(Constants.JWT_HEADER_CATEGORY);
         if (claim == null || !claim.asString().equals(Constants.JWT_CATEGORY_TICKET)) {
-            logger.error("not ticket for category[{}]", claim == null ? "null" : claim.asString());
+            logger.error("Not ticket for category:{}", claim == null ? "null" : claim.asString());
             return false;
         }
         return jwtService.verify(decodedJWT);

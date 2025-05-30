@@ -52,7 +52,7 @@ public class HTTPUtils {
             return port == -1 ? String.format("%s://%s", protocol, host) :
                     String.format("%s://%s:%d", protocol, host, port);
         } catch (Exception e) {
-            logger.error("get request base URL failed");
+            logger.error("Get request base URL failed");
             logger.error(e.getMessage(), e);
             return null;
         }

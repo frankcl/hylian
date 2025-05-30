@@ -97,7 +97,7 @@ public class UserRoleServiceImpl implements UserRoleService {
         LambdaQueryWrapper<UserRole> query = new LambdaQueryWrapper<>();
         query.eq(UserRole::getUserId, userId);
         int n = userRoleMapper.delete(query);
-        logger.info("delete user role relationship num[{}] for user[{}]", n, userId);
+        logger.info("Delete user role relationship num:{} for user:{}", n, userId);
     }
 
     @Override
@@ -106,7 +106,7 @@ public class UserRoleServiceImpl implements UserRoleService {
         LambdaQueryWrapper<UserRole> query = new LambdaQueryWrapper<>();
         query.eq(UserRole::getRoleId, roleId);
         int n = userRoleMapper.delete(query);
-        logger.info("delete user role relationship num[{}] for role[{}]", n, roleId);
+        logger.info("Delete user role relationship num:{} for role:{}", n, roleId);
     }
 
     @Override

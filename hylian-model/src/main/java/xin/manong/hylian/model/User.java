@@ -129,23 +129,23 @@ public class User extends BaseModel {
      */
     public void check() {
         if (StringUtils.isEmpty(id)) {
-            logger.error("user id is empty");
+            logger.error("User id is empty");
             throw new BadRequestException("用户ID为空");
         }
         if (StringUtils.isEmpty(name)) {
-            logger.error("real name is empty");
-            throw new BadRequestException("用户真实名称为空");
+            logger.error("nickName is empty");
+            throw new BadRequestException("用户昵称为空");
         }
         if (StringUtils.isEmpty(username)) {
-            logger.error("username is empty");
+            logger.error("Username is empty");
             throw new BadRequestException("用户名为空");
         }
         if (StringUtils.isEmpty(tenantId)) {
-            logger.error("tenant id is empty");
+            logger.error("Tenant id is empty");
             throw new BadRequestException("租户ID为空");
         }
         if (StringUtils.isEmpty(password)) {
-            logger.error("password is empty");
+            logger.error("Password is empty");
             throw new BadRequestException("密码为空");
         }
     }

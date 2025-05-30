@@ -107,7 +107,7 @@ public class AppUserServiceImpl implements AppUserService {
         LambdaQueryWrapper<AppUser> query = new LambdaQueryWrapper<>();
         query.eq(AppUser::getAppId, appId);
         int n = appUserMapper.delete(query);
-        logger.info("delete app user num[{}] for app[{}]", n, appId);
+        logger.info("Delete app user num:{} for app:{}", n, appId);
     }
 
     @Override
@@ -116,7 +116,7 @@ public class AppUserServiceImpl implements AppUserService {
         LambdaQueryWrapper<AppUser> query = new LambdaQueryWrapper<>();
         query.eq(AppUser::getUserId, userId);
         int n = appUserMapper.delete(query);
-        logger.info("delete app user num[{}] for user[{}]", n, userId);
+        logger.info("Delete app user num:{} for user:{}", n, userId);
     }
 
     @Override

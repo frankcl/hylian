@@ -81,7 +81,7 @@ public class TenantServiceImpl implements TenantService {
         searchRequest.tenantId = id;
         Pager<User> pager = userService.search(searchRequest);
         if (pager != null && pager.total > 0) {
-            logger.error("users are found for tenant[{}], not allowed to be deleted", id);
+            logger.error("Users are found for Tenant:{}, not allowed to be deleted", id);
             throw new ForbiddenException("该租户下存在用户，不能删除");
         }
         return tenantMapper.deleteById(id) > 0;

@@ -61,8 +61,7 @@ public class RolePermission extends BaseModel {
 
     @Override
     public boolean equals(Object object) {
-        if (!(object instanceof RolePermission)) return false;
-        RolePermission rolePermission = (RolePermission) object;
+        if (!(object instanceof RolePermission rolePermission)) return false;
         return Objects.equals(rolePermission.permissionId, permissionId) &&
                 Objects.equals(rolePermission.roleId, roleId);
     }
@@ -78,11 +77,11 @@ public class RolePermission extends BaseModel {
      */
     public void check() {
         if (StringUtils.isEmpty(permissionId)) {
-            logger.error("permission id is empty");
+            logger.error("Permission id is empty");
             throw new BadRequestException("权限ID为空");
         }
         if (StringUtils.isEmpty(roleId)) {
-            logger.error("role id is empty");
+            logger.error("Role id is empty");
             throw new BadRequestException("角色ID为空");
         }
     }

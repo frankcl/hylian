@@ -52,11 +52,11 @@ public class QRCodeGenerateRequest extends SearchRequest {
     public void check() {
         if (category == null) throw new BadRequestException("微信小程序码类型为空");
         if (category != CATEGORY_LOGIN && category != CATEGORY_BIND) {
-            logger.error("invalid QRCode category[{}]", category);
+            logger.error("Invalid QRCode category:{}", category);
             throw new BadRequestException("非法微信小程序码类型");
         }
         if (category == CATEGORY_BIND && StringUtils.isEmpty(userid)) {
-            logger.error("missing userid when generating bind QRCode");
+            logger.error("Missing userid when generating bind QRCode");
             throw new BadRequestException("缺少绑定用户ID");
         }
     }

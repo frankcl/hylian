@@ -43,7 +43,7 @@ public class TokenServiceImpl implements TokenService {
         if (decodedJWT == null) return false;
         Claim claim = decodedJWT.getHeaderClaim(Constants.JWT_HEADER_CATEGORY);
         if (claim == null || !claim.asString().equals(Constants.JWT_CATEGORY_TOKEN)) {
-            logger.error("not token for category[{}]", claim == null ? "null" : claim.asString());
+            logger.error("Not token for category:{}", claim == null ? "null" : claim.asString());
             return false;
         }
         return jwtService.verify(decodedJWT);

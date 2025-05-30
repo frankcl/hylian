@@ -31,7 +31,7 @@ public class HylianInterceptorConfig {
     @Bean
     public HylianInterceptor buildHylianInterceptor() {
         if (clientConfig == null) {
-            logger.error("client config is null");
+            logger.error("Client config is null");
             throw new IllegalArgumentException("客户端配置为空");
         }
         return new HylianInterceptor(clientConfig);

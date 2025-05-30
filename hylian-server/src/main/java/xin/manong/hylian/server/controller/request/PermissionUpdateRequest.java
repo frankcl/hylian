@@ -39,11 +39,11 @@ public class PermissionUpdateRequest extends PermissionRequest {
      */
     public void check() {
         if (StringUtils.isEmpty(id)) {
-            logger.error("permission id is empty");
+            logger.error("Permission id is empty");
             throw new BadRequestException("权限ID为空");
         }
         if (StringUtils.isEmpty(name) && StringUtils.isEmpty(path) && StringUtils.isEmpty(appId)) {
-            logger.error("update permission info is empty");
+            logger.error("Update permission info is empty");
             throw new BadRequestException("更新权限信息为空");
         }
         if (path != null) PermissionUtils.validate(path);

@@ -107,7 +107,7 @@ public class RoleServiceImpl implements RoleService {
         LambdaQueryWrapper<Role> query = new LambdaQueryWrapper<>();
         query.eq(Role::getAppId, appId);
         int n = roleMapper.delete(query);
-        logger.info("delete role num[{}] for app[{}]", n, appId);
+        logger.info("Delete role num:{} for app:{}", n, appId);
     }
 
     @Override
@@ -142,7 +142,7 @@ public class RoleServiceImpl implements RoleService {
         query.eq(Role::getAppId, role.appId).eq(Role::getName, role.name);
         if (StringUtils.isNotEmpty(role.id)) query.ne(Role::getId, role.id);
         if (roleMapper.selectCount(query) > 0) {
-            logger.error("role existed for name[{}]", role.name);
+            logger.error("Role existed for name:{}", role.name);
             throw new IllegalStateException("角色已存在");
         }
     }

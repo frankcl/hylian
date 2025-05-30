@@ -38,11 +38,11 @@ public class TenantUpdateRequest extends TenantRequest {
      */
     public void check() {
         if (StringUtils.isEmpty(id)) {
-            logger.error("tenant id is empty");
+            logger.error("Tenant id is empty");
             throw new BadRequestException("租户ID为空");
         }
         if (StringUtils.isEmpty(name)) {
-            logger.error("update tenant info is empty");
+            logger.error("Update tenant info is empty");
             throw new BadRequestException("更新租户信息为空");
         }
     }

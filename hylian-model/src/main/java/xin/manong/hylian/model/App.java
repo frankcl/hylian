@@ -68,15 +68,15 @@ public class App extends BaseModel {
      */
     public void check() {
         if (StringUtils.isEmpty(id)) {
-            logger.error("app id is empty");
+            logger.error("App id is empty");
             throw new BadRequestException("应用ID为空");
         }
         if (StringUtils.isEmpty(name)) {
-            logger.error("app name is empty");
+            logger.error("App name is empty");
             throw new BadRequestException("应用名为空");
         }
         if (StringUtils.isEmpty(secret)) {
-            logger.error("app secret is empty");
+            logger.error("App secret is empty");
             throw new BadRequestException("应用秘钥为空");
         }
     }

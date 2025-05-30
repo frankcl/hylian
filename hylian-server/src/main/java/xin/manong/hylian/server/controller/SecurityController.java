@@ -20,10 +20,12 @@ import xin.manong.hylian.server.model.Pager;
 import xin.manong.hylian.server.model.UserProfile;
 import xin.manong.hylian.client.util.CookieUtils;
 import xin.manong.hylian.client.util.SessionUtils;
+import xin.manong.hylian.server.service.impl.WechatServiceImpl;
 import xin.manong.hylian.server.service.request.UserSearchRequest;
 import xin.manong.hylian.server.common.Constants;
 import xin.manong.hylian.server.service.*;
 import xin.manong.hylian.server.service.request.RolePermissionSearchRequest;
+import xin.manong.hylian.server.wechat.NoticeNewUser;
 import xin.manong.weapon.base.util.RandomID;
 
 import java.io.IOException;
@@ -48,31 +50,33 @@ public class SecurityController {
     private static final Logger logger = LoggerFactory.getLogger(SecurityController.class);
 
     @Resource
-    protected JWTService jwtService;
+    private JWTService jwtService;
     @Resource
-    protected CodeService codeService;
+    private CodeService codeService;
     @Resource
-    protected TokenService tokenService;
+    private TokenService tokenService;
     @Resource
-    protected TicketService ticketService;
+    private TicketService ticketService;
     @Resource
-    protected AppService appService;
+    private AppService appService;
     @Resource
-    protected UserService userService;
+    private UserService userService;
     @Resource
-    protected AppUserService appUserService;
+    private AppUserService appUserService;
     @Resource
-    protected TenantService tenantService;
+    private TenantService tenantService;
     @Resource
-    protected ActivityService activityService;
+    private ActivityService activityService;
     @Resource
-    protected UserRoleService userRoleService;
+    private UserRoleService userRoleService;
     @Resource
-    protected RolePermissionService rolePermissionService;
+    private RolePermissionService rolePermissionService;
     @Resource
-    protected PermissionService permissionService;
+    private PermissionService permissionService;
     @Resource
-    protected CaptchaService captchaService;
+    private CaptchaService captchaService;
+    @Resource
+    private WechatService wechatService;
     @Resource
     private ServerConfig serverConfig;
 
@@ -139,7 +143,7 @@ public class SecurityController {
                 record -> activityService.add(record) : record -> activityService.update(record);
         if (!function.apply(activity)) {
             String operation = prevActivity == null ? "add" : "update";
-            logger.warn("{} activity failed for app[{}] and user[{}]", operation , request.appId, userProfile.userId);
+            logger.warn("{} activity failed for app:{} and user:{}", operation , request.appId, userProfile.userId);
         }
         return token;
     }
@@ -165,13 +169,13 @@ public class SecurityController {
         UserProfile userProfile = jwtService.decodeProfile(token);
         User user = userService.get(userProfile.userId);
         if (user == null) {
-            logger.error("user[{}] is not found", userProfile.userId);
+            logger.error("User:{} is not found", userProfile.userId);
             throw new NotAuthorizedException("用户不存在");
         }
         if (appUserService.getAppUser(appId, user.id) != null) user.superAdmin = true;
         Tenant tenant = tenantService.get(user.tenantId);
         if (tenant == null) {
-            logger.error("tenant[{}] is not found", user.tenantId);
+            logger.error("Tenant:{} is not found", user.tenantId);
             throw new NotAuthorizedException("租户不存在");
         }
         user.tenant = tenant;
@@ -197,7 +201,7 @@ public class SecurityController {
         if (!verifyToken(request.token)) return null;
         String ticket = tokenService.getTicket(request.token);
         if (StringUtils.isEmpty(ticket)) {
-            logger.error("cached ticket is expired");
+            logger.error("Cached ticket is expired");
             throw new NotAuthorizedException("缓存ticket过期");
         }
         UserProfile userProfile = jwtService.decodeProfile(ticket);
@@ -332,7 +336,7 @@ public class SecurityController {
         String ticket = CookieUtils.getCookie(httpRequest, Constants.COOKIE_TICKET);
         if (StringUtils.isEmpty(ticket)) {
             CookieUtils.removeCookie(Constants.COOKIE_TOKEN, "/", serverConfig.domain, httpResponse);
-            logger.error("ticket is not found from cookies");
+            logger.error("Ticket is not found from cookies");
             throw new IllegalStateException("尚未登录");
         }
         removeTicketResources(ticket);
@@ -361,7 +365,7 @@ public class SecurityController {
                                  @Context HttpServletResponse httpResponse) {
         String ticket = CookieUtils.getCookie(httpRequest, Constants.COOKIE_TICKET);
         if (StringUtils.isNotEmpty(ticket)) {
-            logger.info("logged in");
+            logger.info("Logged in");
             return true;
         }
         request.check();
@@ -372,16 +376,16 @@ public class SecurityController {
         searchRequest.pageSize = 1;
         Pager<User> pager = userService.search(searchRequest);
         if (pager == null || pager.total < 1 || pager.records.isEmpty()) {
-            logger.error("user is not found for username[{}]", request.username);
+            logger.error("User is not found for username:{}", request.username);
             throw new NotFoundException("用户不存在");
         }
         User user = pager.records.get(0);
         if (!user.password.equals(DigestUtils.md5Hex(request.password.trim()))) {
-            logger.error("password are not correct");
+            logger.error("Password are not correct");
             throw new BadRequestException("密码不正确");
         }
         if (user.disabled) {
-            logger.error("user is disabled");
+            logger.error("User is disabled");
             throw new IllegalStateException("账号尚未启用，请联系管理员");
         }
         UserProfile userProfile = new UserProfile();
@@ -415,7 +419,12 @@ public class SecurityController {
         user.tenantId = serverConfig.defaultTenant;
         user.registerMode = User.REGISTER_MODE_NORMAL;
         user.check();
-        return userService.add(user);
+        boolean success = userService.add(user);
+        if (success) {
+            NoticeNewUser noticeNewUser = new NoticeNewUser(request.name, "普通");
+            wechatService.notifyAdmin(WechatServiceImpl.TEMPLATE_ID_NEW_USER, noticeNewUser.toMap());
+        }
+        return success;
     }
 
     /**
@@ -455,11 +464,11 @@ public class SecurityController {
      */
     private boolean verifyToken(String token) {
         if (StringUtils.isEmpty(token)) {
-            logger.error("token is empty");
+            logger.error("Token is empty");
             return false;
         }
         if (!tokenService.verifyToken(token)) {
-            logger.error("verify token failed");
+            logger.error("Verify token failed");
             removeTokenResources(token);
             return false;
         }
@@ -473,23 +482,23 @@ public class SecurityController {
      */
     private void verifyTicket(String ticket) {
         if (StringUtils.isEmpty(ticket)) {
-            logger.warn("ticket is empty");
+            logger.warn("Ticket is empty");
             throw new NotAuthorizedException("ticket为空");
         }
         if (!ticketService.verifyTicket(ticket)) {
-            logger.error("verify ticket failed");
+            logger.error("Verify ticket failed");
             removeTicketResources(ticket);
             throw new NotAuthorizedException("验证ticket失败");
         }
         UserProfile userProfile = jwtService.decodeProfile(ticket);
         if (userProfile == null) {
-            logger.error("decode profile failed from ticket");
+            logger.error("Decode profile failed from ticket");
             removeTicketResources(ticket);
             throw new NotAuthorizedException("非法ticket");
         }
         String cachedTicket = ticketService.getTicket(userProfile.id);
         if (StringUtils.isEmpty(cachedTicket) || !ticket.equals(cachedTicket)) {
-            logger.error("cached ticket and provided ticket are not consistent");
+            logger.error("Cached ticket and provided ticket are not consistent");
             removeTicketResources(ticket);
             throw new NotAuthorizedException("ticket缓存失效");
         }

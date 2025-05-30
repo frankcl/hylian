@@ -46,7 +46,7 @@ public class RolePermissionServiceImpl implements RolePermissionService {
 
     @Override
     public RolePermission get(Long id) {
-        if (id == null) throw new BadRequestException("id is null");
+        if (id == null) throw new BadRequestException("角色权限关系ID为空");
         return rolePermissionMapper.selectById(id);
     }
 
@@ -97,7 +97,7 @@ public class RolePermissionServiceImpl implements RolePermissionService {
         LambdaQueryWrapper<RolePermission> query = new LambdaQueryWrapper<>();
         query.eq(RolePermission::getRoleId, roleId);
         int n = rolePermissionMapper.delete(query);
-        logger.info("delete role permission relationship num[{}] for role[{}]", n, roleId);
+        logger.info("Delete role permission relationship num:{} for role:{}", n, roleId);
     }
 
     @Override
@@ -106,7 +106,7 @@ public class RolePermissionServiceImpl implements RolePermissionService {
         LambdaQueryWrapper<RolePermission> query = new LambdaQueryWrapper<>();
         query.eq(RolePermission::getPermissionId, permissionId);
         int n = rolePermissionMapper.delete(query);
-        logger.info("delete role permission relationship num[{}] for permission[{}]", n, permissionId);
+        logger.info("Delete role permission relationship num:{} for permission:{}", n, permissionId);
     }
 
     @Override

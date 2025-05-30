@@ -43,17 +43,17 @@ public class HylianGuard extends CookieSweeper implements Filter {
         logger.info("Hylian guard is init ...");
         appId = filterConfig.getInitParameter(Constants.PARAM_APP_ID);
         if (StringUtils.isEmpty(appId)) {
-            logger.error("param[{}] is not found", Constants.PARAM_APP_ID);
+            logger.error("Param:{} is not found", Constants.PARAM_APP_ID);
             throw new IllegalArgumentException(String.format("参数缺失[%s]", Constants.PARAM_APP_ID));
         }
         appSecret = filterConfig.getInitParameter(Constants.PARAM_APP_SECRET);
         if (StringUtils.isEmpty(appSecret)) {
-            logger.error("param[{}] is not found", Constants.PARAM_APP_SECRET);
+            logger.error("Param:{} is not found", Constants.PARAM_APP_SECRET);
             throw new IllegalArgumentException(String.format("参数缺失[%s]", Constants.PARAM_APP_SECRET));
         }
         serverURL = filterConfig.getInitParameter(Constants.PARAM_SERVER_URL);
         if (StringUtils.isEmpty(serverURL)) {
-            logger.error("param[{}] is not found", Constants.PARAM_SERVER_URL);
+            logger.error("Param:{} is not found", Constants.PARAM_SERVER_URL);
             throw new IllegalArgumentException(String.format("参数缺失[%s]", Constants.PARAM_SERVER_URL));
         }
         if (!serverURL.endsWith("/")) serverURL += "/";

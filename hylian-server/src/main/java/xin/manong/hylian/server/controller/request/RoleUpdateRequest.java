@@ -38,11 +38,11 @@ public class RoleUpdateRequest extends RoleRequest {
      */
     public void check() {
         if (StringUtils.isEmpty(id)) {
-            logger.error("role id is empty");
+            logger.error("Role id is empty");
             throw new BadRequestException("角色ID为空");
         }
         if (StringUtils.isEmpty(name) && StringUtils.isEmpty(appId)) {
-            logger.error("update role info is empty");
+            logger.error("Update role info is empty");
             throw new BadRequestException("更新角色信息为空");
         }
     }

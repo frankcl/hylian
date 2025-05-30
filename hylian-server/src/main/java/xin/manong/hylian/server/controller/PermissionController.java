@@ -39,9 +39,9 @@ import java.util.List;
 public class PermissionController {
 
     @Resource
-    protected AppService appService;
+    private AppService appService;
     @Resource
-    protected PermissionService permissionService;
+    private PermissionService permissionService;
 
     /**
      * 获取权限信息

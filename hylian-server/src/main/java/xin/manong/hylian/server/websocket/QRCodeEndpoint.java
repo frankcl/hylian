@@ -41,9 +41,9 @@ public class QRCodeEndpoint {
         if (prevEndpoint != null) {
             try {
                 prevEndpoint.session.close();
-                logger.warn("session existed for key[{}], close it", key);
+                logger.warn("Session existed for key:{}, close it", key);
             } catch (IOException e) {
-                logger.error("close session failed for key[{}]", key);
+                logger.error("Close session failed for key:{}", key);
                 logger.error(e.getMessage(), e);
             } finally {
                 endpointMap.remove(key);
@@ -53,13 +53,13 @@ public class QRCodeEndpoint {
         this.session = session;
         this.createTime = System.currentTimeMillis();
         endpointMap.put(key, this);
-        logger.info("open session success for key[{}]", key);
+        logger.info("Open session success for key:{}", key);
     }
 
     @OnClose
     public void onClose() {
         if (key != null) endpointMap.remove(key);
-        logger.info("close session success for key[{}]", key);
+        logger.info("Close session success for key:{}", key);
     }
 
     @OnError
@@ -70,7 +70,7 @@ public class QRCodeEndpoint {
 
     @OnMessage
     public void onMessage(String message) {
-        logger.info("receive message[{}]", message);
+        logger.info("Receive message:{}", message);
     }
 
     /**
@@ -83,7 +83,7 @@ public class QRCodeEndpoint {
     public static void sendMessage(String key, String message) throws IOException {
         QRCodeEndpoint endpoint = endpointMap.get(key);
         if (endpoint == null) {
-            logger.error("endpoint is not found for key[{}]", key);
+            logger.error("Endpoint is not found for key:{}", key);
             throw new NotFoundException("小程序码WebSocket不存在");
         }
         endpoint.session.getBasicRemote().sendText(message);
@@ -101,7 +101,7 @@ public class QRCodeEndpoint {
             Map.Entry<String, QRCodeEndpoint> entry = iterator.next();
             QRCodeEndpoint endpoint = entry.getValue();
             if (endpoint.createTime < before) {
-                logger.info("QRCode endpoint is expired for key[{}]", entry.getKey());
+                logger.info("QRCode endpoint is expired for key:{}", entry.getKey());
                 endpoint.session.close();
                 iterator.remove();
             }

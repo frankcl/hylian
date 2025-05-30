@@ -67,12 +67,12 @@ public class HylianShield {
         String token = SessionUtils.getToken(httpRequest);
         if (StringUtils.isNotEmpty(token)) {
             if (refreshUser(token, httpRequest) && refreshToken(token, httpRequest)) return true;
-            logger.warn("token is expired");
+            logger.warn("Token is expired");
         }
         SessionUtils.removeResources(httpRequest);
         String code = httpRequest.getParameter(Constants.PARAM_CODE);
         if (StringUtils.isEmpty(code)) {
-            logger.info("apply code for acquiring token");
+            logger.info("Apply code for acquiring token");
             String redirectURL = HTTPUtils.getRequestURL(httpRequest);
             httpResponse.sendRedirect(String.format("%s%s?%s=%s&%s=%s&%s=%s", serverURL,
                     Constants.SERVER_PATH_APPLY_CODE, Constants.PARAM_APP_ID, appId,
@@ -91,11 +91,11 @@ public class HylianShield {
             }
             token = acquireToken(code, httpRequest);
             if (StringUtils.isEmpty(token)) {
-                logger.error("acquire token failed");
+                logger.error("Acquire token failed");
                 httpResponse.sendRedirect(requestURL);
                 return false;
             }
-            logger.info("acquire token success");
+            logger.info("Acquire token success");
             SessionManager.putTokenSession(httpRequest.getSession());
             SessionUtils.setToken(httpRequest, token);
             httpResponse.sendRedirect(requestURL);
@@ -206,7 +206,7 @@ public class HylianShield {
         if (!forceRefresh && SessionUtils.getUser(httpRequest) != null) return true;
         User user = getUser(token);
         if (user == null) {
-            logger.error("get user failed for token[{}]", token);
+            logger.error("Get user failed for token:{}", token);
             return false;
         }
         SessionUtils.setUser(httpRequest, user);

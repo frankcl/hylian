@@ -38,15 +38,15 @@ public class AppUpdateRequest extends AppRequest {
      */
     public void check() {
         if (StringUtils.isEmpty(id)) {
-            logger.error("app id is empty");
+            logger.error("App id is empty");
             throw new BadRequestException("应用ID为空");
         }
         if (secret != null && secret.length() < 8) {
-            logger.error("app secret length is less than 8");
+            logger.error("App secret length is less than 8");
             throw new BadRequestException("应用秘钥至少8位");
         }
         if (StringUtils.isEmpty(name) && StringUtils.isEmpty(secret) && StringUtils.isEmpty(description)) {
-            logger.error("update app info is empty");
+            logger.error("Update app info is empty");
             throw new BadRequestException("修改应用信息为空");
         }
     }

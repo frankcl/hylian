@@ -50,11 +50,11 @@ public class JWTServiceImpl implements JWTService {
     public String buildJWT(UserProfile userProfile, Date expiresAt,
                            String algoName, Map<String, Object> headers) {
         if (userProfile == null) {
-            logger.error("profile is null");
+            logger.error("Profile is null");
             return null;
         }
         if (!algorithmMap.containsKey(algoName)) {
-            logger.error("unsupported encrypt algorithm[{}]", algoName);
+            logger.error("Unsupported encrypt algorithm:{}", algoName);
             return null;
         }
         Algorithm algorithm = algorithmMap.get(algoName);
@@ -66,12 +66,12 @@ public class JWTServiceImpl implements JWTService {
     public boolean verify(DecodedJWT decodedJWT) {
         Claim claim = decodedJWT.getHeaderClaim(Constants.JWT_HEADER_ALGORITHM);
         if (claim == null) {
-            logger.error("encrypt algorithm is not found");
+            logger.error("Encrypt algorithm is not found");
             return false;
         }
         String algoName = claim.asString();
         if (!verifierMap.containsKey(algoName)) {
-            logger.error("unsupported encrypt algorithm[{}] for verifying", algoName);
+            logger.error("Unsupported encrypt algorithm:{} for verifying", algoName);
             return false;
         }
         JWTVerifier verifier = verifierMap.get(algoName);
@@ -79,15 +79,15 @@ public class JWTServiceImpl implements JWTService {
             verifier.verify(decodedJWT);
             return true;
         } catch (TokenExpiredException e) {
-            logger.error("JWT is expired for time[{}]", decodedJWT.getExpiresAt().getTime());
+            logger.error("JWT is expired for time:{}", decodedJWT.getExpiresAt().getTime());
             logger.error(e.getMessage(), e);
             return false;
         } catch (SignatureVerificationException e){
-            logger.error("sign verify failed");
+            logger.error("Sign verify failed");
             logger.error(e.getMessage(), e);
             return false;
         } catch (AlgorithmMismatchException e){
-            logger.error("algorithm not match");
+            logger.error("Algorithm not match");
             logger.error(e.getMessage(), e);
             return false;
         } catch (Exception e) {
@@ -101,7 +101,7 @@ public class JWTServiceImpl implements JWTService {
         try {
             return JWT.decode(jwt);
         } catch (Exception e) {
-            logger.error("decode JWT failed");
+            logger.error("Decode JWT failed");
             logger.error(e.getMessage(), e);
             return null;
         }
@@ -114,7 +114,7 @@ public class JWTServiceImpl implements JWTService {
         try {
             Claim claim = decodedJWT.getClaim(Constants.JWT_CLAIM_PROFILE);
             if (claim == null) {
-                logger.error("claim[{}] is not found", Constants.JWT_CLAIM_PROFILE);
+                logger.error("Claim:{} is not found", Constants.JWT_CLAIM_PROFILE);
                 return null;
             }
             return JSON.parseObject(claim.asString(), UserProfile.class);

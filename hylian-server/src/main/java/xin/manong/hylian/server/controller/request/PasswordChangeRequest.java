@@ -56,23 +56,23 @@ public class PasswordChangeRequest implements Serializable {
      */
     public void check() {
         if (StringUtils.isEmpty(id)) {
-            logger.error("user id is empty");
+            logger.error("User id is empty");
             throw new BadRequestException("用户ID为空");
         }
         if (StringUtils.isEmpty(password)) {
-            logger.error("password is empty");
+            logger.error("Password is empty");
             throw new BadRequestException("密码为空");
         }
         if (StringUtils.isEmpty(newPassword)) {
-            logger.error("new password is empty");
+            logger.error("New password is empty");
             throw new BadRequestException("新密码为空");
         }
         if (StringUtils.isEmpty(confirmPassword)) {
-            logger.error("confirm new password is empty");
+            logger.error("Confirm new password is empty");
             throw new BadRequestException("确认新密码为空");
         }
         if (!newPassword.equals(confirmPassword)) {
-            logger.error("new password and confirmed new password are not consistent");
+            logger.error("New password and confirmed new password are not consistent");
             throw new BadRequestException("新密码与确认新密码不一致");
         }
         PasswordUtils.checkPassword(newPassword);

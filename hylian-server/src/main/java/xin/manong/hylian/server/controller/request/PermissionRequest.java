@@ -53,15 +53,15 @@ public class PermissionRequest implements Serializable {
      */
     public void check() {
         if (StringUtils.isEmpty(name)) {
-            logger.error("permission name is empty");
+            logger.error("Permission name is empty");
             throw new BadRequestException("权限名为空");
         }
         if (StringUtils.isEmpty(path)) {
-            logger.error("permission resource is empty");
+            logger.error("Permission resource is empty");
             throw new BadRequestException("权限资源为空");
         }
         if (StringUtils.isEmpty(appId)) {
-            logger.error("app id is empty");
+            logger.error("App id is empty");
             throw new BadRequestException("应用ID为空");
         }
         PermissionUtils.validate(path);

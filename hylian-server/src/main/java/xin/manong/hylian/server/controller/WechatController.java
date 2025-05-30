@@ -16,17 +16,17 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import xin.manong.hylian.client.core.HTTPExecutor;
-import xin.manong.hylian.client.core.HTTPResponse;
 import xin.manong.hylian.model.User;
 import xin.manong.hylian.server.common.Constants;
 import xin.manong.hylian.server.config.ServerConfig;
 import xin.manong.hylian.server.model.UserProfile;
 import xin.manong.hylian.server.service.TicketService;
+import xin.manong.hylian.server.service.WechatService;
+import xin.manong.hylian.server.service.impl.WechatServiceImpl;
 import xin.manong.hylian.server.util.AvatarUtils;
 import xin.manong.hylian.client.util.CookieUtils;
 import xin.manong.hylian.server.websocket.QRCodeWebSocket;
 import xin.manong.hylian.server.wechat.*;
-import xin.manong.hylian.server.controller.response.WechatLoginResponse;
 import xin.manong.hylian.server.converter.Converter;
 import xin.manong.hylian.server.model.QRCode;
 import xin.manong.hylian.server.service.QRCodeService;
@@ -35,20 +35,14 @@ import xin.manong.hylian.server.util.AppSecretUtils;
 import xin.manong.weapon.aliyun.oss.OSSClient;
 import xin.manong.weapon.aliyun.oss.OSSMeta;
 import xin.manong.weapon.base.http.HttpRequest;
-import xin.manong.weapon.base.http.RequestFormat;
 import xin.manong.weapon.base.util.FileUtil;
 import xin.manong.weapon.base.util.RandomID;
-import xin.manong.weapon.spring.boot.etcd.WatchValue;
 import xin.manong.weapon.spring.boot.etcd.WatchValueDisposableBean;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.nio.charset.StandardCharsets;
-import java.util.Base64;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * 微信控制器
@@ -64,43 +58,22 @@ public class WechatController extends WatchValueDisposableBean {
 
     private static final Logger logger = LoggerFactory.getLogger(WechatController.class);
 
-    private static final String WECHAT_BASE_URL = "https://api.weixin.qq.com/";
-    private static final String WECHAT_PATH_TOKEN = "cgi-bin/token";
-    private static final String WECHAT_PATH_WXA_CODE = "wxa/getwxacodeunlimit";
-    private static final String WECHAT_PATH_CODE_TO_SESSION = "sns/jscode2session";
-
-    private static final String PARAM_KEY_APP_ID = "appid";
-    private static final String PARAM_KEY_APP_SECRET = "secret";
-    private static final String PARAM_KEY_JS_CODE = "js_code";
-    private static final String PARAM_KEY_ACCESS_TOKEN = "access_token";
-    private static final String PARAM_KEY_PAGE = "page";
-    private static final String PARAM_KEY_SCENE = "scene";
-    private static final String PARAM_KEY_CHECK_PATH = "check_path";
-    private static final String PARAM_KEY_VERSION = "env_version";
-    private static final String PARAM_KEY_GRANT_TYPE = "grant_type";
-
-    private static final String GRANT_TYPE_CLIENT_CREDENTIAL = "client_credential";
-    private static final String GRANT_TYPE_AUTHORIZATION_CODE = "authorization_code";
     private static final String WX_LOGIN_PAGE = "pages/login/index";
     private static final String WX_BIND_PAGE = "pages/bind/index";
-    private static final String WX_SCENE_FORMAT = "key=%s";
     private static final String DEFAULT_PASSWORD = "123456";
 
-    protected AccessToken accessToken;
     @Resource
-    protected UserService userService;
+    private UserService userService;
     @Resource
-    protected QRCodeService qrCodeService;
+    private QRCodeService qrCodeService;
     @Resource
-    protected TicketService ticketService;
+    private TicketService ticketService;
+    @Resource
+    private WechatService wechatService;
     @Resource
     private ServerConfig serverConfig;
     @Resource
     private OSSClient ossClient;
-    @WatchValue(namespace = "hylian", key = "wechat/app_id")
-    private String appId;
-    @WatchValue(namespace = "hylian", key = "wechat/app_secret")
-    private String appSecret;
 
     /**
      * 生成小程序码
@@ -115,33 +88,17 @@ public class WechatController extends WatchValueDisposableBean {
     public QRCodeImage generateQRCode(@BeanParam QRCodeGenerateRequest request) {
         if (request == null) throw new BadRequestException("小程序码生成请求为空");
         request.check();
-        AccessToken accessToken = getAccessToken();
-        String qrCodeKey = AppSecretUtils.buildSecret(12);
-        while (qrCodeService.getByKey(qrCodeKey) != null) qrCodeKey = AppSecretUtils.buildSecret(12);
-        String requestURL = String.format("%s%s?%s=%s", WECHAT_BASE_URL, WECHAT_PATH_WXA_CODE,
-                PARAM_KEY_ACCESS_TOKEN, accessToken.token);
-        Map<String, Object> requestBody = new HashMap<>();
-        requestBody.put(PARAM_KEY_PAGE, request.category ==
-                QRCodeGenerateRequest.CATEGORY_LOGIN ? WX_LOGIN_PAGE : WX_BIND_PAGE);
-        requestBody.put(PARAM_KEY_CHECK_PATH, false);
-        requestBody.put(PARAM_KEY_SCENE, String.format(WX_SCENE_FORMAT, qrCodeKey));
-        requestBody.put(PARAM_KEY_VERSION, serverConfig.wxVersion);
-        HttpRequest httpRequest = HttpRequest.buildPostRequest(requestURL, RequestFormat.JSON, requestBody);
-        HTTPResponse httpResponse = HTTPExecutor.executeRequest(httpRequest);
-        if (httpResponse == null || !httpResponse.isImage()) {
-            logger.error("generate wechat mini code error: {}", httpResponse == null ?
-                    "未知" : new String(httpResponse.content, StandardCharsets.UTF_8));
-            throw new InternalServerErrorException("生成小程序码错误");
-        }
-        String image = String.format("data:image/png;base64,%s",
-                Base64.getEncoder().encodeToString(httpResponse.content));
+        String codeKey = AppSecretUtils.buildSecret(12);
+        while (qrCodeService.getByKey(codeKey) != null) codeKey = AppSecretUtils.buildSecret(12);
+        String image = wechatService.generateMiniCode(codeKey,
+                request.category == QRCodeGenerateRequest.CATEGORY_LOGIN ? WX_LOGIN_PAGE : WX_BIND_PAGE);
         QRCode qrCode = new QRCode();
-        qrCode.key = qrCodeKey;
+        qrCode.key = codeKey;
         qrCode.status = QRCode.STATUS_WAIT;
         qrCode.userid = request.userid;
         if (!qrCodeService.add(qrCode)) throw new InternalServerErrorException("添加小程序码记录失败");
         QRCodeImage qrCodeImage = new QRCodeImage();
-        qrCodeImage.key = qrCodeKey;
+        qrCodeImage.key = codeKey;
         qrCodeImage.image = image;
         return qrCodeImage;
     }
@@ -178,7 +135,7 @@ public class WechatController extends WatchValueDisposableBean {
     @GetMapping("user/exists")
     public boolean userExists(@QueryParam("code") String code) {
         if (StringUtils.isEmpty(code)) throw new BadRequestException("参数code缺失");
-        String openid = getOpenid(code);
+        String openid = wechatService.getOpenid(code);
         return userService.getByWxOpenid(openid) != null;
     }
 
@@ -216,12 +173,12 @@ public class WechatController extends WatchValueDisposableBean {
         QRCode qrCode = qrCodeService.getByKey(request.key);
         if (qrCode == null) throw new IllegalStateException("小程序码已过期");
         try {
-            String openid = getOpenid(request.getCode());
+            String openid = wechatService.getOpenid(request.getCode());
             User user = userService.getByWxOpenid(openid);
             if (user != null) throw new IllegalStateException("微信账号已被绑定");
             user = userService.get(qrCode.userid);
             if (user == null) {
-                logger.error("user[{}] is not found", qrCode.userid);
+                logger.error("User:{} is not found", qrCode.userid);
                 throw new IllegalStateException("未找到绑定用户");
             }
             User updateUser = new User();
@@ -229,12 +186,12 @@ public class WechatController extends WatchValueDisposableBean {
             updateUser.wxOpenid = openid;
             boolean success = userService.update(updateUser);
             qrCode.status = QRCode.STATUS_BIND;
-            if (!qrCodeService.updateByKey(qrCode)) logger.warn("update QRCode bind status failed");
+            if (!qrCodeService.updateByKey(qrCode)) logger.warn("Update QRCode bind status failed");
             return success;
         } catch (Exception e) {
             qrCode.status = QRCode.STATUS_ERROR;
             qrCode.message = e.getMessage();
-            if (!qrCodeService.updateByKey(qrCode)) logger.warn("update bind QRCode[{}] status failed", qrCode.key);
+            if (!qrCodeService.updateByKey(qrCode)) logger.warn("Update bind QRCode:{} status failed", qrCode.key);
             throw e;
         } finally {
             QRCodeWebSocket.sendMessage(qrCode.key, JSON.toJSONString(qrCode));
@@ -258,19 +215,21 @@ public class WechatController extends WatchValueDisposableBean {
         QRCode qrCode = new QRCode();
         qrCode.key = request.key;
         try {
-            String openid = getOpenid(request.code);
+            String openid = wechatService.getOpenid(request.code);
             qrCode.openid = openid;
             User user = userService.getByWxOpenid(openid);
             if (user != null) throw new IllegalStateException("微信账号已注册");
             addWechatUser(request.user, openid);
             qrCode.status = QRCode.STATUS_REGISTERED;
-            if (!qrCodeService.updateByKey(qrCode)) logger.warn("update QRCode register status failed");
+            if (!qrCodeService.updateByKey(qrCode)) logger.warn("Update QRCode register status failed");
+            NoticeNewUser noticeNewUser = new NoticeNewUser(request.user.nickName, "微信");
+            wechatService.notifyAdmin(WechatServiceImpl.TEMPLATE_ID_NEW_USER, noticeNewUser.toMap());
             return true;
         } catch (Exception e) {
             qrCode.status = QRCode.STATUS_ERROR;
             qrCode.message = e.getMessage();
             if (!qrCodeService.updateByKey(qrCode)) {
-                logger.warn("update QRCode[{}] status failed when registering", qrCode.key);
+                logger.warn("Update QRCode:{} status failed when registering", qrCode.key);
             }
             throw e;
         } finally {
@@ -295,18 +254,18 @@ public class WechatController extends WatchValueDisposableBean {
         QRCode qrCode = new QRCode();
         qrCode.key = request.key;
         try {
-            String openid = getOpenid(request.code);
+            String openid = wechatService.getOpenid(request.code);
             qrCode.openid = openid;
             User user = userService.getByWxOpenid(openid);
             if (user == null) throw new IllegalStateException("微信用户不存在");
             qrCode.status = QRCode.STATUS_AUTHORIZED;
-            if (!qrCodeService.updateByKey(qrCode)) logger.warn("update QRCode authorize status failed");
+            if (!qrCodeService.updateByKey(qrCode)) logger.warn("Update QRCode authorize status failed");
             return true;
         } catch (Exception e) {
             qrCode.status = QRCode.STATUS_ERROR;
             qrCode.message = e.getMessage();
             if (!qrCodeService.updateByKey(qrCode)) {
-                logger.warn("update QRCode[{}] status failed when authorizing", qrCode.key);
+                logger.warn("Update QRCode:{} status failed when authorizing", qrCode.key);
             }
             throw e;
         } finally {
@@ -345,13 +304,15 @@ public class WechatController extends WatchValueDisposableBean {
             userProfile.setId(RandomID.build()).setUserId(user.id);
             String ticket = ticketService.buildTicket(userProfile, Constants.COOKIE_TICKET_EXPIRED_TIME_MS);
             ticketService.putTicket(userProfile.id, ticket);
-            CookieUtils.setCookie(Constants.COOKIE_TICKET, ticket, "/", serverConfig.domain, true, httpRequest, httpResponse);
-            CookieUtils.setCookie(Constants.COOKIE_TOKEN, RandomID.build(), "/", serverConfig.domain, false, httpRequest, httpResponse);
+            CookieUtils.setCookie(Constants.COOKIE_TICKET, ticket, "/",
+                    serverConfig.domain, true, httpRequest, httpResponse);
+            CookieUtils.setCookie(Constants.COOKIE_TOKEN, RandomID.build(), "/",
+                    serverConfig.domain, false, httpRequest, httpResponse);
             return true;
         } catch (Exception e) {
             qrCode.status = QRCode.STATUS_ERROR;
             qrCode.message = e.getMessage();
-            if (!qrCodeService.updateByKey(qrCode)) logger.warn("update QRCode[{}] status failed when login", qrCode.key);
+            if (!qrCodeService.updateByKey(qrCode)) logger.warn("Update QRCode:{} status failed when login", qrCode.key);
             QRCodeWebSocket.sendMessage(qrCode.key, JSON.toJSONString(qrCode));
             throw e;
         }
@@ -367,7 +328,7 @@ public class WechatController extends WatchValueDisposableBean {
         if (wechatUser == null) throw new BadRequestException("微信用户信息缺失");
         User user = new User();
         user.id = RandomID.build();
-        user.username = String.format("openid_%s", openId);
+        user.username = String.format("%s%s", WechatServiceImpl.OPENID_PREFIX, openId);
         user.name = wechatUser.nickName;
         user.tenantId = serverConfig.defaultTenant;
         user.password = DigestUtils.md5Hex(DEFAULT_PASSWORD);
@@ -391,13 +352,13 @@ public class WechatController extends WatchValueDisposableBean {
         try {
             avatarURL = new URL(wechatUser.avatar);
         } catch (MalformedURLException e) {
-            logger.error("invalid wechat avatar[{}]", wechatUser.avatar);
+            logger.error("Invalid wechat avatar:{}", wechatUser.avatar);
             return null;
         }
         HttpRequest httpRequest = HttpRequest.buildGetRequest(wechatUser.avatar, null);
         byte[] bytes = HTTPExecutor.executeRaw(httpRequest);
         if (bytes == null || bytes.length == 0) {
-            logger.error("download wechat avatar[{}] failed", wechatUser.avatar);
+            logger.error("Download wechat avatar:{} failed", wechatUser.avatar);
             return null;
         }
         String suffix = FileUtil.getFileSuffix(avatarURL.getPath());
@@ -405,7 +366,7 @@ public class WechatController extends WatchValueDisposableBean {
                 Constants.TEMP_AVATAR_DIR, RandomID.build());
         if (StringUtils.isNotEmpty(suffix)) ossKey = String.format("%s.%s", ossKey, suffix);
         if (!ossClient.putObject(serverConfig.ossBucket, ossKey, bytes)) {
-            logger.error("save oss wechat avatar[{}] failed", wechatUser.avatar);
+            logger.error("Save oss wechat avatar:{} failed", wechatUser.avatar);
             return null;
         }
         OSSMeta ossMeta = new OSSMeta();
@@ -426,45 +387,5 @@ public class WechatController extends WatchValueDisposableBean {
         if (StringUtils.isEmpty(avatarURL)) return false;
         OSSMeta ossMeta = OSSClient.parseURL(avatarURL);
         return ossMeta == null || !ossMeta.region.equals(serverConfig.ossRegion);
-    }
-
-    /**
-     * 获取小程序openid
-     *
-     * @param code 微信授权码
-     * @return 小程序openid
-     */
-    private String getOpenid(String code) {
-        String requestURL = String.format("%s%s", WECHAT_BASE_URL, WECHAT_PATH_CODE_TO_SESSION);
-        Map<String, Object> paramMap = new HashMap<>();
-        paramMap.put(PARAM_KEY_APP_ID, appId);
-        paramMap.put(PARAM_KEY_APP_SECRET, appSecret);
-        paramMap.put(PARAM_KEY_GRANT_TYPE, GRANT_TYPE_AUTHORIZATION_CODE);
-        paramMap.put(PARAM_KEY_JS_CODE, code);
-        HttpRequest httpRequest = HttpRequest.buildGetRequest(requestURL, paramMap);
-        String body = HTTPExecutor.execute(httpRequest);
-        if (StringUtils.isEmpty(body)) throw new InternalServerErrorException("获取微信小程序openid失败");
-        WechatLoginResponse response = JSON.parseObject(body, WechatLoginResponse.class);
-        return response.openid;
-    }
-
-    /**
-     * 获取AccessToken
-     *
-     * @return 访问令牌
-     */
-    private AccessToken getAccessToken() {
-        if (accessToken != null && accessToken.expiresIn - System.currentTimeMillis() > 60000) return accessToken;
-        String requestURL = String.format("%s%s", WECHAT_BASE_URL, WECHAT_PATH_TOKEN);
-        Map<String, Object> paramMap = new HashMap<>();
-        paramMap.put(PARAM_KEY_APP_ID, appId);
-        paramMap.put(PARAM_KEY_APP_SECRET, appSecret);
-        paramMap.put(PARAM_KEY_GRANT_TYPE, GRANT_TYPE_CLIENT_CREDENTIAL);
-        HttpRequest httpRequest = HttpRequest.buildGetRequest(requestURL, paramMap);
-        String body = HTTPExecutor.execute(httpRequest);
-        if (StringUtils.isEmpty(body)) throw new InternalServerErrorException("获取AccessToken失败");
-        accessToken = JSON.parseObject(body, AccessToken.class);
-        accessToken.expiresIn = System.currentTimeMillis() + accessToken.expiresIn * 1000L;
-        return accessToken;
     }
 }
