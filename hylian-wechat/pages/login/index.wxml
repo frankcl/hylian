@@ -2,11 +2,6 @@
 <view class="container">
   <image class="logo" src="/images/logo_blue.jpg"></image>
   <block wx:if="{{ registered }}">
-    <checkbox-group bindchange="onCheckboxChange">
-      <checkbox wx:for="{{ items }}" wx:key="{{ item.name }}" value="{{ item.name }}" checked="{{ item.checked }}">
-        {{ item.name }}
-      </checkbox>
-    </checkbox-group>
     <button class="button-login" loading="{{ showLoading }}" bind:tap="authorize">授权登录</button>
   </block>
   <block wx:else>
@@ -18,13 +13,6 @@
         <view class="nickname-wrapper">
           <text class="nickname-label">昵称</text>
           <input type="nickname" class="nickname-input" placeholder="请输入昵称" bind:change="onInputChange" />
-        </view>
-        <view class="notice-wrapper">
-          <checkbox-group bindchange="onCheckboxChange">
-            <checkbox wx:for="{{ items }}" wx:key="{{ item.name }}" value="{{ item.name }}" checked="{{ item.checked }}">
-              {{ item.name }}
-            </checkbox>
-          </checkbox-group>
         </view>
         <button class="button-login" loading="{{ showLoading }}" bind:tap="register">注册</button>
       </view>

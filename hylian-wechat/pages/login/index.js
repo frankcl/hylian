@@ -10,7 +10,6 @@ Page({
     canUseGetUserProfile: wx.canIUse('getUserProfile'),
     canUseNicknameComp: wx.canIUse('input.type.nickname'),
     avatarUrl: defaultAvatarUrl,
-    items: [{ name: '订阅消息通知', checked: false }],
     nickName: ''
   },
   onLoad(options) {
@@ -37,10 +36,6 @@ Page({
   onInputChange(e) {
     this.setData({ nickName: e.detail.value })
   },
-  onCheckboxChange(e) {
-    this.data.items[0].checked = e.detail.value.length === 1
-    if (this.data.items[0].checked) this.subscribeMessage()
-  },
   isRegister() {
     const currentPage = this
     wx.login({
@@ -58,15 +53,6 @@ Page({
       }
     })
   },
-  subscribeMessage() {
-    wx.requestSubscribeMessage({
-      tmplIds: [
-        'B4E0XRqlSC3Nnc70NPTDxHAUVZl-iAPmvAZh-x2DvNs', 
-        '8BQJJagGrk2G8bwUZJ0p4v8xr3uXpCyut-B1U2pHAVw'
-      ],
-      success (res) {}
-    })
-  }, 
   registerWithUserProfile() {
     const currentPage = this
     wx.getUserProfile({
@@ -115,27 +101,35 @@ Page({
     }
     const currentPage = this
     this.setData({ showLoading: true })
-    wx.login({
-      success: res => {
-        wx.request({
-          url: app.globalData.serverBaseURL + '/api/wechat/user/register',
-          method: 'POST',
-          data: {
-            key: currentPage.data.key,
-            code: res.code,
-            user: {
-              nickName: currentPage.data.nickName,
-              avatarUrl: currentPage.data.avatarUrl
-            }
-          },
+    wx.requestSubscribeMessage({
+      tmplIds: [
+        'B4E0XRqlSC3Nnc70NPTDxHAUVZl-iAPmvAZh-x2DvNs', 
+        '8BQJJagGrk2G8bwUZJ0p4v8xr3uXpCyut-B1U2pHAVw',
+      ],
+      success (res) {
+        wx.login({
           success: res => {
-            currentPage.setData({ showLoading: false })
-            const serverResponse = res.data
-            app.handleServerResponse(serverResponse, '注册成功', '注册失败：' + serverResponse.message)
-          },
-          fail: error => {
-            currentPage.setData({ showLoading: false })
-            app.handleServerError(error)
+            wx.request({
+              url: app.globalData.serverBaseURL + '/api/wechat/user/register',
+              method: 'POST',
+              data: {
+                key: currentPage.data.key,
+                code: res.code,
+                user: {
+                  nickName: currentPage.data.nickName,
+                  avatarUrl: currentPage.data.avatarUrl
+                }
+              },
+              success: res => {
+                currentPage.setData({ showLoading: false })
+                const serverResponse = res.data
+                app.handleServerResponse(serverResponse, '注册成功', '注册失败：' + serverResponse.message)
+              },
+              fail: error => {
+                currentPage.setData({ showLoading: false })
+                app.handleServerError(error)
+              }
+            })
           }
         })
       }

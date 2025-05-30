@@ -5,7 +5,7 @@ page {
   flex-direction: column;
 }
 .button-login {
-  margin-top: 100rpx;
+  margin-top: 200rpx;
   padding: 10px;
   background-color: #2d557c;
   color: #ffffff;
@@ -17,7 +17,7 @@ page {
   align-items: center;
   color: #aaaaaa;
   width: 80%;
-  height: 80%;
+  height: 65%;
 }
 .avatar-wrapper {
   padding: 0;
@@ -45,11 +45,4 @@ page {
 }
 .nickname-input {
   flex: 1;
-}
-.notice-wrapper {
-  display: flex;
-  justify-content: center;
-  width: 100%;
-  margin-top: 50px;
-  color: black;
 }
