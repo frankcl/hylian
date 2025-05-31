@@ -39,7 +39,7 @@ public class WechatServiceImpl implements WechatService {
     private static final Logger logger = LoggerFactory.getLogger(WechatServiceImpl.class);
 
     private static final String WECHAT_BASE_URL = "https://api.weixin.qq.com/";
-    private static final String WECHAT_PATH_TOKEN = "cgi-bin/token";
+    private static final String WECHAT_PATH_TOKEN = "cgi-bin/stable_token";
     private static final String WECHAT_PATH_WXA_CODE = "wxa/getwxacodeunlimit";
     private static final String WECHAT_PATH_CODE_TO_SESSION = "sns/jscode2session";
     private static final String WECHAT_PATH_SEND_MESSAGE = "cgi-bin/message/subscribe/send";
@@ -107,7 +107,7 @@ public class WechatServiceImpl implements WechatService {
         paramMap.put(PARAM_KEY_APP_ID, appId);
         paramMap.put(PARAM_KEY_APP_SECRET, appSecret);
         paramMap.put(PARAM_KEY_GRANT_TYPE, GRANT_TYPE_CLIENT_CREDENTIAL);
-        HttpRequest httpRequest = HttpRequest.buildGetRequest(requestURL, paramMap);
+        HttpRequest httpRequest = HttpRequest.buildPostRequest(requestURL, RequestFormat.JSON, paramMap);
         String body = HTTPExecutor.execute(httpRequest);
         if (StringUtils.isEmpty(body)) throw new InternalServerErrorException("获取AccessToken失败");
         accessToken = JSON.parseObject(body, AccessToken.class);
