@@ -38,7 +38,7 @@ const update = async () => {
 <template>
   <el-dialog v-model="open" @close="emits('close')" align-center show-close>
     <hylian-card title="修改密码">
-      <el-form ref="form" label-width="80px" label-position="top" :model="passwordForm" :rules="formRules">
+      <el-form ref="form" label-width="100px" label-position="top" :model="passwordForm" :rules="formRules">
         <el-form-item label="原始密码" prop="password">
           <template #label>
             <span class="d-flex align-items-center">
