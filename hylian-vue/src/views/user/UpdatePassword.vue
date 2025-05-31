@@ -1,7 +1,7 @@
 <script setup>
 import { IconArrowBackUp, IconEdit, IconHelp } from '@tabler/icons-vue'
 import { reactive, useTemplateRef } from 'vue'
-import { ElButton, ElDialog, ElForm, ElFormItem, ElInput } from 'element-plus'
+import { ElButton, ElDialog, ElForm, ElFormItem, ElInput, ElTooltip } from 'element-plus'
 import { useUserStore } from '@/store'
 import { appFormRules } from '@/views/user/common'
 import { asyncUpdatePassword } from '@/common/AsyncRequest'
