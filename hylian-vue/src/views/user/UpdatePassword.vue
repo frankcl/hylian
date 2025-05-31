@@ -41,7 +41,7 @@ const update = async () => {
       <el-form ref="form" label-width="100px" label-position="top" :model="passwordForm" :rules="formRules">
         <el-form-item label="原始密码" prop="password">
           <template #label>
-            <span class="d-flex align-items-center">
+            <span class="d-flex-inline align-items-center">
               <span>原始密码</span>
               <el-tooltip effect="dark" placement="top" content="系统初始密码：123456">
                 <IconHelp size="12" class="ml-2" />
