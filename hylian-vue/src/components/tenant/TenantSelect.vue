@@ -5,7 +5,8 @@ import { asyncGetTenants } from '@/common/AsyncRequest'
 
 const props = defineProps({
   placeholder: { default: '全部' },
-  clearable: { default: true }
+  clearable: { default: true },
+  disable: { default: false }
 })
 const emits = defineEmits(['change'])
 const tenantId = defineModel()
@@ -24,7 +25,7 @@ onMounted(async() => {
 </script>
 
 <template>
-  <el-select v-model="tenantId" @change="handleChange" filterable
+  <el-select v-model="tenantId" @change="handleChange" filterable :disabled="disable"
              :clearable="props.clearable" :placeholder="props.placeholder">
     <el-option v-for="tenant in tenants" :key="tenant.id" :label="tenant.name" :value="tenant.id" />
   </el-select>

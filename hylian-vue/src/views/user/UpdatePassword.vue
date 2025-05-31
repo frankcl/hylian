@@ -1,5 +1,5 @@
 <script setup>
-import { IconArrowBackUp, IconEdit } from '@tabler/icons-vue'
+import { IconArrowBackUp, IconEdit, IconHelp } from '@tabler/icons-vue'
 import { reactive, useTemplateRef } from 'vue'
 import { ElButton, ElDialog, ElForm, ElFormItem, ElInput } from 'element-plus'
 import { useUserStore } from '@/store'
@@ -40,6 +40,14 @@ const update = async () => {
     <hylian-card title="修改密码">
       <el-form ref="form" label-width="80px" label-position="top" :model="passwordForm" :rules="formRules">
         <el-form-item label="原始密码" prop="password">
+          <template #label>
+            <span class="d-flex align-items-center">
+              <span>原始密码</span>
+              <el-tooltip effect="dark" placement="top" content="系统初始密码：123456">
+                <IconHelp size="12" class="ml-2" />
+              </el-tooltip>
+            </span>
+          </template>
           <el-input type="password" v-model="passwordForm.password" clearable show-password />
         </el-form-item>
         <el-form-item label="新密码" prop="new_password">

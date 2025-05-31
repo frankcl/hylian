@@ -4,6 +4,7 @@ import { ref, useTemplateRef, watch } from 'vue'
 import {
   ElButton, ElCol, ElDialog, ElForm, ElFormItem, ElInput, ElRow
 } from 'element-plus'
+import { useUserStore } from '@/store'
 import {
   asyncForceRefresh,
   asyncGetUser,
@@ -11,7 +12,7 @@ import {
   asyncRemoveAvatar,
   asyncUpdateUser
 } from '@/common/AsyncRequest'
-import {asyncExecuteAfterConfirming, ERROR, showMessage, SUCCESS} from '@/common/Feedback'
+import { asyncExecuteAfterConfirming, ERROR, showMessage, SUCCESS } from '@/common/Feedback'
 import AvatarUpload from '@/components/user/AvatarUpload'
 import TenantSelect from '@/components/tenant/TenantSelect'
 import { appFormRules } from '@/views/user/common'
@@ -20,6 +21,7 @@ import HylianCard from '@/components/data/Card'
 const props = defineProps(['id'])
 const emits = defineEmits(['close'])
 const open = defineModel()
+const userStore = useUserStore()
 const formRef = useTemplateRef('form')
 const user = ref({})
 
@@ -73,7 +75,7 @@ watch(() => [props.id, open.value], async () => {
               <el-input v-model.trim="user.name" clearable></el-input>
             </el-form-item>
             <el-form-item label="所属租户" prop="tenant_id">
-              <tenant-select v-model="user.tenant_id" placeholder="请选择" />
+              <tenant-select v-model="user.tenant_id" placeholder="请选择" :disable="!userStore.superAdmin" />
             </el-form-item>
             <el-form-item>
               <el-button type="primary" @click="update">
