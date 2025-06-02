@@ -1,5 +1,7 @@
 # Hylian
 
+* 产品地址：https://hylian.manong.xin
+
 ## 特点
 
 * 基于oauth的单点登录
