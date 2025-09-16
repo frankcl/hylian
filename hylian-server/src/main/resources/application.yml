@@ -22,7 +22,7 @@ server:
   ssl:
     key-store: classpath:hylian.manong.xin.jks
     key-store-type: jks
-    key-password: 3earfy8r
+    key-password: hq3h8yao
   jetty:
     threads:
       acceptors: 2
