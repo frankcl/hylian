@@ -1,6 +1,7 @@
 package xin.manong.hylian.server.service;
 
 import xin.manong.hylian.server.wechat.AccessToken;
+import xin.manong.hylian.server.wechat.QRCodeGenerateRequest;
 
 import java.util.Map;
 
@@ -16,10 +17,10 @@ public interface WechatService {
      * 生成小程序码
      *
      * @param codeKey 小程序码key
-     * @param pageURL 小程序页面URL
+     * @param request 小程序码生成请求
      * @return 小程序码图片
      */
-    String generateMiniCode(String codeKey, String pageURL);
+    String generateMiniCode(String codeKey, QRCodeGenerateRequest request);
 
     /**
      * 获取AccessToken

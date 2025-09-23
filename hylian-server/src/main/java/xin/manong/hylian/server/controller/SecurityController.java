@@ -20,7 +20,6 @@ import xin.manong.hylian.server.model.Pager;
 import xin.manong.hylian.server.model.UserProfile;
 import xin.manong.hylian.client.util.CookieUtils;
 import xin.manong.hylian.client.util.SessionUtils;
-import xin.manong.hylian.server.service.impl.WechatServiceImpl;
 import xin.manong.hylian.server.service.request.UserSearchRequest;
 import xin.manong.hylian.server.common.Constants;
 import xin.manong.hylian.server.service.*;
@@ -101,13 +100,29 @@ public class SecurityController {
                             @Context HttpServletRequest httpRequest,
                             @Context HttpServletResponse httpResponse) throws IOException {
         appService.verifyApp(appId, appSecret);
-        String ticket = CookieUtils.getCookie(httpRequest, Constants.COOKIE_TICKET);
+        String ticket = getTicket(httpRequest);
         verifyTicket(ticket);
         String code = codeService.createCode(ticket);
         boolean hasQuery = StringUtils.isNotEmpty(new URL(redirectURL).getQuery());
         httpResponse.sendRedirect(String.format("%s%s%s=%s", redirectURL,
                 hasQuery ? "&" : "?", Constants.PARAM_CODE, code));
         return code;
+    }
+
+    /**
+     * 从HTTP请求中获取ticket
+     * 1. 从cookie获取
+     * 2. 从HTTP请求头Authorization获取
+     *
+     * @param httpRequest HTTP请求
+     * @return 票据
+     */
+    private String getTicket(HttpServletRequest httpRequest) {
+        String ticket = CookieUtils.getCookie(httpRequest, Constants.COOKIE_TICKET);
+        if (StringUtils.isNotEmpty(ticket)) return ticket;
+        String v = httpRequest.getHeader(Constants.HEADER_AUTHORIZATION);
+        if (StringUtils.isEmpty(v) || !v.startsWith("Bearer ")) return null;
+        return v.substring("Bearer ".length());
     }
 
     /**
@@ -333,7 +348,7 @@ public class SecurityController {
                           @Context HttpServletRequest httpRequest,
                           @Context HttpServletResponse httpResponse) {
         appService.verifyApp(appId, appSecret);
-        String ticket = CookieUtils.getCookie(httpRequest, Constants.COOKIE_TICKET);
+        String ticket = getTicket(httpRequest);
         if (StringUtils.isEmpty(ticket)) {
             CookieUtils.removeCookie(Constants.COOKIE_TOKEN, "/", serverConfig.domain, httpResponse);
             logger.error("Ticket is not found from cookies");
@@ -363,7 +378,7 @@ public class SecurityController {
     public boolean passwordLogin(@RequestBody LoginRequest request,
                                  @Context HttpServletRequest httpRequest,
                                  @Context HttpServletResponse httpResponse) {
-        String ticket = CookieUtils.getCookie(httpRequest, Constants.COOKIE_TICKET);
+        String ticket = getTicket(httpRequest);
         if (StringUtils.isNotEmpty(ticket)) {
             logger.info("Logged in");
             return true;
@@ -392,8 +407,10 @@ public class SecurityController {
         userProfile.setId(RandomID.build()).setUserId(user.id);
         ticket = ticketService.buildTicket(userProfile, Constants.COOKIE_TICKET_EXPIRED_TIME_MS);
         ticketService.putTicket(userProfile.id, ticket);
-        CookieUtils.setCookie(Constants.COOKIE_TICKET, ticket, "/", serverConfig.domain, true, httpRequest, httpResponse);
-        CookieUtils.setCookie(Constants.COOKIE_TOKEN, RandomID.build(), "/", serverConfig.domain, false, httpRequest, httpResponse);
+        CookieUtils.setCookie(Constants.COOKIE_TICKET, ticket, "/",
+                serverConfig.domain, true, httpRequest, httpResponse);
+        CookieUtils.setCookie(Constants.COOKIE_TOKEN, RandomID.build(), "/",
+                serverConfig.domain, false, httpRequest, httpResponse);
         return true;
     }
 
@@ -422,7 +439,7 @@ public class SecurityController {
         boolean success = userService.add(user);
         if (success) {
             NoticeNewUser noticeNewUser = new NoticeNewUser(request.name, "普通");
-            wechatService.notifyAdmin(WechatServiceImpl.TEMPLATE_ID_NEW_USER, noticeNewUser.toMap());
+            wechatService.notifyAdmin(serverConfig.wechatNoticeNewUser, noticeNewUser.toMap());
         }
         return success;
     }

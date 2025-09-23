@@ -42,3 +42,5 @@ app:
     default-tenant: e9c2227a9d7da6c1241b8c6782061b7f
     wx-version: develop
     mini-version: developer
+    wechat-notice-new-user: 8BQJJagGrk2G8bwUZJ0p4v8xr3uXpCyut-B1U2pHAVw
+    wechat-notice-user-audit: B4E0XRqlSC3Nnc70NPTDxHAUVZl-iAPmvAZh-x2DvNs

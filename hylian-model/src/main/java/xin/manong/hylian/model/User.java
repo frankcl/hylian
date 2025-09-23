@@ -66,6 +66,88 @@ public class User extends BaseModel {
     public String name;
 
     /**
+     * 性别
+     * 男：true
+     * 女：false
+     */
+    @TableField(value = "gender")
+    @JSONField(name = "gender")
+    @JsonProperty("gender")
+    public Boolean gender;
+
+    /**
+     * 邮箱
+     */
+    @TableField(value = "email")
+    @JSONField(name = "email")
+    @JsonProperty("email")
+    public String email;
+
+    /**
+     * 公司
+     */
+    @TableField(value = "company")
+    @JSONField(name = "company")
+    @JsonProperty("company")
+    public String company;
+
+    /**
+     * 省
+     */
+    @TableField(value = "province")
+    @JSONField(name = "province")
+    @JsonProperty("province")
+    public String province;
+
+    /**
+     * 市
+     */
+    @TableField(value = "city")
+    @JSONField(name = "city")
+    @JsonProperty("city")
+    public String city;
+
+    /**
+     * 区
+     */
+    @TableField(value = "district")
+    @JSONField(name = "district")
+    @JsonProperty("district")
+    public String district;
+
+    /**
+     * 地址
+     */
+    @TableField(value = "address")
+    @JSONField(name = "address")
+    @JsonProperty("address")
+    public String address;
+
+    /**
+     * 行业
+     */
+    @TableField(value = "industry")
+    @JSONField(name = "industry")
+    @JsonProperty("industry")
+    public String industry;
+
+    /**
+     * 职位
+     */
+    @TableField(value = "position")
+    @JSONField(name = "position")
+    @JsonProperty("position")
+    public String position;
+
+    /**
+     * 手机号
+     */
+    @TableField(value = "phone")
+    @JSONField(name = "phone")
+    @JsonProperty("phone")
+    public String phone;
+
+    /**
      * 租户ID
      */
     @TableField(value = "tenant_id")

@@ -58,8 +58,6 @@ public class WechatController extends WatchValueDisposableBean {
 
     private static final Logger logger = LoggerFactory.getLogger(WechatController.class);
 
-    private static final String WX_LOGIN_PAGE = "pages/login/index";
-    private static final String WX_BIND_PAGE = "pages/bind/index";
     private static final String DEFAULT_PASSWORD = "123456";
 
     @Resource
@@ -90,8 +88,7 @@ public class WechatController extends WatchValueDisposableBean {
         request.check();
         String codeKey = AppSecretUtils.buildSecret(12);
         while (qrCodeService.getByKey(codeKey) != null) codeKey = AppSecretUtils.buildSecret(12);
-        String image = wechatService.generateMiniCode(codeKey,
-                request.category == QRCodeGenerateRequest.CATEGORY_LOGIN ? WX_LOGIN_PAGE : WX_BIND_PAGE);
+        String image = wechatService.generateMiniCode(codeKey, request);
         QRCode qrCode = new QRCode();
         qrCode.key = codeKey;
         qrCode.status = QRCode.STATUS_WAIT;
@@ -199,6 +196,35 @@ public class WechatController extends WatchValueDisposableBean {
     }
 
     /**
+     * 微信用户注册登录
+     *
+     * @param request 注册登录请求
+     * @param httpRequest HTTP请求
+     * @param httpResponse HTTP响应
+     * @return 成功返回true，否则返回false
+     */
+    @POST
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("user/registerLogin")
+    @PostMapping("user/registerLogin")
+    public boolean registerLogin(@RequestBody RegisterLoginRequest request,
+                                 @Context HttpServletRequest httpRequest,
+                                 @Context HttpServletResponse httpResponse) {
+        if (request == null) throw new BadRequestException("微信注册登录请求为空");
+        request.check();
+        String openid = wechatService.getOpenid(request.code);
+        User user = userService.getByWxOpenid(openid);
+        if (user == null) {
+            WechatUser wechatUser = new WechatUser();
+            wechatUser.nickName = "微信用户";
+            user = addWechatUser(wechatUser, openid, false);
+        }
+        afterLogin(user, httpRequest, httpResponse);
+        return true;
+    }
+
+    /**
      * 微信账号注册
      *
      * @param request 授权认证请求
@@ -219,11 +245,11 @@ public class WechatController extends WatchValueDisposableBean {
             qrCode.openid = openid;
             User user = userService.getByWxOpenid(openid);
             if (user != null) throw new IllegalStateException("微信账号已注册");
-            addWechatUser(request.user, openid);
+            addWechatUser(request.user, openid, true);
             qrCode.status = QRCode.STATUS_REGISTERED;
             if (!qrCodeService.updateByKey(qrCode)) logger.warn("Update QRCode register status failed");
             NoticeNewUser noticeNewUser = new NoticeNewUser(request.user.nickName, "微信");
-            wechatService.notifyAdmin(WechatServiceImpl.TEMPLATE_ID_NEW_USER, noticeNewUser.toMap());
+            wechatService.notifyAdmin(serverConfig.wechatNoticeNewUser, noticeNewUser.toMap());
             return true;
         } catch (Exception e) {
             qrCode.status = QRCode.STATUS_ERROR;
@@ -300,14 +326,7 @@ public class WechatController extends WatchValueDisposableBean {
             User user = userService.getByWxOpenid(qrCode.openid);
             if (user == null) throw new IllegalStateException("用户未绑定微信账号");
             if (user.disabled) throw new IllegalStateException("账号尚未审核，请联系管理员");
-            UserProfile userProfile = new UserProfile();
-            userProfile.setId(RandomID.build()).setUserId(user.id);
-            String ticket = ticketService.buildTicket(userProfile, Constants.COOKIE_TICKET_EXPIRED_TIME_MS);
-            ticketService.putTicket(userProfile.id, ticket);
-            CookieUtils.setCookie(Constants.COOKIE_TICKET, ticket, "/",
-                    serverConfig.domain, true, httpRequest, httpResponse);
-            CookieUtils.setCookie(Constants.COOKIE_TOKEN, RandomID.build(), "/",
-                    serverConfig.domain, false, httpRequest, httpResponse);
+            afterLogin(user, httpRequest, httpResponse);
             return true;
         } catch (Exception e) {
             qrCode.status = QRCode.STATUS_ERROR;
@@ -319,12 +338,35 @@ public class WechatController extends WatchValueDisposableBean {
     }
 
     /**
+     * 登录后处理
+     *
+     * @param user 登录用户
+     * @param httpRequest HTTP请求
+     * @param httpResponse HTTP响应
+     */
+    private void afterLogin(User user,
+                            HttpServletRequest httpRequest,
+                            HttpServletResponse httpResponse) {
+        UserProfile userProfile = new UserProfile();
+        userProfile.setId(RandomID.build()).setUserId(user.id);
+        String ticket = ticketService.buildTicket(userProfile, Constants.COOKIE_TICKET_EXPIRED_TIME_MS);
+        ticketService.putTicket(userProfile.id, ticket);
+        CookieUtils.setCookie(Constants.COOKIE_TICKET, ticket, "/",
+                serverConfig.domain, true, httpRequest, httpResponse);
+        CookieUtils.setCookie(Constants.COOKIE_TOKEN, RandomID.build(), "/",
+                serverConfig.domain, false, httpRequest, httpResponse);
+        httpResponse.addHeader(Constants.HEADER_TICKET, ticket);
+        httpResponse.addHeader(Constants.HEADER_SESSION_ID, httpRequest.getSession().getId());
+    }
+
+    /**
      * 添加微信用户信息
      *
      * @param wechatUser 微信用户信息
      * @param openId 微信小程序openId
+     * @return 新用户信息
      */
-    private void addWechatUser(WechatUser wechatUser, String openId) {
+    private User addWechatUser(WechatUser wechatUser, String openId, boolean disabled) {
         if (wechatUser == null) throw new BadRequestException("微信用户信息缺失");
         User user = new User();
         user.id = RandomID.build();
@@ -332,12 +374,13 @@ public class WechatController extends WatchValueDisposableBean {
         user.name = wechatUser.nickName;
         user.tenantId = serverConfig.defaultTenant;
         user.password = DigestUtils.md5Hex(DEFAULT_PASSWORD);
-        user.disabled = true;
+        user.disabled = disabled;
         user.wxOpenid = openId;
         user.registerMode = User.REGISTER_MODE_WECHAT;
         String avatarURL = downloadAvatar(wechatUser);
         if (StringUtils.isNotEmpty(avatarURL)) user.avatar = avatarURL;
         if (!userService.add(user)) throw new InternalServerErrorException("添加微信用户失败");
+        return user;
     }
 
     /**

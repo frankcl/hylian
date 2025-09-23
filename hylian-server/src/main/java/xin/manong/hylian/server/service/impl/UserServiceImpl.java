@@ -312,7 +312,7 @@ public class UserServiceImpl implements UserService {
             openid = openid.substring(WechatServiceImpl.OPENID_PREFIX.length());
         }
         NoticeUserAudit noticeUserAudit = new NoticeUserAudit(user.name, status);
-        if (!wechatService.sendMessage(openid, WechatServiceImpl.TEMPLATE_ID_USER_AUDIT,
+        if (!wechatService.sendMessage(openid, serverConfig.wechatNoticeUserAudit,
                 noticeUserAudit.toMap())) {
             logger.warn("Send user audit notice failed for user:{}", user.name);
         }

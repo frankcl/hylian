@@ -17,6 +17,7 @@ import xin.manong.hylian.server.service.AppUserService;
 import xin.manong.hylian.server.service.WechatService;
 import xin.manong.hylian.server.wechat.AccessToken;
 import xin.manong.hylian.server.wechat.MessageResponse;
+import xin.manong.hylian.server.wechat.QRCodeGenerateRequest;
 import xin.manong.weapon.base.http.HttpRequest;
 import xin.manong.weapon.base.http.RequestFormat;
 import xin.manong.weapon.spring.boot.etcd.WatchValue;
@@ -63,8 +64,6 @@ public class WechatServiceImpl implements WechatService {
     private static final String GRANT_TYPE_AUTHORIZATION_CODE = "authorization_code";
     private static final String WX_SCENE_FORMAT = "key=%s";
     public static final String OPENID_PREFIX = "openid_";
-    public static final String TEMPLATE_ID_USER_AUDIT = "B4E0XRqlSC3Nnc70NPTDxHAUVZl-iAPmvAZh-x2DvNs";
-    public static final String TEMPLATE_ID_NEW_USER = "8BQJJagGrk2G8bwUZJ0p4v8xr3uXpCyut-B1U2pHAVw";
 
     private AccessToken accessToken;
     @Resource
@@ -79,8 +78,10 @@ public class WechatServiceImpl implements WechatService {
     private String appSecret;
 
     @Override
-    public String generateMiniCode(String codeKey, String pageURL) {
+    public String generateMiniCode(String codeKey, QRCodeGenerateRequest request) {
         AccessToken accessToken = getAccessToken();
+        String pageURL = request.category == QRCodeGenerateRequest.CATEGORY_LOGIN ?
+                serverConfig.wechatPageLogin : serverConfig.wechatPageBind;
         String requestURL = String.format("%s%s?%s=%s", WECHAT_BASE_URL, WECHAT_PATH_WXA_CODE,
                 PARAM_KEY_ACCESS_TOKEN, accessToken.token);
         Map<String, Object> requestBody = new HashMap<>();
