@@ -82,7 +82,6 @@ public class HylianGuard extends CookieSweeper implements Filter {
                 sweepCookies(httpRequest, httpResponse);
                 throw e;
             } finally {
-                httpResponse.addHeader(Constants.HEADER_SESSION_ID, httpRequest.getSession().getId());
                 ContextManager.removeUser();
                 ContextManager.sweepContext();
             }
