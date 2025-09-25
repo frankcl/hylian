@@ -26,6 +26,9 @@ public class Constants {
     public static final String COOKIE_TICKET = "TICKET";
     public static final String COOKIE_TOKEN = "TOKEN";
 
+    public static final String HEADER_AUTHORIZATION = "Authorization";
+    public static final String HEADER_TICKET = "TICKET";
+
     public static final String PARAM_CODE = "code";
 
     public static final String JWT_HEADER_ALGORITHM = "alg";

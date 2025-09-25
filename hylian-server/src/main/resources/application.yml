@@ -43,6 +43,7 @@ hylian:
         - api/health/*
         - api/captcha/*
         - api/ws/qrcode
+        - error
         - favicon.ico
 
 app:

@@ -392,6 +392,33 @@ public class UserController {
     }
 
     /**
+     * 更新头像
+     *
+     * @param fileDetail 文件信息
+     * @param fileInputStream 文件流
+     * @return 成功返回true，否则返回false
+     */
+    @POST
+    @Path("updateAvatar")
+    @PostMapping("updateAvatar")
+    @Consumes(MediaType.MULTIPART_FORM_DATA)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Boolean updateAvatar(@FormDataParam("file") FormDataContentDisposition fileDetail,
+                                @FormDataParam("file") final InputStream fileInputStream,
+                                @Context HttpServletRequest httpRequest) {
+        User user = ContextManager.getUser();
+        String ossURL = AvatarUtils.uploadAvatarWithoutSign(fileDetail, fileInputStream, ossClient, serverConfig);
+        User updateUser = new User();
+        updateUser.id = user.id;
+        updateUser.avatar = ossURL;
+        if (userService.update(updateUser)) {
+            SessionUtils.setRefreshUser(httpRequest);
+            return true;
+        }
+        return false;
+    }
+
+    /**
      * 填充并转换视图层用户信息
      *
      * @param user 用户信息

@@ -30,6 +30,10 @@ public class ServerConfig implements InitializingBean {
     public String defaultTenant;
     public String wxVersion = "develop";
     public String miniVersion = "developer";
+    public String wechatPageLogin = "pages/login/index";
+    public String wechatPageBind = "pages/bind/index";
+    public String wechatNoticeUserAudit;
+    public String wechatNoticeNewUser;
     public JWTConfig jwtConfig;
 
     /**

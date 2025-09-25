@@ -1,6 +1,7 @@
 package xin.manong.hylian.server.wechat;
 
 import com.alibaba.fastjson.annotation.JSONField;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
@@ -9,6 +10,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  * @author frankcl
  * @date 2024-11-04 11:15:43
  */
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class AccessToken {
 
     /**

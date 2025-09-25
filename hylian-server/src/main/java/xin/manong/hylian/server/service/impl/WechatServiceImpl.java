@@ -17,6 +17,8 @@ import xin.manong.hylian.server.service.AppUserService;
 import xin.manong.hylian.server.service.WechatService;
 import xin.manong.hylian.server.wechat.AccessToken;
 import xin.manong.hylian.server.wechat.MessageResponse;
+import xin.manong.hylian.server.wechat.PhoneResponse;
+import xin.manong.hylian.server.wechat.QRCodeGenerateRequest;
 import xin.manong.weapon.base.http.HttpRequest;
 import xin.manong.weapon.base.http.RequestFormat;
 import xin.manong.weapon.spring.boot.etcd.WatchValue;
@@ -42,11 +44,13 @@ public class WechatServiceImpl implements WechatService {
     private static final String WECHAT_PATH_TOKEN = "cgi-bin/stable_token";
     private static final String WECHAT_PATH_WXA_CODE = "wxa/getwxacodeunlimit";
     private static final String WECHAT_PATH_CODE_TO_SESSION = "sns/jscode2session";
+    private static final String WECHAT_PATH_PHONE_NUMBER = "wxa/business/getuserphonenumber";
     private static final String WECHAT_PATH_SEND_MESSAGE = "cgi-bin/message/subscribe/send";
 
     private static final String PARAM_KEY_APP_ID = "appid";
     private static final String PARAM_KEY_APP_SECRET = "secret";
     private static final String PARAM_KEY_JS_CODE = "js_code";
+    private static final String PARAM_KEY_CODE = "code";
     private static final String PARAM_KEY_ACCESS_TOKEN = "access_token";
     private static final String PARAM_KEY_PAGE = "page";
     private static final String PARAM_KEY_SCENE = "scene";
@@ -63,8 +67,6 @@ public class WechatServiceImpl implements WechatService {
     private static final String GRANT_TYPE_AUTHORIZATION_CODE = "authorization_code";
     private static final String WX_SCENE_FORMAT = "key=%s";
     public static final String OPENID_PREFIX = "openid_";
-    public static final String TEMPLATE_ID_USER_AUDIT = "B4E0XRqlSC3Nnc70NPTDxHAUVZl-iAPmvAZh-x2DvNs";
-    public static final String TEMPLATE_ID_NEW_USER = "8BQJJagGrk2G8bwUZJ0p4v8xr3uXpCyut-B1U2pHAVw";
 
     private AccessToken accessToken;
     @Resource
@@ -79,8 +81,10 @@ public class WechatServiceImpl implements WechatService {
     private String appSecret;
 
     @Override
-    public String generateMiniCode(String codeKey, String pageURL) {
+    public String generateMiniCode(String codeKey, QRCodeGenerateRequest request) {
         AccessToken accessToken = getAccessToken();
+        String pageURL = request.category == QRCodeGenerateRequest.CATEGORY_LOGIN ?
+                serverConfig.wechatPageLogin : serverConfig.wechatPageBind;
         String requestURL = String.format("%s%s?%s=%s", WECHAT_BASE_URL, WECHAT_PATH_WXA_CODE,
                 PARAM_KEY_ACCESS_TOKEN, accessToken.token);
         Map<String, Object> requestBody = new HashMap<>();
@@ -128,6 +132,24 @@ public class WechatServiceImpl implements WechatService {
         if (StringUtils.isEmpty(body)) throw new InternalServerErrorException("获取微信小程序openid失败");
         WechatLoginResponse response = JSON.parseObject(body, WechatLoginResponse.class);
         return response.openid;
+    }
+
+    @Override
+    public String getPhoneNumber(String phoneCode) {
+        AccessToken accessToken = getAccessToken();
+        String requestURL = String.format("%s%s?%s=%s", WECHAT_BASE_URL,
+                WECHAT_PATH_PHONE_NUMBER, PARAM_KEY_ACCESS_TOKEN, accessToken.token);
+        Map<String, Object> paramMap = new HashMap<>();
+        paramMap.put(PARAM_KEY_CODE, phoneCode);
+        HttpRequest httpRequest = HttpRequest.buildPostRequest(requestURL, RequestFormat.JSON, paramMap);
+        String body = HTTPExecutor.execute(httpRequest);
+        if (StringUtils.isEmpty(body)) throw new InternalServerErrorException("获取电话号码失败");
+        PhoneResponse response = JSON.parseObject(body, PhoneResponse.class);
+        if (response.code != 0) {
+            logger.error("get phone number failed, code:{}, message:{}", response.code, response.message);
+            return null;
+        }
+        return response.phoneInfo.purePhoneNumber;
     }
 
     @Override

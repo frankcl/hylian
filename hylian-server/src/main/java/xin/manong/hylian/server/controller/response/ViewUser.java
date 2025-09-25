@@ -95,4 +95,66 @@ public class ViewUser implements Serializable {
      */
     @JsonProperty("update_time")
     public Long updateTime;
+
+    /**
+     * 性别
+     * 男：true
+     * 女：false
+     */
+    @JsonProperty("gender")
+    public Boolean gender;
+
+    /**
+     * 邮箱
+     */
+    @JsonProperty("email")
+    public String email;
+
+    /**
+     * 公司
+     */
+    @JsonProperty("company")
+    public String company;
+
+    /**
+     * 省
+     */
+    @JsonProperty("province")
+    public String province;
+
+    /**
+     * 市
+     */
+    @JsonProperty("city")
+    public String city;
+
+    /**
+     * 区
+     */
+    @JsonProperty("district")
+    public String district;
+
+    /**
+     * 地址
+     */
+    @JsonProperty("address")
+    public String address;
+
+    /**
+     * 行业
+     */
+    @JsonProperty("industry")
+    public String industry;
+
+    /**
+     * 职位
+     */
+    @JsonProperty("position")
+    public String position;
+
+    /**
+     * 手机号
+     */
+    @JsonProperty("phone")
+    public String phone;
 }

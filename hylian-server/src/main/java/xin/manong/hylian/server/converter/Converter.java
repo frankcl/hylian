@@ -89,6 +89,16 @@ public class Converter {
         user.tenantId = userRequest.tenantId;
         user.avatar = userRequest.avatar;
         user.disabled = userRequest.disabled;
+        user.address = userRequest.address;
+        user.company = userRequest.company;
+        user.province = userRequest.province;
+        user.city = userRequest.city;
+        user.district = userRequest.district;
+        user.industry = userRequest.industry;
+        user.position = userRequest.position;
+        user.phone = userRequest.phone;
+        user.email = userRequest.email;
+        user.gender = userRequest.gender;
         return user;
     }
 
@@ -289,6 +299,16 @@ public class Converter {
         viewUser.registerMode = user.registerMode;
         viewUser.wxOpenid = user.wxOpenid;
         viewUser.disabled = user.disabled == null || user.disabled;
+        viewUser.address = user.address;
+        viewUser.email = user.email;
+        viewUser.gender = user.gender;
+        viewUser.company = user.company;
+        viewUser.province = user.province;
+        viewUser.city = user.city;
+        viewUser.district = user.district;
+        viewUser.industry = user.industry;
+        viewUser.phone = user.phone;
+        viewUser.position = user.position;
         viewUser.tenant = tenant;
         if (tenant != null) {
             if (!user.tenantId.equals(tenant.id)) {

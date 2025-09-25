@@ -1,7 +1,7 @@
 spring:
   datasource:
-    url: jdbc:mysql://localhost:3306/hylian?useUnicode=true&characterEncoding=utf-8
-    username: root
+    url: jdbc:mysql://rm-bp1jzevz9n51nnybryo.mysql.rds.aliyuncs.com:3306/hylian?useUnicode=true&characterEncoding=utf-8
+    username: frankcl
     password: ${weapon/mysql/password}
     druid:
       public-key: ${weapon/mysql/public-key}
@@ -31,14 +31,17 @@ weapon:
         retry-cnt: 3
 hylian:
   client:
-    appId: 9a478c039ff674264bcacf902ee8b9b2
-    appSecret: 5lewSA3fa
+    appId: f733a689783eee56ad79886de1012699
+    appSecret: oSUf9lwQ
 
 app:
   server:
     aspectLogFile: ./log/aspect/web.log
     oss-region: cn-hangzhou
-    oss-base-directory: prod
+    oss-bucket: lumy
+    oss-base-directory: hylian/prod
     default-tenant: e9c2227a9d7da6c1241b8c6782061b7f
-    wx-version: release
-    mini-version: formal
+    wx-version: develop
+    mini-version: developer
+    wechat-notice-new-user: 8BQJJagGrk2G8bwUZJ0p4v8xr3uXpCyut-B1U2pHAVw
+    wechat-notice-user-audit: B4E0XRqlSC3Nnc70NPTDxHAUVZl-iAPmvAZh-x2DvNs

@@ -66,6 +66,66 @@ public class UserUpdateRequest implements Serializable {
     public Boolean disabled;
 
     /**
+     * 性别
+     */
+    @JsonProperty("gender")
+    public Boolean gender;
+
+    /**
+     * 地址
+     */
+    @JsonProperty("address")
+    public String address;
+
+    /**
+     * 省
+     */
+    @JsonProperty("province")
+    public String province;
+
+    /**
+     * 市
+     */
+    @JsonProperty("city")
+    public String city;
+
+    /**
+     * 区
+     */
+    @JsonProperty("district")
+    public String district;
+
+    /**
+     * 邮箱
+     */
+    @JsonProperty("email")
+    public String email;
+
+    /**
+     * 公司
+     */
+    @JsonProperty("company")
+    public String company;
+
+    /**
+     * 行业
+     */
+    @JsonProperty("industry")
+    public String industry;
+
+    /**
+     * 职位
+     */
+    @JsonProperty("position")
+    public String position;
+
+    /**
+     * 电话号码
+     */
+    @JsonProperty("phone")
+    public String phone;
+
+    /**
      * 检测有效性
      * 无效信息抛出异常
      */
@@ -76,7 +136,11 @@ public class UserUpdateRequest implements Serializable {
         }
         if (StringUtils.isEmpty(name) && StringUtils.isEmpty(tenantId) &&
                 StringUtils.isEmpty(username) && StringUtils.isEmpty(avatar) &&
-                disabled == null) {
+                StringUtils.isEmpty(province) && StringUtils.isEmpty(city) &&
+                StringUtils.isEmpty(district) && StringUtils.isEmpty(email) &&
+                StringUtils.isEmpty(company) && StringUtils.isEmpty(industry) &&
+                StringUtils.isEmpty(position) && StringUtils.isEmpty(phone) &&
+                StringUtils.isEmpty(address) && disabled == null && gender == null) {
             logger.error("User info is empty");
             throw new BadRequestException("用户信息为空");
         }
