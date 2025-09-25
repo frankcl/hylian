@@ -2,9 +2,12 @@ package xin.manong.hylian.client.core;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.ws.rs.ClientErrorException;
+import jakarta.ws.rs.core.Response;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import xin.manong.hylian.client.util.CookieUtils;
 import xin.manong.hylian.client.util.HTTPUtils;
 import xin.manong.hylian.client.util.SessionUtils;
 import xin.manong.hylian.model.Tenant;
@@ -68,6 +71,16 @@ public class HylianShield {
         if (StringUtils.isNotEmpty(token)) {
             if (refreshUser(token, httpRequest) && refreshToken(token, httpRequest)) return true;
             logger.warn("Token is expired");
+        } else {
+            String authorization = httpRequest.getHeader(Constants.HEADER_AUTHORIZATION);
+            String sessionId = SessionUtils.getSessionID(httpRequest);
+            String cookieSessionId = CookieUtils.getCookie(httpRequest, Constants.HEADER_SESSION_ID);
+            if (StringUtils.isNotEmpty(authorization) && !Objects.equals(sessionId, cookieSessionId)) {
+                logger.error("Cookie session id is expired, need refresh");
+                ClientErrorException e = new ClientErrorException("Need refresh session", Response.Status.CONFLICT);
+                httpRequest.getServletContext().setAttribute(Constants.ATTRIBUTE_EXCEPTION, e);
+                throw e;
+            }
         }
         SessionUtils.removeResources(httpRequest);
         String code = httpRequest.getParameter(Constants.PARAM_CODE);

@@ -36,4 +36,11 @@ public class WechatUser implements Serializable {
     @JsonProperty("avatarUrl")
     @JSONField(name = "avatarUrl")
     public String avatar;
+
+    /**
+     * 电话号码
+     */
+    @JsonProperty("phone")
+    @JSONField(name = "phone")
+    public String phone;
 }

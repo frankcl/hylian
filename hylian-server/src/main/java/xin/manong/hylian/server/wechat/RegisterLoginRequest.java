@@ -36,6 +36,12 @@ public class RegisterLoginRequest implements Serializable {
     public String code;
 
     /**
+     * 微信小程序电话授权码
+     */
+    @JsonProperty("phone_code")
+    public String phoneCode;
+
+    /**
      * 检测有效性
      * 无效信息抛出异常
      */

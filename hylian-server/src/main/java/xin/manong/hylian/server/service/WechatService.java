@@ -37,6 +37,14 @@ public interface WechatService {
     String getOpenid(String code);
 
     /**
+     * 获取手机号
+     *
+     * @param phoneCode 授权码
+     * @return 手机号
+     */
+    String getPhoneNumber(String phoneCode);
+
+    /**
      * 发送通知消息
      *
      * @param openid 小程序openid

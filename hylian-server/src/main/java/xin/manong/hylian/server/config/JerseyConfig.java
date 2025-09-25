@@ -17,6 +17,7 @@ import xin.manong.weapon.jersey.handler.ExceptionHandler;
 public class JerseyConfig extends ResourceConfig {
 
     public JerseyConfig() {
+        packages("xin.manong.weapon.spring.boot.controller");
         packages("xin.manong.hylian.server");
         register(JacksonJsonProvider.class);
         register(WebResponseFilter.class);

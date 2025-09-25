@@ -33,7 +33,7 @@ import xin.manong.weapon.spring.boot.io.EtcdPropertySourceFactory;
 @EnableJettySupportSSL
 @ServletComponentScan
 @PropertySource(name="default", value = "application-${spring.profiles.active}.yml", factory = EtcdPropertySourceFactory.class)
-@SpringBootApplication(scanBasePackages = { "xin.manong.hylian.server" })
+@SpringBootApplication(scanBasePackages = { "xin.manong.hylian.server", "xin.manong.weapon.spring.boot.controller" })
 public class Application {
 
     /**

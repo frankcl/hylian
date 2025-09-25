@@ -218,6 +218,10 @@ public class WechatController extends WatchValueDisposableBean {
         if (user == null) {
             WechatUser wechatUser = new WechatUser();
             wechatUser.nickName = "微信用户";
+            if (StringUtils.isNotEmpty(request.phoneCode)) {
+                String phone = wechatService.getPhoneNumber(request.phoneCode);
+                if (StringUtils.isNotEmpty(phone)) wechatUser.phone = phone;
+            }
             user = addWechatUser(wechatUser, openid, false);
         }
         afterLogin(user, httpRequest, httpResponse);
@@ -356,7 +360,6 @@ public class WechatController extends WatchValueDisposableBean {
         CookieUtils.setCookie(Constants.COOKIE_TOKEN, RandomID.build(), "/",
                 serverConfig.domain, false, httpRequest, httpResponse);
         httpResponse.addHeader(Constants.HEADER_TICKET, ticket);
-        httpResponse.addHeader(Constants.HEADER_SESSION_ID, httpRequest.getSession().getId());
     }
 
     /**
@@ -372,6 +375,7 @@ public class WechatController extends WatchValueDisposableBean {
         user.id = RandomID.build();
         user.username = String.format("%s%s", WechatServiceImpl.OPENID_PREFIX, openId);
         user.name = wechatUser.nickName;
+        user.phone = wechatUser.phone;
         user.tenantId = serverConfig.defaultTenant;
         user.password = DigestUtils.md5Hex(DEFAULT_PASSWORD);
         user.disabled = disabled;

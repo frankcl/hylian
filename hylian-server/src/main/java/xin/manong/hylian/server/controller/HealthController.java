@@ -1,8 +1,10 @@
 package xin.manong.hylian.server.controller;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -32,5 +34,19 @@ public class HealthController {
     @GetMapping("check")
     public String check() {
         return "server is ok";
+    }
+
+    /**
+     * 刷新会话
+     *
+     * @param httpRequest HTTP请求
+     * @return 会话ID
+     */
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("refreshSession")
+    @GetMapping("refreshSession")
+    public String refreshSession(@Context HttpServletRequest httpRequest) {
+        return httpRequest.getSession().getId();
     }
 }
