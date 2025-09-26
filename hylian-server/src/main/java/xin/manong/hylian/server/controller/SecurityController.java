@@ -121,8 +121,9 @@ public class SecurityController {
         String ticket = CookieUtils.getCookie(httpRequest, Constants.COOKIE_TICKET);
         if (StringUtils.isNotEmpty(ticket)) return ticket;
         String v = httpRequest.getHeader(Constants.HEADER_AUTHORIZATION);
-        if (StringUtils.isEmpty(v) || !v.startsWith("Bearer ")) return null;
-        return v.substring("Bearer ".length());
+        String prefix = String.format("%s ", Constants.PREFIX_BEARER);
+        if (StringUtils.isEmpty(v) || !v.startsWith(prefix)) return null;
+        return v.substring(prefix.length());
     }
 
     /**

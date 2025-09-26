@@ -359,7 +359,6 @@ public class WechatController extends WatchValueDisposableBean {
                 serverConfig.domain, true, httpRequest, httpResponse);
         CookieUtils.setCookie(Constants.COOKIE_TOKEN, RandomID.build(), "/",
                 serverConfig.domain, false, httpRequest, httpResponse);
-        httpResponse.addHeader(Constants.HEADER_TICKET, ticket);
     }
 
     /**

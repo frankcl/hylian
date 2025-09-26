@@ -10,11 +10,11 @@ public class Constants {
 
     public static final String ATTRIBUTE_EXCEPTION = "exception";
 
-    public static final String HEADER_SESSION_ID = "JSESSIONID";
     public static final String HEADER_AUTHORIZATION = "Authorization";
 
     public static final String COOKIE_TICKET = "TICKET";
     public static final String COOKIE_TOKEN = "TOKEN";
+    public static final String COOKIE_SESSION_ID = "JSESSIONID";
 
     public static final String PARAM_CODE = "code";
     public static final String PARAM_TOKEN = "token";
