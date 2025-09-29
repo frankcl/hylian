@@ -28,11 +28,11 @@
         <redisson.version>3.38.1</redisson.version>
         <jetcd.version>0.8.3</jetcd.version>
         <okhttp3.version>4.12.0</okhttp3.version>
-        <spring.version>6.1.14</spring.version>
-        <spring-boot.version>3.3.5</spring-boot.version>
+        <spring.version>6.2.11</spring.version>
+        <spring-boot.version>3.4.10</spring-boot.version>
         <jersey.version>3.1.9</jersey.version>
         <jackson.version>2.13.3</jackson.version>
-        <mybatis-plus.version>3.5.8</mybatis-plus.version>
+        <mybatis-plus.version>3.5.14</mybatis-plus.version>
         <druid.version>1.2.23</druid.version>
         <java-jwt.version>4.4.0</java-jwt.version>
         <oss.version>3.18.1</oss.version>
@@ -337,6 +337,11 @@
             <dependency>
                 <groupId>com.baomidou</groupId>
                 <artifactId>mybatis-plus-extension</artifactId>
+                <version>${mybatis-plus.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.baomidou</groupId>
+                <artifactId>mybatis-plus-jsqlparser</artifactId>
                 <version>${mybatis-plus.version}</version>
             </dependency>
             <dependency>
