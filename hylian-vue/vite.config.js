@@ -46,7 +46,7 @@ export default defineConfig({
     cors: true,
     proxy: {
       '^/api': {
-        target: 'https://hylian.junctionmagic.com:9001',
+        target: 'https://hylian.lumychip.com:9001',
         changeOrigin: true,
         ws: true,
         https: true,
