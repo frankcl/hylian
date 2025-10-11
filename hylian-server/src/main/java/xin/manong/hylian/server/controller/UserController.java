@@ -57,6 +57,8 @@ public class UserController {
 
     private static final Logger logger = LoggerFactory.getLogger(UserController.class);
 
+    private final static long EXPIRED_TIME_1Y = 86400 * 365 * 1000L;
+
     @Resource
     private ServerConfig serverConfig;
     @Resource
@@ -444,6 +446,6 @@ public class UserController {
             logger.warn("Avatar:{} is invalid", user.avatar);
             return;
         }
-        user.avatar = ossClient.sign(ossMeta.bucket, ossMeta.key);
+        user.avatar = ossClient.sign(ossMeta.bucket, ossMeta.key, EXPIRED_TIME_1Y);
     }
 }
