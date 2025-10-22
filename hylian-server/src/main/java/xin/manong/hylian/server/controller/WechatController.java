@@ -7,7 +7,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
-import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
@@ -376,7 +375,7 @@ public class WechatController extends WatchValueDisposableBean {
         user.name = wechatUser.nickName;
         user.phone = wechatUser.phone;
         user.tenantId = serverConfig.defaultTenant;
-        user.password = DigestUtils.md5Hex(DEFAULT_PASSWORD);
+        user.password = DEFAULT_PASSWORD;
         user.disabled = disabled;
         user.wxOpenid = openId;
         user.registerMode = User.REGISTER_MODE_WECHAT;
