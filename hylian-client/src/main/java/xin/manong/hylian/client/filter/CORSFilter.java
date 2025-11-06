@@ -47,7 +47,8 @@ public class CORSFilter implements Filter {
             String requestHeaders = httpRequest.getHeader(HTTP_REQUEST_HEAD_ACCESS_CONTROL_REQUEST_HEADERS);
             httpResponse.addHeader(HTTP_RESPONSE_HEAD_ACCESS_CONTROL_ALLOW_HEADERS,
                     requestHeaders != null ? requestHeaders : "*");
-            httpResponse.addHeader(HTTP_RESPONSE_HEAD_ACCESS_CONTROL_ALLOW_METHODS, "GET, POST, PUT, DELETE, OPTIONS");
+            httpResponse.addHeader(HTTP_RESPONSE_HEAD_ACCESS_CONTROL_ALLOW_METHODS,
+                    "GET, POST, PUT, DELETE, OPTIONS");
             httpResponse.setStatus(HttpServletResponse.SC_NO_CONTENT);
             return;
         }
