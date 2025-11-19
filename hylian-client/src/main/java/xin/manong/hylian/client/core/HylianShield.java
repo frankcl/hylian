@@ -87,7 +87,8 @@ public class HylianShield {
         if (StringUtils.isEmpty(code)) {
             logger.info("Apply code for acquiring token");
             String redirectURL = HTTPUtils.getRequestURL(httpRequest);
-            httpResponse.sendRedirect(String.format("%s%s?%s=%s&%s=%s&%s=%s", serverURL,
+            httpResponse.setStatus(HttpServletResponse.SC_SEE_OTHER);
+            httpResponse.setHeader(Constants.HEADER_LOCATION, String.format("%s%s?%s=%s&%s=%s&%s=%s", serverURL,
                     Constants.SERVER_PATH_APPLY_CODE, Constants.PARAM_APP_ID, appId,
                     Constants.PARAM_APP_SECRET, appSecret, Constants.PARAM_REDIRECT_URL,
                     URLEncoder.encode(redirectURL, StandardCharsets.UTF_8)));
