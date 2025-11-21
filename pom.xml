@@ -160,7 +160,7 @@
                         </goals>
                         <configuration>
                             <keyname>9893D73D</keyname>
-                            <passphrase>xmjjyhy28p</passphrase>
+                            <passphrase></passphrase>
                         </configuration>
                     </execution>
                 </executions>
