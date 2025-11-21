@@ -87,6 +87,17 @@ public class HylianShield {
         if (StringUtils.isEmpty(code)) {
             logger.info("Apply code for acquiring token");
             String redirectURL = HTTPUtils.getRequestURL(httpRequest);
+            String authorization = httpRequest.getHeader(Constants.HEADER_AUTHORIZATION);
+            /*
+             * 解决微信小程序对303支持不好问题：微信小程序返回302，其他返回303
+             */
+            if (StringUtils.isNotEmpty(authorization)) {
+                httpResponse.sendRedirect(String.format("%s%s?%s=%s&%s=%s&%s=%s", serverURL,
+                        Constants.SERVER_PATH_APPLY_CODE, Constants.PARAM_APP_ID, appId,
+                        Constants.PARAM_APP_SECRET, appSecret, Constants.PARAM_REDIRECT_URL,
+                        URLEncoder.encode(redirectURL, StandardCharsets.UTF_8)));
+                return false;
+            }
             httpResponse.setStatus(HttpServletResponse.SC_SEE_OTHER);
             httpResponse.setHeader(Constants.HEADER_LOCATION, String.format("%s%s?%s=%s&%s=%s&%s=%s", serverURL,
                     Constants.SERVER_PATH_APPLY_CODE, Constants.PARAM_APP_ID, appId,
