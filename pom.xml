@@ -36,7 +36,7 @@
         <druid.version>1.2.23</druid.version>
         <java-jwt.version>4.4.0</java-jwt.version>
         <oss.version>3.18.1</oss.version>
-        <weapon.version>0.2.0</weapon.version>
+        <weapon.version>0.2.1</weapon.version>
         <hylian.version>0.0.1</hylian.version>
     </properties>
 
