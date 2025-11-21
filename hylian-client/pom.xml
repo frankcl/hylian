@@ -8,7 +8,8 @@
         <artifactId>hylian</artifactId>
         <version>0.0.1</version>
     </parent>
-
+    <name>hylian-client</name>
+    <description>client for SSO and ACL supporting</description>
     <artifactId>hylian-client</artifactId>
 
     <dependencies>
