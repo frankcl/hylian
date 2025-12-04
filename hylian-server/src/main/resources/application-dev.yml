@@ -44,3 +44,5 @@ app:
     mini-version: developer
     wechat-notice-new-user: 8BQJJagGrk2G8bwUZJ0p4v8xr3uXpCyut-B1U2pHAVw
     wechat-notice-user-audit: B4E0XRqlSC3Nnc70NPTDxHAUVZl-iAPmvAZh-x2DvNs
+    wechat-page-login: pages/web_login/index
+    wechat-page-bind: pages/web_bind/index
