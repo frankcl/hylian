@@ -91,7 +91,8 @@ public class WechatServiceImpl implements WechatService {
         requestBody.put(PARAM_KEY_PAGE, pageURL);
         requestBody.put(PARAM_KEY_CHECK_PATH, false);
         requestBody.put(PARAM_KEY_SCENE, String.format(WX_SCENE_FORMAT, codeKey));
-        requestBody.put(PARAM_KEY_VERSION, serverConfig.wxVersion);
+        requestBody.put(PARAM_KEY_VERSION, StringUtils.isEmpty(request.wxVersion) ?
+                serverConfig.wxVersion : request.wxVersion);
         HttpRequest httpRequest = HttpRequest.buildPostRequest(requestURL, RequestFormat.JSON, requestBody);
         HTTPResponse httpResponse = HTTPExecutor.executeRequest(httpRequest);
         if (httpResponse == null || !httpResponse.isImage()) {
