@@ -69,6 +69,13 @@ public class ActivityServiceImpl implements ActivityService {
     }
 
     @Override
+    public boolean removeByUserId(String userId) {
+        LambdaQueryWrapper<Activity> query = new LambdaQueryWrapper<>();
+        query.eq(Activity::getUserId, userId);
+        return activityMapper.delete(query) > 0;
+    }
+
+    @Override
     public Activity get(String appId, String ticketId) {
         if (StringUtils.isEmpty(appId)) throw new BadRequestException("应用ID为空");
         if (StringUtils.isEmpty(ticketId)) throw new BadRequestException("票据ID为空");

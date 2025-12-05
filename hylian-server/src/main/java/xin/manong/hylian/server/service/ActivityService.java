@@ -55,6 +55,14 @@ public interface ActivityService {
     boolean remove(String sessionId, String appId);
 
     /**
+     * 删除用户所有活动记录
+     *
+     * @param userId 用户ID
+     * @return 成功返回true，否则返回false
+     */
+    boolean removeByUserId(String userId);
+
+    /**
      * 获取应用活动记录
      *
      * @param appId 应用ID
