@@ -141,7 +141,7 @@ watchEffect(async () => await search())
           </div>
         </template>
       </el-table-column>
-      <el-table-column width="360">
+      <el-table-column label="操作" width="360">
         <template #default="scope">
           <el-button type="primary" @click="edit(scope.row.id)" :disabled="!userStore.superAdmin">
             <IconEdit size="20" class="mr-2" />
