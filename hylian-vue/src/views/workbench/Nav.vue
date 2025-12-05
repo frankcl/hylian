@@ -5,7 +5,7 @@ import { ElAvatar, ElDropdown, ElDropdownItem, ElDropdownMenu, ElLink, ElText } 
 import router from '@/router'
 import { useUserStore } from '@/store'
 import { asyncLogout, asyncRefreshUser, asyncUnbindWechat } from '@/common/AsyncRequest'
-import { ERROR, showMessage, SUCCESS } from '@/common/Feedback'
+import { asyncExecuteAfterConfirming, ERROR, showMessage, SUCCESS } from '@/common/Feedback'
 import ImageAvatar from '@/assets/avatar.jpg'
 import BindWechat from '@/views/user/BindWechat'
 import EditUser from '@/views/user/EditUser'
@@ -27,7 +27,9 @@ const handleCommand = async command => {
     await router.push('/')
   }
   else if (command === 'unbind') {
-    if (!await asyncUnbindWechat({ id: userStore.id })) {
+    const success = await asyncExecuteAfterConfirming(asyncUnbindWechat, { id: userStore.id })
+    if (success === undefined) return
+    if (!success) {
       showMessage('解绑微信账号失败', ERROR)
       return
     }
