@@ -14,25 +14,25 @@ import xin.manong.weapon.base.util.CommonUtil;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class NoticeNewUser extends WechatNotice {
 
-    @JsonProperty("thing1")
-    @JSONField(name = "thing1")
+    @JsonProperty("name1")
+    @JSONField(name = "name1")
     public String nickName;
-    @JsonProperty("time10")
-    @JSONField(name = "time10")
+    @JsonProperty("date5")
+    @JSONField(name = "date5")
     public String registerTime;
-    @JsonProperty("phrase2")
-    @JSONField(name = "phrase2")
+    @JsonProperty("thing6")
+    @JSONField(name = "thing6")
     public String status;
-    @JsonProperty("thing9")
-    @JSONField(name = "thing9")
-    public String channel;
+//    @JsonProperty("thing9")
+//    @JSONField(name = "thing9")
+//    public String channel;
 
     public NoticeNewUser() {
     }
 
     public NoticeNewUser(String nickName, String channel) {
         this.nickName = nickName;
-        this.channel = channel;
+//        this.channel = channel;
         this.status = "新用户注册";
         this.registerTime = CommonUtil.timeToString(System.currentTimeMillis(), null);
     }

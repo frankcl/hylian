@@ -17,11 +17,11 @@ public class NoticeUserAudit extends WechatNotice {
     @JsonProperty("thing1")
     @JSONField(name = "thing1")
     public String nickName;
-    @JsonProperty("time5")
-    @JSONField(name = "time5")
+    @JsonProperty("time4")
+    @JSONField(name = "time4")
     public String auditTime;
-    @JsonProperty("phrase7")
-    @JSONField(name = "phrase7")
+    @JsonProperty("phrase2")
+    @JSONField(name = "phrase2")
     public String status;
 
     public NoticeUserAudit() {}
