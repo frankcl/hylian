@@ -174,6 +174,7 @@ public class UserServiceImpl implements UserService {
             appUserService.deleteByUser(id);
             deleteAvatar(user);
             removeUserProfile(user);
+            activityService.removeByUserId(user.id);
         }
         return success;
     }
