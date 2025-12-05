@@ -49,7 +49,7 @@ watch(() => [props.id, appId.value], async() => {
 </script>
 
 <template>
-  <el-dialog v-model="open" @close="emits('close')" align-center show-close>
+  <el-dialog v-model="open" @close="emits('close')" width="60%" align-center show-close>
     <hylian-card :title="`用户角色：${ name }`">
       <div class="d-flex align-items-center mb-4">
         <label class="mr-4 fs-14px flex-shrink-0">请选择应用</label>

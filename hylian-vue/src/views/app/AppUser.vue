@@ -42,7 +42,7 @@ watch(() => props.id, async() => {
 </script>
 
 <template>
-  <el-dialog v-model="open" align-center show-close>
+  <el-dialog v-model="open" width="60%" align-center show-close>
     <hylian-card :title="`应用管理员：${name}`">
       <el-transfer v-model="appUsers" :data="users" filterable filter-placeholder="根据用户名搜索"
                    :filter-method="search" :titles="['普通用户', '应用管理员']"
