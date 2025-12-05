@@ -47,7 +47,7 @@ watch(() => [props.appId, props.roleId], async() => {
 </script>
 
 <template>
-  <el-dialog v-model="open" align-center show-close>
+  <el-dialog v-model="open" width="60%" align-center show-close>
     <hylian-card :title="`角色权限分配：${roleName}`">
       <el-transfer v-model="permissions" :data="appPermissions" filterable
                    filter-placeholder="根据权限名搜索" :filter-method="search"

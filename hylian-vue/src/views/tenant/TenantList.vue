@@ -140,7 +140,7 @@ watchEffect(async () => await search())
           </div>
         </template>
       </el-table-column>
-      <el-table-column width="120">
+      <el-table-column label="操作" width="120">
         <template #default="scope">
           <el-button type="danger" :disabled="!userStore.superAdmin" @click="remove(scope.row.id)">
             <IconTrash size="20" class="mr-2" />

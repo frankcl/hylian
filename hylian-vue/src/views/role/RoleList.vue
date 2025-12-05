@@ -189,7 +189,7 @@ watchEffect(async () => await search())
           </div>
         </template>
       </el-table-column>
-      <el-table-column>
+      <el-table-column label="操作" width="240">
         <template #default="scope">
           <el-button type="primary" plain @click="permission(scope.row)">
             <IconLockCheck size="20" class="mr-2" />
