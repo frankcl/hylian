@@ -13,6 +13,9 @@ const userStore = useUserStore()
 const formRef = useTemplateRef('form')
 const passwordForm = reactive({ id: userStore.id })
 const formRules = {
+  password: [
+    { required: true, message: '请输入密码', trigger: 'change' }
+  ],
   new_password: [
     { required: true, message: '请输入新密码', trigger: 'change' },
     { min: 8, message: '密码至少8位', trigger: 'change' }
