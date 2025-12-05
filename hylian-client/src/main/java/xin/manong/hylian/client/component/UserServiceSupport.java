@@ -47,7 +47,7 @@ public class UserServiceSupport {
             CacheBuilder<String, Long> builder = CacheBuilder.newBuilder()
                     .concurrencyLevel(1)
                     .maximumSize(CACHE_CAPACITY)
-                    .expireAfterWrite(2, TimeUnit.MINUTES)
+                    .expireAfterWrite(30, TimeUnit.SECONDS)
                     .removalListener(n -> logger.info("Roles are removed from cache for user:{}", n.getKey()));
             rolesCache = builder.build();
         }
@@ -55,7 +55,7 @@ public class UserServiceSupport {
             CacheBuilder<String, Long> builder = CacheBuilder.newBuilder()
                     .concurrencyLevel(1)
                     .maximumSize(CACHE_CAPACITY)
-                    .expireAfterWrite(2, TimeUnit.MINUTES)
+                    .expireAfterWrite(30, TimeUnit.SECONDS)
                     .removalListener(n -> logger.info("Permissions are removed from cache for user:{}", n.getKey()));
             permissionsCache = builder.build();
         }

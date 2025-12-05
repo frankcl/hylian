@@ -3,7 +3,6 @@ import { IconArrowBackUp, IconEdit, IconHelp } from '@tabler/icons-vue'
 import { reactive, useTemplateRef } from 'vue'
 import { ElButton, ElDialog, ElForm, ElFormItem, ElInput, ElTooltip } from 'element-plus'
 import { useUserStore } from '@/store'
-import { appFormRules } from '@/views/user/common'
 import { asyncUpdatePassword } from '@/common/AsyncRequest'
 import { ERROR, showMessage, SUCCESS } from '@/common/Feedback'
 import HylianCard from '@/components/data/Card'
@@ -14,7 +13,10 @@ const userStore = useUserStore()
 const formRef = useTemplateRef('form')
 const passwordForm = reactive({ id: userStore.id })
 const formRules = {
-  ... appFormRules,
+  new_password: [
+    { required: true, message: '请输入新密码', trigger: 'change' },
+    { min: 8, message: '密码至少8位', trigger: 'change' }
+  ],
   confirm_password: [{
     required: true, trigger: 'change', validator: (rule, value, callback) => {
       if (!value || value === '') callback(new Error('请输入确认密码'))
