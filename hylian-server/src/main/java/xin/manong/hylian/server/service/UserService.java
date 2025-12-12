@@ -94,6 +94,14 @@ public interface UserService {
     List<User> getUsers();
 
     /**
+     * 根据ID获取用户列表
+     *
+     * @param ids 用户ID列表
+     * @return 用户列表
+     */
+    List<User> getUsers(List<String> ids);
+
+    /**
      * 移除用户登录信息
      * 1. ticket相关信息
      * 2. token相关信息

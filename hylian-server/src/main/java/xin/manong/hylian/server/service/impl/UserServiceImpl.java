@@ -220,6 +220,13 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public List<User> getUsers(List<String> ids) {
+        LambdaQueryWrapper<User> query = new LambdaQueryWrapper<>();
+        query.eq(User::getDisabled, false).in(User::getId, ids);
+        return userMapper.selectList(query);
+    }
+
+    @Override
     public void removeUserProfile(String id) {
         Set<String> tokenIds = ticketService.getTokens(id);
         for (String tokenId : tokenIds) tokenService.removeTokenWithId(tokenId);

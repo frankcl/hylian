@@ -326,10 +326,28 @@ public class SecurityController {
     @Path("getAllUsers")
     @PostMapping("getAllUsers")
     public List<User> getAllUsers(@RequestBody SecurityRequest request) {
-        if (request == null) throw new BadRequestException("获取用户列表安全请求为空");
+        if (request == null) throw new BadRequestException("获取全量用户列表安全请求为空");
         request.check();
         appService.verifyApp(request.appId, request.appSecret);
         return userService.getUsers();
+    }
+
+    /**
+     * 批量获取用户列表
+     *
+     * @param request 请求
+     * @return 用户列表
+     */
+    @POST
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("getUsers")
+    @PostMapping("getUsers")
+    public List<User> getUsers(@RequestBody BatchUserSecurityRequest request) {
+        if (request == null) throw new BadRequestException("批量获取用户列表安全请求为空");
+        request.check();
+        appService.verifyApp(request.appId, request.appSecret);
+        return userService.getUsers(request.ids);
     }
 
     /**
