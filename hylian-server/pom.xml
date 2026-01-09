@@ -19,6 +19,7 @@
                 <artifactId>maven-assembly-plugin</artifactId>
                 <version>3.1.1</version>
                 <configuration>
+                    <attach>false</attach>
                     <descriptors>
                         <descriptor>package/assembly.xml</descriptor>
                     </descriptors>
