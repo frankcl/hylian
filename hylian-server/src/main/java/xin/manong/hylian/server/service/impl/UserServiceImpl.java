@@ -35,7 +35,6 @@ import xin.manong.weapon.base.util.RandomID;
 
 import java.io.InputStream;
 import java.util.*;
-import java.util.concurrent.CountDownLatch;
 
 /**
  * 用户服务实现
@@ -93,24 +92,9 @@ public class UserServiceImpl implements UserService {
     @Override
     public List<User> batchGet(List<String> ids) {
         if (ids == null || ids.isEmpty()) return new ArrayList<>();
-        List<User> users = Collections.synchronizedList(new ArrayList<>());
-        CountDownLatch countDownLatch = new CountDownLatch(ids.size());
-        ids.stream().parallel().forEach(id -> {
-            try {
-                User user = userMapper.selectById(id);
-                if (user != null) users.add(user);
-            } catch (Exception e) {
-                logger.warn(e.getMessage(), e);
-            } finally {
-                countDownLatch.countDown();
-            }
-        });
-        try {
-            countDownLatch.await();
-        } catch (Exception e) {
-            logger.warn(e.getMessage(), e);
-        }
-        return new ArrayList<>(users);
+        LambdaQueryWrapper<User> query = new LambdaQueryWrapper<>();
+        query.eq(User::getDisabled, false).in(User::getId, ids);
+        return userMapper.selectList(query);
     }
 
     @Override
