@@ -323,31 +323,51 @@ public class SecurityController {
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    @Path("getAllUsers")
-    @PostMapping("getAllUsers")
-    public List<User> getAllUsers(@RequestBody SecurityRequest request) {
-        if (request == null) throw new BadRequestException("获取全量用户列表安全请求为空");
+    @Path("getUsers")
+    @PostMapping("getUsers")
+    public List<User> getUsers(@RequestBody SecurityRequest request) {
+        if (request == null) throw new BadRequestException("安全获取用户列表请求为空");
         request.check();
         appService.verifyApp(request.appId, request.appSecret);
         return userService.getUsers();
     }
 
     /**
-     * 批量获取用户列表
+     * 根据用户ID用户信息
      *
      * @param request 请求
-     * @return 用户列表
+     * @return 用户信息
      */
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    @Path("getUsers")
-    @PostMapping("getUsers")
-    public List<User> getUsers(@RequestBody BatchUserSecurityRequest request) {
-        if (request == null) throw new BadRequestException("批量获取用户列表安全请求为空");
+    @Path("getUserById")
+    @PostMapping("getUserById")
+    public User getUserById(@RequestBody GetUserRequest request) {
+        if (request == null) throw new BadRequestException("安全获取用户信息请求为空");
         request.check();
         appService.verifyApp(request.appId, request.appSecret);
-        return userService.getUsers(request.ids);
+        User user = userService.get(request.userId);
+        if (user == null) throw new NotFoundException("用户不存在");
+        return user;
+    }
+
+    /**
+     * 批量获取用户信息列表
+     *
+     * @param request 请求
+     * @return 用户信息列表
+     */
+    @POST
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("batchGetUsers")
+    @PostMapping("batchGetUsers")
+    public List<User> batchGetUsers(@RequestBody BatchGetUsersRequest request) {
+        if (request == null) throw new BadRequestException("安全获取用户信息请求为空");
+        request.check();
+        appService.verifyApp(request.appId, request.appSecret);
+        return userService.batchGet(request.userIds);
     }
 
     /**

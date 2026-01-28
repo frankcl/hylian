@@ -7,15 +7,12 @@ import jakarta.ws.rs.core.Response;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import xin.manong.hylian.client.config.HylianClientConfig;
 import xin.manong.hylian.client.util.CookieUtils;
 import xin.manong.hylian.client.util.HTTPUtils;
 import xin.manong.hylian.client.util.SessionUtils;
-import xin.manong.hylian.model.Tenant;
 import xin.manong.hylian.model.User;
 import xin.manong.hylian.client.common.Constants;
-import xin.manong.weapon.base.http.HttpRequest;
-import xin.manong.weapon.base.http.RequestFormat;
-import xin.manong.weapon.jersey.WebResponse;
 
 import java.io.IOException;
 import java.net.URLEncoder;
@@ -35,16 +32,12 @@ public class HylianShield {
 
     private static final long REFRESH_TIME_INTERVAL_MS = 60000L;
 
-    private final String appId;
-    private final String appSecret;
-    private final String serverURL;
+    private final HylianClientConfig clientConfig;
+    private final HylianClient hylianClient;
 
-    public HylianShield(String appId,
-                        String appSecret,
-                        String serverURL) {
-        this.appId = appId;
-        this.appSecret = appSecret;
-        this.serverURL = serverURL.endsWith("/") ? serverURL : serverURL + "/";
+    public HylianShield(HylianClient hylianClient) {
+        this.hylianClient = hylianClient;
+        this.clientConfig = hylianClient.getConfig();
     }
 
     /**
@@ -58,10 +51,7 @@ public class HylianShield {
                            HttpServletResponse httpResponse) throws IOException {
         String path = HTTPUtils.getRequestPath(httpRequest);
         if (path != null && path.equals(Constants.CLIENT_PATH_LOGOUT)) {
-            httpResponse.sendRedirect(String.format("%s%s?%s=%s&%s=%s", serverURL,
-                    Constants.SERVER_PATH_LOGOUT, Constants.PARAM_APP_ID, appId,
-                    Constants.PARAM_APP_SECRET, appSecret));
-            SessionManager.invalidate(httpRequest.getSession().getId());
+            hylianClient.forceLogout(httpRequest, httpResponse);
             return false;
         } else if (path != null && path.equals(Constants.CLIENT_PATH_SWEEP)) {
             sweepSession(httpRequest);
@@ -92,16 +82,17 @@ public class HylianShield {
              * 解决微信小程序对303支持不好问题：微信小程序返回302，其他返回303
              */
             if (StringUtils.isNotEmpty(authorization)) {
-                httpResponse.sendRedirect(String.format("%s%s?%s=%s&%s=%s&%s=%s", serverURL,
-                        Constants.SERVER_PATH_APPLY_CODE, Constants.PARAM_APP_ID, appId,
-                        Constants.PARAM_APP_SECRET, appSecret, Constants.PARAM_REDIRECT_URL,
+                httpResponse.sendRedirect(String.format("%s%s?%s=%s&%s=%s&%s=%s", clientConfig.serverURL,
+                        Constants.SERVER_PATH_APPLY_CODE, Constants.PARAM_APP_ID, clientConfig.appId,
+                        Constants.PARAM_APP_SECRET, clientConfig.appSecret, Constants.PARAM_REDIRECT_URL,
                         URLEncoder.encode(redirectURL, StandardCharsets.UTF_8)));
                 return false;
             }
             httpResponse.setStatus(HttpServletResponse.SC_SEE_OTHER);
-            httpResponse.setHeader(Constants.HEADER_LOCATION, String.format("%s%s?%s=%s&%s=%s&%s=%s", serverURL,
-                    Constants.SERVER_PATH_APPLY_CODE, Constants.PARAM_APP_ID, appId,
-                    Constants.PARAM_APP_SECRET, appSecret, Constants.PARAM_REDIRECT_URL,
+            httpResponse.setHeader(Constants.HEADER_LOCATION, String.format("%s%s?%s=%s&%s=%s&%s=%s",
+                    clientConfig.serverURL, Constants.SERVER_PATH_APPLY_CODE,
+                    Constants.PARAM_APP_ID, clientConfig.appId, Constants.PARAM_APP_SECRET,
+                    clientConfig.appSecret, Constants.PARAM_REDIRECT_URL,
                     URLEncoder.encode(redirectURL, StandardCharsets.UTF_8)));
             return false;
         }
@@ -114,7 +105,7 @@ public class HylianShield {
                 httpResponse.sendRedirect(requestURL);
                 return false;
             }
-            token = acquireToken(code, httpRequest);
+            token = hylianClient.acquireToken(code, httpRequest);
             if (StringUtils.isEmpty(token)) {
                 logger.error("Acquire token failed");
                 httpResponse.sendRedirect(requestURL);
@@ -142,54 +133,6 @@ public class HylianShield {
     }
 
     /**
-     * 根据安全码获取token
-     *
-     * @param code 安全码
-     * @param httpRequest HTTP请求
-     * @return 成功返回token，否则返回null
-     */
-    private String acquireToken(String code, HttpServletRequest httpRequest) {
-        String requestURL = String.format("%s%s", serverURL, Constants.SERVER_PATH_ACQUIRE_TOKEN);
-        Map<String, Object> paramMap = new HashMap<>();
-        paramMap.put(Constants.PARAM_CODE, code);
-        paramMap.put(Constants.PARAM_APP_ID, appId);
-        paramMap.put(Constants.PARAM_APP_SECRET, appSecret);
-        paramMap.put(Constants.PARAM_SESSION_ID, SessionUtils.getSessionID(httpRequest));
-        HttpRequest request = HttpRequest.buildGetRequest(requestURL, paramMap);
-        return HTTPExecutor.executeAndUnwrap(request, String.class);
-    }
-
-    /**
-     * 根据token向服务端获取用户信息
-     *
-     * @param token 令牌
-     * @return 成功返回用户信息，否则返回null
-     */
-    private User getUser(String token) {
-        String requestURL = String.format("%s%s", serverURL, Constants.SERVER_PATH_GET_USER);
-        Map<String, Object> paramMap = buildTokenRequest(token);
-        HttpRequest httpRequest = HttpRequest.buildGetRequest(requestURL, paramMap);
-        WebResponse<User> response = HTTPExecutor.execute(httpRequest, User.class);
-        if (response == null || !response.status) return null;
-        return response.data;
-    }
-
-    /**
-     * 根据token向服务端获取租户信息
-     *
-     * @param token 令牌
-     * @return 成功返回租户信息，否则返回null
-     */
-    private Tenant getTenant(String token) {
-        String requestURL = String.format("%s%s", serverURL, Constants.SERVER_PATH_GET_TENANT);
-        Map<String, Object> paramMap = buildTokenRequest(token);
-        HttpRequest httpRequest = HttpRequest.buildGetRequest(requestURL, paramMap);
-        WebResponse<Tenant> response = HTTPExecutor.execute(httpRequest, Tenant.class);
-        if (response == null || !response.status) return null;
-        return response.data;
-    }
-
-    /**
      * 刷新token
      *
      * @param token 原token
@@ -204,13 +147,7 @@ public class HylianShield {
         try {
             if (sessionLock != null) sessionLock.lock();
             if (!token.equals(SessionUtils.getToken(httpServletRequest))) return true;
-            String requestURL = String.format("%s%s", serverURL, Constants.SERVER_PATH_REFRESH_TOKEN);
-            Map<String, Object> body = new HashMap<>();
-            body.put(Constants.PARAM_TOKEN, token);
-            body.put(Constants.PARAM_APP_ID, appId);
-            body.put(Constants.PARAM_APP_SECRET, appSecret);
-            HttpRequest httpRequest = HttpRequest.buildPostRequest(requestURL, RequestFormat.JSON, body);
-            String newToken = HTTPExecutor.executeAndUnwrap(httpRequest, String.class);
+            String newToken = hylianClient.refreshToken(token);
             if (StringUtils.isEmpty(newToken)) return false;
             SessionUtils.setToken(httpServletRequest, newToken);
             return true;
@@ -229,7 +166,7 @@ public class HylianShield {
     private boolean refreshUser(String token, HttpServletRequest httpRequest) {
         boolean forceRefresh = SessionUtils.isRefreshUser(httpRequest);
         if (!forceRefresh && SessionUtils.getUser(httpRequest) != null) return true;
-        User user = getUser(token);
+        User user = hylianClient.getUser(token);
         if (user == null) {
             logger.error("Get user failed for token:{}", token);
             return false;
@@ -237,19 +174,5 @@ public class HylianShield {
         SessionUtils.setUser(httpRequest, user);
         SessionUtils.removeRefreshUser(httpRequest);
         return true;
-    }
-
-    /**
-     * 构建token请求
-     *
-     * @param token 令牌
-     * @return token请求
-     */
-    private Map<String, Object> buildTokenRequest(String token) {
-        Map<String, Object> paramMap = new HashMap<>();
-        paramMap.put(Constants.PARAM_TOKEN, token);
-        paramMap.put(Constants.PARAM_APP_ID, appId);
-        paramMap.put(Constants.PARAM_APP_SECRET, appSecret);
-        return paramMap;
     }
 }

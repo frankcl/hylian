@@ -15,7 +15,7 @@ public class Constants {
 
     public static final Long CACHE_CODE_EXPIRED_TIME_MS = 60000L;
     public static final Long CACHE_TOKEN_EXPIRED_TIME_MS = 600000L;
-    public static final Long CACHE_TICKET_EXPIRED_TIME_MS = 7200000L;
+    public static final Long CACHE_TICKET_EXPIRED_TIME_MS = 3600000L * 12;
     public static final Long COOKIE_TICKET_EXPIRED_TIME_MS = 86400000L;
 
     public static final String CODE_CACHE_PREFIX = "__SK_CODE_";
@@ -28,8 +28,8 @@ public class Constants {
 
     public static final String HEADER_AUTHORIZATION = "Authorization";
 
-    public static final String PARAM_CODE = "code";
     public static final String PREFIX_BEARER = "Bearer";
+    public static final String PARAM_CODE = "code";
 
     public static final String JWT_HEADER_ALGORITHM = "alg";
     public static final String JWT_HEADER_CATEGORY = "category";

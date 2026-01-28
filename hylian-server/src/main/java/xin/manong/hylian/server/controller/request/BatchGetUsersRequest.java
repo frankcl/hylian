@@ -10,35 +10,42 @@ import jakarta.xml.bind.annotation.XmlAccessorType;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
 /**
- * 批量获取用户信息安全请求
+ * 批量获取用户信息请求
  *
  * @author frankcl
- * @date 2025-12-12 10:59:14
+ * @date 2026-01-12 19:09:06
  */
 @Getter
 @Setter
 @Accessors(chain = true)
 @XmlAccessorType(XmlAccessType.FIELD)
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class BatchUserSecurityRequest extends SecurityRequest {
+public class BatchGetUsersRequest extends SecurityRequest {
+
+    private static final Logger logger = LoggerFactory.getLogger(BatchGetUsersRequest.class);
 
     /**
      * 用户ID列表
      */
-    @JsonProperty("ids")
-    @JSONField(name = "ids")
-    @QueryParam("ids")
-    public List<String> ids;
+    @JsonProperty("user_ids")
+    @JSONField(name = "user_ids")
+    @QueryParam("user_ids")
+    public List<String> userIds;
 
     /**
-     * 检测有效性，无效请求抛出异常
+     * 检测有效性，无效抛出异常BadRequestException
      */
     public void check() {
         super.check();
-        if (ids == null || ids.isEmpty()) throw new BadRequestException("用户ID列表为空");
+        if (userIds == null || userIds.isEmpty()) {
+            logger.error("User ids are empty");
+            throw new BadRequestException("用户ID列表为空");
+        }
     }
 }

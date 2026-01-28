@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 import xin.manong.hylian.client.common.Constants;
 import xin.manong.hylian.client.common.URLPattern;
 import xin.manong.hylian.client.core.CookieSweeper;
+import xin.manong.hylian.client.core.HylianClient;
 import xin.manong.hylian.client.core.HylianShield;
 import xin.manong.hylian.client.core.ContextManager;
 import xin.manong.hylian.client.util.HTTPUtils;
@@ -32,33 +33,19 @@ public class HylianGuard extends CookieSweeper implements Filter {
 
     private static final Logger logger = LoggerFactory.getLogger(HylianGuard.class);
 
-    protected String appId;
-    protected String appSecret;
-    protected String serverURL;
+    protected HylianClient client;
     protected List<URLPattern> excludePatterns;
     protected HylianShield shield;
+
+    public HylianGuard(HylianClient client) {
+        this.client = client;
+    }
 
     @Override
     public void init(FilterConfig filterConfig) throws ServletException {
         logger.info("Hylian guard is init ...");
-        appId = filterConfig.getInitParameter(Constants.PARAM_APP_ID);
-        if (StringUtils.isEmpty(appId)) {
-            logger.error("Param:{} is not found", Constants.PARAM_APP_ID);
-            throw new IllegalArgumentException(String.format("参数缺失[%s]", Constants.PARAM_APP_ID));
-        }
-        appSecret = filterConfig.getInitParameter(Constants.PARAM_APP_SECRET);
-        if (StringUtils.isEmpty(appSecret)) {
-            logger.error("Param:{} is not found", Constants.PARAM_APP_SECRET);
-            throw new IllegalArgumentException(String.format("参数缺失[%s]", Constants.PARAM_APP_SECRET));
-        }
-        serverURL = filterConfig.getInitParameter(Constants.PARAM_SERVER_URL);
-        if (StringUtils.isEmpty(serverURL)) {
-            logger.error("Param:{} is not found", Constants.PARAM_SERVER_URL);
-            throw new IllegalArgumentException(String.format("参数缺失[%s]", Constants.PARAM_SERVER_URL));
-        }
-        if (!serverURL.endsWith("/")) serverURL += "/";
         buildExcludePatterns(filterConfig);
-        shield = new HylianShield(appId, appSecret, serverURL);
+        shield = new HylianShield(client);
         logger.info("Hylian guard init success");
     }
 
