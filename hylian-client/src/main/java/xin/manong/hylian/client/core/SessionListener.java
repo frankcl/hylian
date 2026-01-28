@@ -6,14 +6,8 @@ import jakarta.servlet.http.HttpSessionEvent;
 import jakarta.servlet.http.HttpSessionListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import xin.manong.hylian.client.common.Constants;
-import xin.manong.hylian.client.config.HylianClientConfig;
 import xin.manong.hylian.client.common.SessionConstants;
-import xin.manong.weapon.base.http.HttpRequest;
-import xin.manong.weapon.base.http.RequestFormat;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
@@ -29,10 +23,10 @@ public class SessionListener implements HttpSessionListener {
 
     private static final int MAX_SESSION_IDLE_TIME_SECONDS = 1800;
 
-    private final HylianClientConfig hylianClientConfig;
+    private final HylianClient client;
 
-    public SessionListener(HylianClientConfig hylianClientConfig) {
-        this.hylianClientConfig = hylianClientConfig;
+    public SessionListener(HylianClient client) {
+        this.client = client;
     }
 
     @Override
@@ -62,19 +56,10 @@ public class SessionListener implements HttpSessionListener {
      */
     private void removeActivity(String sessionId) {
         if (!SessionManager.isTokenSession(sessionId)) return;
-        String requestURL = String.format("%s%s", hylianClientConfig.serverURL, Constants.SERVER_PATH_REMOVE_ACTIVITY);
-        Map<String, Object> body = new HashMap<>();
-        body.put(Constants.PARAM_SESSION_ID, sessionId);
-        body.put(Constants.PARAM_APP_ID, hylianClientConfig.appId);
-        body.put(Constants.PARAM_APP_SECRET, hylianClientConfig.appSecret);
-        HttpRequest httpRequest = HttpRequest.buildPostRequest(requestURL, RequestFormat.JSON, body);
-        Boolean success = HTTPExecutor.executeAndUnwrap(httpRequest, Boolean.class);
-        if (success != null && success) {
-            logger.info("Unregister activity success for app:{} and session:{}",
-                    hylianClientConfig.appId, sessionId);
+        if (client.removeActivity(sessionId)) {
+            logger.info("Unregister activity success for app:{} and session:{}", client.getConfig().appId, sessionId);
             return;
         }
-        logger.warn("Unregister activity failed for app:{} and session:{}",
-                hylianClientConfig.appId, sessionId);
+        logger.warn("Unregister activity failed for app:{} and session:{}", client.getConfig().appId, sessionId);
     }
 }

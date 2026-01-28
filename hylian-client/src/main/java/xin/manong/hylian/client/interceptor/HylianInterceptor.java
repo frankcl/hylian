@@ -5,8 +5,8 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.ws.rs.NotAuthorizedException;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.web.servlet.HandlerInterceptor;
-import xin.manong.hylian.client.config.HylianClientConfig;
 import xin.manong.hylian.client.core.CookieSweeper;
+import xin.manong.hylian.client.core.HylianClient;
 import xin.manong.hylian.client.core.HylianShield;
 import xin.manong.hylian.client.core.ContextManager;
 import xin.manong.hylian.client.util.SessionUtils;
@@ -21,8 +21,8 @@ public class HylianInterceptor extends CookieSweeper implements HandlerIntercept
 
     private final HylianShield shield;
 
-    public HylianInterceptor(HylianClientConfig clientConfig) {
-        shield = new HylianShield(clientConfig.appId, clientConfig.appSecret, clientConfig.serverURL);
+    public HylianInterceptor(HylianClient client) {
+        shield = new HylianShield(client);
     }
 
     /**

@@ -9,6 +9,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import xin.manong.hylian.client.common.Constants;
 import xin.manong.hylian.client.common.URLPattern;
+import xin.manong.hylian.client.core.HylianClient;
 import xin.manong.hylian.client.filter.HylianGuard;
 import xin.manong.weapon.base.util.CommonUtil;
 
@@ -27,7 +28,7 @@ import java.util.List;
 public class HylianGuardConfig {
 
     @Resource
-    public HylianClientConfig clientConfig;
+    public HylianClient hylianClient;
 
     public int order = -1000;
     public List<String> includePatterns;
@@ -40,13 +41,12 @@ public class HylianGuardConfig {
      */
     @Bean
     public FilterRegistrationBean<HylianGuard> buildHylianGuard() {
-        clientConfig.check();
         FilterRegistrationBean<HylianGuard> bean = new FilterRegistrationBean<>();
         initHylianGuard(bean);
         if (includePatterns == null) includePatterns = new ArrayList<>();
         if (includePatterns.isEmpty()) includePatterns.add("/*");
         bean.setUrlPatterns(includePatterns);
-        bean.setFilter(new HylianGuard());
+        bean.setFilter(new HylianGuard(hylianClient));
         bean.setName(HylianGuard.class.getSimpleName());
         bean.setOrder(order);
         return bean;
@@ -58,9 +58,6 @@ public class HylianGuardConfig {
      * @param bean Hylian警卫
      */
     private void initHylianGuard(FilterRegistrationBean<HylianGuard> bean) {
-        bean.addInitParameter(Constants.PARAM_APP_ID, clientConfig.appId);
-        bean.addInitParameter(Constants.PARAM_APP_SECRET, clientConfig.appSecret);
-        bean.addInitParameter(Constants.PARAM_SERVER_URL, clientConfig.serverURL);
         if (excludePatterns != null && !excludePatterns.isEmpty()) {
             List<URLPattern> patterns = new ArrayList<>();
             for (String excludePattern : excludePatterns) patterns.add(processExcludePattern(excludePattern));

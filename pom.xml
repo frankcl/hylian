@@ -12,7 +12,7 @@
         <module>hylian-client</module>
         <module>hylian-server</module>
     </modules>
-    <version>0.0.1</version>
+    <version>0.0.2</version>
     <name>hylian</name>
     <description>support SSO and ACL</description>
     <url>https://github.com/frankcl/hylian</url>
@@ -61,8 +61,8 @@
         <druid.version>1.2.23</druid.version>
         <java-jwt.version>4.4.0</java-jwt.version>
         <oss.version>3.18.1</oss.version>
-        <weapon.version>0.2.1</weapon.version>
-        <hylian.version>0.0.1</hylian.version>
+        <weapon.version>0.2.9</weapon.version>
+        <hylian.version>0.0.2</hylian.version>
     </properties>
 
     <profiles>

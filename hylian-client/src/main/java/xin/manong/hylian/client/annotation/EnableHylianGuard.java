@@ -18,7 +18,10 @@ import java.lang.annotation.*;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.TYPE })
 @Documented
-@Import({ HylianClientConfig.class, HylianGuardConfig.class,
-        SessionListenerConfig.class, UserServiceSupport.class })
+@Import({
+        HylianClientConfig.class,
+        HylianGuardConfig.class,
+        SessionListenerConfig.class,
+        UserServiceSupport.class })
 public @interface EnableHylianGuard {
 }

@@ -5,7 +5,9 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import xin.manong.hylian.client.core.HylianClient;
 
 /**
  * Hylian客户端配置
@@ -25,6 +27,17 @@ public class HylianClientConfig {
     public String serverURL;
 
     /**
+     * 构建客户端
+     *
+     * @param clientConfig 客户端配置
+     * @return 客户端
+     */
+    @Bean
+    public HylianClient buildHylianClient(HylianClientConfig clientConfig) {
+        return new HylianClient(clientConfig);
+    }
+
+    /**
      * 检测应用客户端配置有效性
      */
     public void check() {
@@ -40,5 +53,6 @@ public class HylianClientConfig {
             logger.error("Server url is empty");
             throw new IllegalArgumentException("安全检测服务URL为空");
         }
+        if (!serverURL.endsWith("/")) serverURL += "/";
     }
 }

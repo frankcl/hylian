@@ -5,6 +5,7 @@ import lombok.Data;
 import org.springframework.boot.web.servlet.ServletListenerRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import xin.manong.hylian.client.core.HylianClient;
 import xin.manong.hylian.client.core.SessionListener;
 
 /**
@@ -18,7 +19,7 @@ import xin.manong.hylian.client.core.SessionListener;
 public class SessionListenerConfig {
 
     @Resource
-    protected HylianClientConfig hylianClientConfig;
+    protected HylianClient hylianClient;
 
     /**
      * 构建session监听器
@@ -27,10 +28,9 @@ public class SessionListenerConfig {
      */
     @Bean
     public ServletListenerRegistrationBean<SessionListener> buildSessionListener() {
-        if (hylianClientConfig == null) throw new IllegalArgumentException("客户端配置为空");
-        hylianClientConfig.check();
+        if (hylianClient == null) throw new IllegalArgumentException("客户端为空");
         ServletListenerRegistrationBean<SessionListener> bean = new ServletListenerRegistrationBean<>();
-        bean.setListener(new SessionListener(hylianClientConfig));
+        bean.setListener(new SessionListener(hylianClient));
         return bean;
     }
 }
