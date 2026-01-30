@@ -43,6 +43,7 @@ export default defineConfig({
   server: {
     port: 8089,
     host: '127.0.0.1',
+    allowedHosts: ['hylian.manong.xin'],
     cors: true,
     proxy: {
       '^/api': {
