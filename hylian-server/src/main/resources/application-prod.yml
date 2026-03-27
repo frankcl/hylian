@@ -20,7 +20,7 @@ weapon:
         mode: single
         connection-pool-size: 200
         password: ${weapon/redis/password}
-        address: localhost:6379
+        address: r-bp1zhcujlmuqz1sr6j.redis.rds.aliyuncs.com:6379
         db: 0
   aliyun:
     oss:
