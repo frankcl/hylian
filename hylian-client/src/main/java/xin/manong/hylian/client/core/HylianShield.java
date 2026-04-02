@@ -69,7 +69,8 @@ public class HylianShield {
                 authorization = httpRequest.getHeader(Constants.HEADER_AUTHORIZATION.toLowerCase());
             }
             if (StringUtils.isNotEmpty(authorization) && !Objects.equals(sessionId, cookieSessionId)) {
-                logger.error("Cookie session id is expired, need refresh");
+                logger.error("Cookie session id is expired, need refresh, session:{}, cookie session:{}",
+                        sessionId, cookieSessionId);
                 ClientErrorException e = new ClientErrorException("Need refresh session", Response.Status.CONFLICT);
                 httpRequest.getServletContext().setAttribute(Constants.ATTRIBUTE_EXCEPTION, e);
                 throw e;
