@@ -175,7 +175,7 @@ public class HylianClient {
      * @param token 令牌
      * @return 成功返回用户信息，否则返回null
      */
-    User getUser(String token) {
+    public User getUser(String token) {
         String requestURL = String.format("%s%s", config.serverURL, Constants.SERVER_PATH_GET_USER);
         Map<String, Object> paramMap = buildTokenRequest(token);
         HttpRequest httpRequest = HttpRequest.buildGetRequest(requestURL, paramMap);
@@ -205,7 +205,7 @@ public class HylianClient {
      * @param token 当前token
      * @return 成功返回新token，否则返回null
      */
-    String refreshToken(String token) {
+    public String refreshToken(String token) {
         String requestURL = String.format("%s%s", config.serverURL, Constants.SERVER_PATH_REFRESH_TOKEN);
         Map<String, Object> requestBody = buildTokenRequest(token);
         HttpRequest httpRequest = HttpRequest.buildPostRequest(requestURL, RequestFormat.JSON, requestBody);

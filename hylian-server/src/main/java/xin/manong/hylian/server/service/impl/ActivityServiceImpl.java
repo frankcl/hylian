@@ -19,6 +19,7 @@ import xin.manong.hylian.server.service.request.ActivitySearchRequest;
 import xin.manong.hylian.server.util.ModelValidator;
 
 import java.util.List;
+import java.util.function.Function;
 
 /**
  * 活动记录服务实现
@@ -45,6 +46,14 @@ public class ActivityServiceImpl implements ActivityService {
         Activity prevActivity = activityMapper.selectById(activity.id);
         if (prevActivity == null) throw new NotFoundException("活动记录不存在");
         return activityMapper.updateById(activity) > 0;
+    }
+
+    @Override
+    public boolean upsert(Activity activity) {
+        Activity prevActivity = get(activity.appId, activity.ticketId);
+        if (prevActivity != null) activity.id = prevActivity.id;
+        Function<Activity, Boolean> function = prevActivity == null ? this::add : this::update;
+        return function.apply(activity);
     }
 
     @Override

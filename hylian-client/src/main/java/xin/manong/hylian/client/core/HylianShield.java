@@ -3,6 +3,7 @@ package xin.manong.hylian.client.core;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.ws.rs.ClientErrorException;
+import jakarta.ws.rs.NotAuthorizedException;
 import jakarta.ws.rs.core.Response;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -57,7 +58,18 @@ public class HylianShield {
             sweepSession(httpRequest);
             return false;
         }
-        String token = SessionUtils.getToken(httpRequest);
+        String token = HTTPUtils.getTokenFromHeader(httpRequest);
+        if (StringUtils.isNotEmpty(token)) {
+            User user = hylianClient.getUser(token);
+            if (user == null) {
+                logger.error("Invalid token:{}", token);
+                throw new NotAuthorizedException("Token验证失败");
+            }
+            SessionUtils.setUser(httpRequest, user);
+            SessionUtils.removeRefreshUser(httpRequest);
+            return true;
+        }
+        token = SessionUtils.getToken(httpRequest);
         if (StringUtils.isNotEmpty(token)) {
             if (refreshUser(token, httpRequest) && refreshToken(token, httpRequest)) return true;
             logger.warn("Token is expired");

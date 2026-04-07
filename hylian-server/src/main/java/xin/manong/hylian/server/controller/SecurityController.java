@@ -149,18 +149,13 @@ public class SecurityController {
         String token = tokenService.buildToken(userProfile, Constants.CACHE_TOKEN_EXPIRED_TIME_MS);
         tokenService.putToken(token, ticket);
         ticketService.addToken(userProfile.id, token);
-        Activity prevActivity = activityService.get(request.appId, userProfile.id);
         Activity activity = new Activity();
         activity.userId = userProfile.userId;
         activity.ticketId = userProfile.id;
         activity.sessionId = request.sessionId;
         activity.appId = request.appId;
-        if (prevActivity != null) activity.id = prevActivity.id;
-        Function<Activity, Boolean> function = prevActivity == null ?
-                record -> activityService.add(record) : record -> activityService.update(record);
-        if (!function.apply(activity)) {
-            String operation = prevActivity == null ? "add" : "update";
-            logger.warn("{} activity failed for app:{} and user:{}", operation , request.appId, userProfile.userId);
+        if (!activityService.upsert(activity)) {
+            logger.warn("Upsert activity failed for app:{} and user:{}" , request.appId, userProfile.userId);
         }
         return token;
     }
@@ -446,10 +441,13 @@ public class SecurityController {
         UserProfile userProfile = new UserProfile();
         userProfile.setId(RandomID.build()).setUserId(user.id);
         ticket = ticketService.buildTicket(userProfile, Constants.COOKIE_TICKET_EXPIRED_TIME_MS);
+        String token = tokenService.buildToken(userProfile, Constants.CACHE_TOKEN_EXPIRED_TIME_MS);
+        tokenService.putToken(token, ticket);
+        ticketService.addToken(userProfile.id, token);
         ticketService.putTicket(userProfile.id, ticket);
         CookieUtils.setCookie(Constants.COOKIE_TICKET, ticket, "/",
                 serverConfig.domain, true, httpRequest, httpResponse);
-        CookieUtils.setCookie(Constants.COOKIE_TOKEN, RandomID.build(), "/",
+        CookieUtils.setCookie(Constants.COOKIE_TOKEN, token, "/",
                 serverConfig.domain, false, httpRequest, httpResponse);
         return true;
     }

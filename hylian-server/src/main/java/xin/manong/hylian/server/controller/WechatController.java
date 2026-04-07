@@ -19,8 +19,7 @@ import xin.manong.hylian.model.User;
 import xin.manong.hylian.server.common.Constants;
 import xin.manong.hylian.server.config.ServerConfig;
 import xin.manong.hylian.server.model.UserProfile;
-import xin.manong.hylian.server.service.TicketService;
-import xin.manong.hylian.server.service.WechatService;
+import xin.manong.hylian.server.service.*;
 import xin.manong.hylian.server.service.impl.WechatServiceImpl;
 import xin.manong.hylian.server.util.AvatarUtils;
 import xin.manong.hylian.client.util.CookieUtils;
@@ -28,8 +27,6 @@ import xin.manong.hylian.server.websocket.QRCodeWebSocket;
 import xin.manong.hylian.server.wechat.*;
 import xin.manong.hylian.server.converter.Converter;
 import xin.manong.hylian.server.model.QRCode;
-import xin.manong.hylian.server.service.QRCodeService;
-import xin.manong.hylian.server.service.UserService;
 import xin.manong.hylian.server.util.AppSecretUtils;
 import xin.manong.weapon.aliyun.oss.OSSClient;
 import xin.manong.weapon.aliyun.oss.OSSMeta;
@@ -65,6 +62,8 @@ public class WechatController extends WatchValueDisposableBean {
     private QRCodeService qrCodeService;
     @Resource
     private TicketService ticketService;
+    @Resource
+    private TokenService tokenService;
     @Resource
     private WechatService wechatService;
     @Resource
@@ -353,10 +352,14 @@ public class WechatController extends WatchValueDisposableBean {
         UserProfile userProfile = new UserProfile();
         userProfile.setId(RandomID.build()).setUserId(user.id);
         String ticket = ticketService.buildTicket(userProfile, Constants.COOKIE_TICKET_EXPIRED_TIME_MS);
+        String token = tokenService.buildToken(userProfile, Constants.CACHE_TOKEN_EXPIRED_TIME_MS);
+        tokenService.putToken(token, ticket);
+        ticketService.addToken(userProfile.id, token);
         ticketService.putTicket(userProfile.id, ticket);
+        httpResponse.addHeader(Constants.HEADER_TOKEN, token);
         CookieUtils.setCookie(Constants.COOKIE_TICKET, ticket, "/",
                 serverConfig.domain, true, httpRequest, httpResponse);
-        CookieUtils.setCookie(Constants.COOKIE_TOKEN, RandomID.build(), "/",
+        CookieUtils.setCookie(Constants.COOKIE_TOKEN, token, "/",
                 serverConfig.domain, false, httpRequest, httpResponse);
     }
 

@@ -27,6 +27,7 @@ public class Constants {
     public static final String COOKIE_TOKEN = "TOKEN";
 
     public static final String HEADER_AUTHORIZATION = "Authorization";
+    public static final String HEADER_TOKEN = "Token";
 
     public static final String PREFIX_BEARER = "Bearer";
     public static final String PARAM_CODE = "code";

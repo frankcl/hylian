@@ -8,8 +8,11 @@ package xin.manong.hylian.client.common;
  */
 public class Constants {
 
+    public static final String PREFIX_BEARER = "Bearer";
+
     public static final String ATTRIBUTE_EXCEPTION = "exception";
 
+    public static final String HEADER_WECHAT = "Wechat";
     public static final String HEADER_AUTHORIZATION = "Authorization";
     public static final String HEADER_LOCATION = "Location";
 

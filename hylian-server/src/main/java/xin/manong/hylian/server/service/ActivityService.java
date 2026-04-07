@@ -31,6 +31,14 @@ public interface ActivityService {
     boolean update(Activity activity);
 
     /**
+     * 添加更新活动记录
+     *
+     * @param activity 活动记录
+     * @return 成功返回true，否则返回false
+     */
+    boolean upsert(Activity activity);
+
+    /**
      * 清除过期活动记录
      *
      * @param maxUpdateTime 最大更新时间，单位：毫秒
