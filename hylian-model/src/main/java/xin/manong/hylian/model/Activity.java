@@ -66,6 +66,58 @@ public class Activity extends BaseModel {
     @JsonProperty("app_id")
     public String appId;
 
+    public Activity() {}
+
+    private Activity(Builder builder) {
+        this.sessionId = builder.sessionId;
+        this.ticketId = builder.ticketId;
+        this.userId = builder.userId;
+        this.appId = builder.appId;
+    }
+
+    /**
+     * 创建构建器
+     *
+     * @return 构建器
+     */
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    /**
+     * 构建器
+     */
+    public static class Builder {
+        private String sessionId;
+        private String ticketId;
+        private String userId;
+        private String appId;
+
+        public Builder sessionId(String sessionId) {
+            this.sessionId = sessionId;
+            return this;
+        }
+
+        public Builder ticketId(String ticketId) {
+            this.ticketId = ticketId;
+            return this;
+        }
+
+        public Builder userId(String userId) {
+            this.userId = userId;
+            return this;
+        }
+
+        public Builder appId(String appId) {
+            this.appId = appId;
+            return this;
+        }
+
+        public Activity build() {
+            return new Activity(this);
+        }
+    }
+
     /**
      * 检测有效性，无效抛出异常BadRequestException
      */

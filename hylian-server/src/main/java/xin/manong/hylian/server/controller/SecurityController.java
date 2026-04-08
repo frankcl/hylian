@@ -31,7 +31,6 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -149,11 +148,8 @@ public class SecurityController {
         String token = tokenService.buildToken(userProfile, Constants.CACHE_TOKEN_EXPIRED_TIME_MS);
         tokenService.putToken(token, ticket);
         ticketService.addToken(userProfile.id, token);
-        Activity activity = new Activity();
-        activity.userId = userProfile.userId;
-        activity.ticketId = userProfile.id;
-        activity.sessionId = request.sessionId;
-        activity.appId = request.appId;
+        Activity activity = Activity.builder().userId(userProfile.userId).
+                ticketId(userProfile.id).sessionId(request.sessionId).appId(request.appId).build();
         if (!activityService.upsert(activity)) {
             logger.warn("Upsert activity failed for app:{} and user:{}" , request.appId, userProfile.userId);
         }
