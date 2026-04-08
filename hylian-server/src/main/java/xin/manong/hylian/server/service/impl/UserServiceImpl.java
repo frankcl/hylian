@@ -17,6 +17,7 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import xin.manong.hylian.model.Activity;
+import xin.manong.hylian.server.component.TicketTokenManagement;
 import xin.manong.hylian.server.config.ServerConfig;
 import xin.manong.hylian.server.service.*;
 import xin.manong.hylian.server.service.request.ActivitySearchRequest;
@@ -67,13 +68,10 @@ public class UserServiceImpl implements UserService {
     private ActivityService activityService;
     @Lazy
     @Resource
-    private TicketService ticketService;
-    @Lazy
-    @Resource
-    private TokenService tokenService;
-    @Lazy
-    @Resource
     private WechatService wechatService;
+    @Lazy
+    @Resource
+    private TicketTokenManagement ticketTokenManagement;
 
     @Override
     public User get(String id) {
@@ -136,7 +134,7 @@ public class UserServiceImpl implements UserService {
         boolean result = userMapper.updateById(user) > 0;
         if (StringUtils.isNotEmpty(user.avatar) && result) deleteAvatar(prevUser);
         if (result && !prevUser.disabled && user.disabled != null && user.disabled) {
-            removeUserProfile(user);
+            removeUserActivities(user);
             sendWechatNotice(prevUser, "账号禁用");
         }
         if (result && user.disabled != null && !user.disabled &&
@@ -157,7 +155,7 @@ public class UserServiceImpl implements UserService {
             userRoleService.deleteByUser(id);
             appUserService.deleteByUser(id);
             deleteAvatar(user);
-            removeUserProfile(user);
+            removeUserActivities(user);
             activityService.removeByUserId(user.id);
         }
         return success;
@@ -203,20 +201,12 @@ public class UserServiceImpl implements UserService {
         return userMapper.selectList(query);
     }
 
-    @Override
-    public void removeUserProfile(String id) {
-        Set<String> tokenIds = ticketService.getTokens(id);
-        for (String tokenId : tokenIds) tokenService.removeTokenWithId(tokenId);
-        ticketService.removeTokens(id);
-        ticketService.removeTicket(id);
-    }
-
     /**
      * 移除用户登录信息
      *
      * @param user 用户
      */
-    private void removeUserProfile(User user) {
+    private void removeUserActivities(User user) {
         ActivitySearchRequest request = new ActivitySearchRequest();
         request.userId = user.id;
         request.pageSize = 100;
@@ -225,7 +215,7 @@ public class UserServiceImpl implements UserService {
         Set<String> tickets = new HashSet<>();
         for (Activity activity : pager.records) {
             if (tickets.contains(activity.ticketId)) continue;
-            removeUserProfile(activity.ticketId);
+            ticketTokenManagement.removeTicketTokensById(activity.ticketId);
             tickets.add(activity.ticketId);
         }
     }

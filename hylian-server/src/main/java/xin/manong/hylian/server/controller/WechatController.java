@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 import xin.manong.hylian.client.core.HTTPExecutor;
 import xin.manong.hylian.model.User;
 import xin.manong.hylian.server.common.Constants;
+import xin.manong.hylian.server.component.TicketTokenManagement;
 import xin.manong.hylian.server.config.ServerConfig;
 import xin.manong.hylian.server.model.UserProfile;
 import xin.manong.hylian.server.service.*;
@@ -61,11 +62,9 @@ public class WechatController extends WatchValueDisposableBean {
     @Resource
     private QRCodeService qrCodeService;
     @Resource
-    private TicketService ticketService;
-    @Resource
-    private TokenService tokenService;
-    @Resource
     private WechatService wechatService;
+    @Resource
+    private TicketTokenManagement ticketTokenManagement;
     @Resource
     private ServerConfig serverConfig;
     @Resource
@@ -351,11 +350,8 @@ public class WechatController extends WatchValueDisposableBean {
                             HttpServletResponse httpResponse) {
         UserProfile userProfile = new UserProfile();
         userProfile.setId(RandomID.build()).setUserId(user.id);
-        String ticket = ticketService.buildTicket(userProfile, Constants.COOKIE_TICKET_EXPIRED_TIME_MS);
-        String token = tokenService.buildToken(userProfile, Constants.CACHE_TOKEN_EXPIRED_TIME_MS);
-        tokenService.putToken(token, ticket);
-        ticketService.addToken(userProfile.id, token);
-        ticketService.putTicket(userProfile.id, ticket);
+        String ticket = ticketTokenManagement.buildTicket(userProfile);
+        String token = ticketTokenManagement.buildToken(ticket);
         httpResponse.addHeader(Constants.HEADER_TOKEN, token);
         CookieUtils.setCookie(Constants.COOKIE_TICKET, ticket, "/",
                 serverConfig.domain, true, httpRequest, httpResponse);

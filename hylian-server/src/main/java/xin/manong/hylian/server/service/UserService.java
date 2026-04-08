@@ -92,13 +92,4 @@ public interface UserService {
      * @return 用户列表
      */
     List<User> getUsers();
-
-    /**
-     * 移除用户登录信息
-     * 1. ticket相关信息
-     * 2. token相关信息
-     *
-     * @param id profile id
-     */
-    void removeUserProfile(String id);
 }

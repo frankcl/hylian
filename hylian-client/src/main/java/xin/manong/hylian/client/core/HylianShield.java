@@ -77,9 +77,6 @@ public class HylianShield {
             String authorization = httpRequest.getHeader(Constants.HEADER_AUTHORIZATION);
             String sessionId = SessionUtils.getSessionID(httpRequest);
             String cookieSessionId = CookieUtils.getCookie(httpRequest, Constants.COOKIE_SESSION_ID);
-            if (StringUtils.isEmpty(authorization)) {
-                authorization = httpRequest.getHeader(Constants.HEADER_AUTHORIZATION.toLowerCase());
-            }
             if (StringUtils.isNotEmpty(authorization) && !Objects.equals(sessionId, cookieSessionId)) {
                 logger.error("Cookie session id is expired, need refresh, session:{}, cookie session:{}",
                         sessionId, cookieSessionId);
