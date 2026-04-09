@@ -14,6 +14,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import xin.manong.hylian.client.config.HylianClientConfig;
 import xin.manong.hylian.model.*;
+import xin.manong.hylian.server.component.ActivityManagement;
 import xin.manong.hylian.server.component.TicketTokenManagement;
 import xin.manong.hylian.server.config.ServerConfig;
 import xin.manong.hylian.server.controller.request.*;
@@ -62,8 +63,6 @@ public class SecurityController {
     @Resource
     private TenantService tenantService;
     @Resource
-    private ActivityService activityService;
-    @Resource
     private UserRoleService userRoleService;
     @Resource
     private RolePermissionService rolePermissionService;
@@ -73,6 +72,8 @@ public class SecurityController {
     private CaptchaService captchaService;
     @Resource
     private WechatService wechatService;
+    @Resource
+    private ActivityManagement activityManagement;
     @Resource
     private TicketTokenManagement ticketTokenManagement;
     @Resource
@@ -130,7 +131,7 @@ public class SecurityController {
         ticketTokenManagement.verifyTicket(ticket);
         UserProfile userProfile = jwtService.decodeProfile(ticket);
         String token = ticketTokenManagement.buildToken(ticket);
-        ticketTokenManagement.addActivity(userProfile, request.sessionId, request.appId);
+        activityManagement.addActivity(userProfile, request.sessionId, request.appId);
         return token;
     }
 
@@ -209,7 +210,7 @@ public class SecurityController {
         if (request == null) throw new BadRequestException("移除活动记录请求为空");
         request.check();
         appService.verifyApp(request.appId, request.appSecret);
-        return activityService.remove(request.sessionId, request.appId);
+        return activityManagement.removeActivity(request.appId, request.sessionId);
     }
 
     /**
@@ -361,8 +362,7 @@ public class SecurityController {
         SessionUtils.removeResources(httpRequest);
         CookieUtils.removeCookie(Constants.COOKIE_TOKEN, "/", serverConfig.domain, httpResponse);
         CookieUtils.removeCookie(Constants.COOKIE_TICKET, "/", serverConfig.domain, httpResponse);
-        UserProfile userProfile = jwtService.decodeProfile(ticket);
-        if (userProfile != null) activityService.remove(userProfile.id);
+        activityManagement.removeActivity(ticket);
         return true;
     }
 
@@ -409,7 +409,7 @@ public class SecurityController {
         userProfile.setId(RandomID.build()).setUserId(user.id);
         String ticket = ticketTokenManagement.buildTicket(userProfile);
         String token = ticketTokenManagement.buildToken(ticket);
-        ticketTokenManagement.addActivity(userProfile, httpRequest.getSession().getId(), hylianClientConfig.appId);
+        activityManagement.addActivity(userProfile, httpRequest.getSession().getId(), hylianClientConfig.appId);
         SessionUtils.setToken(httpRequest, token);
         CookieUtils.setCookie(Constants.COOKIE_TICKET, ticket, "/",
                 serverConfig.domain, true, httpRequest, httpResponse);

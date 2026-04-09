@@ -19,6 +19,7 @@ import xin.manong.hylian.client.core.HTTPExecutor;
 import xin.manong.hylian.client.util.SessionUtils;
 import xin.manong.hylian.model.User;
 import xin.manong.hylian.server.common.Constants;
+import xin.manong.hylian.server.component.ActivityManagement;
 import xin.manong.hylian.server.component.TicketTokenManagement;
 import xin.manong.hylian.server.config.ServerConfig;
 import xin.manong.hylian.server.model.UserProfile;
@@ -65,6 +66,8 @@ public class WechatController extends WatchValueDisposableBean {
     private QRCodeService qrCodeService;
     @Resource
     private WechatService wechatService;
+    @Resource
+    private ActivityManagement activityManagement;
     @Resource
     private TicketTokenManagement ticketTokenManagement;
     @Resource
@@ -356,7 +359,7 @@ public class WechatController extends WatchValueDisposableBean {
         userProfile.setId(RandomID.build()).setUserId(user.id);
         String ticket = ticketTokenManagement.buildTicket(userProfile);
         String token = ticketTokenManagement.buildToken(ticket);
-        ticketTokenManagement.addActivity(userProfile, httpRequest.getSession().getId(), hylianClientConfig.appId);
+        activityManagement.addActivity(userProfile, httpRequest.getSession().getId(), hylianClientConfig.appId);
         httpResponse.addHeader(Constants.HEADER_TOKEN, token);
         SessionUtils.setToken(httpRequest, token);
         CookieUtils.setCookie(Constants.COOKIE_TICKET, ticket, "/",

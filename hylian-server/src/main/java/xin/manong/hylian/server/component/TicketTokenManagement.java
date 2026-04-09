@@ -8,10 +8,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import xin.manong.hylian.client.util.CookieUtils;
-import xin.manong.hylian.model.Activity;
 import xin.manong.hylian.server.common.Constants;
 import xin.manong.hylian.server.model.UserProfile;
-import xin.manong.hylian.server.service.ActivityService;
 import xin.manong.hylian.server.service.JWTService;
 import xin.manong.hylian.server.service.TicketService;
 import xin.manong.hylian.server.service.TokenService;
@@ -29,8 +27,6 @@ public class TicketTokenManagement {
 
     private static final Logger logger = LoggerFactory.getLogger(TicketTokenManagement.class);
 
-    @Resource
-    private ActivityService activityService;
     @Resource
     private JWTService jwtService;
     @Resource
@@ -195,20 +191,5 @@ public class TicketTokenManagement {
         UserProfile userProfile = jwtService.decodeProfile(token);
         if (userProfile == null) return;
         ticketService.removeToken(userProfile.id, token);
-    }
-
-    /**
-     * 添加活动记录
-     *
-     * @param userProfile 用户信息
-     * @param sessionId 会话ID
-     * @param appId 应用ID
-     */
-    public void addActivity(UserProfile userProfile, String sessionId, String appId) {
-        Activity activity = Activity.builder().userId(userProfile.userId).
-                ticketId(userProfile.id).sessionId(sessionId).appId(appId).build();
-        if (!activityService.upsert(activity)) {
-            logger.warn("Upsert activity failed for app:{} and user:{}" , appId, userProfile.userId);
-        }
     }
 }
