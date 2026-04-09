@@ -1,11 +1,13 @@
 package xin.manong.hylian.server.component;
 
 import jakarta.annotation.Resource;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.ws.rs.NotAuthorizedException;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
+import xin.manong.hylian.client.util.CookieUtils;
 import xin.manong.hylian.server.common.Constants;
 import xin.manong.hylian.server.model.UserProfile;
 import xin.manong.hylian.server.service.JWTService;
@@ -31,6 +33,43 @@ public class TicketTokenManagement {
     private TokenService tokenService;
     @Resource
     private TicketService ticketService;
+
+    /**
+     * 从HTTP头中获取token
+     *
+     * @param httpRequest HTTP请求
+     * @return token
+     */
+    public String getTokenFromHeader(HttpServletRequest httpRequest) {
+        String value = httpRequest.getHeader(Constants.HEADER_AUTHORIZATION);
+        String prefix = String.format("%s ", Constants.PREFIX_BEARER);
+        if (StringUtils.isEmpty(value) || !value.startsWith(prefix)) return null;
+        return value.substring(prefix.length());
+    }
+
+    /**
+     * 从cookie中获取ticket
+     *
+     * @param httpRequest HTTP请求
+     * @return ticket
+     */
+    public String getTicketFromCookie(HttpServletRequest httpRequest) {
+        return CookieUtils.getCookie(httpRequest, Constants.COOKIE_TICKET);
+    }
+
+    /**
+     * 从HTTP请求中获取ticket或token
+     * 1. 优先从cookie中获取ticket
+     * 2. 其次从HTTP头中获取token
+     *
+     * @param httpRequest HTTP请求
+     * @return ticket或token
+     */
+    public String getTicketTokenFromRequest(HttpServletRequest httpRequest) {
+        String ticket = getTicketFromCookie(httpRequest);
+        if (StringUtils.isNotEmpty(ticket)) return ticket;
+        return getTokenFromHeader(httpRequest);
+    }
 
     /**
      * 验证令牌有效性

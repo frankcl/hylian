@@ -98,30 +98,13 @@ public class SecurityController {
                             @Context HttpServletRequest httpRequest,
                             @Context HttpServletResponse httpResponse) throws IOException {
         appService.verifyApp(appId, appSecret);
-        String ticket = getTicket(httpRequest);
+        String ticket = ticketTokenManagement.getTicketTokenFromRequest(httpRequest);
         ticketTokenManagement.verifyTicket(ticket);
         String code = codeService.createCode(ticket);
         boolean hasQuery = StringUtils.isNotEmpty(new URL(redirectURL).getQuery());
         httpResponse.sendRedirect(String.format("%s%s%s=%s", redirectURL,
                 hasQuery ? "&" : "?", Constants.PARAM_CODE, code));
         return code;
-    }
-
-    /**
-     * 从HTTP请求中获取ticket
-     * 1. 从cookie获取
-     * 2. 从HTTP请求头Authorization获取
-     *
-     * @param httpRequest HTTP请求
-     * @return 票据
-     */
-    private String getTicket(HttpServletRequest httpRequest) {
-        String ticket = CookieUtils.getCookie(httpRequest, Constants.COOKIE_TICKET);
-        if (StringUtils.isNotEmpty(ticket)) return ticket;
-        String value = httpRequest.getHeader(Constants.HEADER_AUTHORIZATION);
-        String prefix = String.format("%s ", Constants.PREFIX_BEARER);
-        if (StringUtils.isEmpty(value) || !value.startsWith(prefix)) return null;
-        return value.substring(prefix.length());
     }
 
     /**
@@ -369,7 +352,7 @@ public class SecurityController {
                           @Context HttpServletRequest httpRequest,
                           @Context HttpServletResponse httpResponse) {
         appService.verifyApp(appId, appSecret);
-        String ticket = getTicket(httpRequest);
+        String ticket = ticketTokenManagement.getTicketTokenFromRequest(httpRequest);
         if (StringUtils.isEmpty(ticket)) {
             CookieUtils.removeCookie(Constants.COOKIE_TOKEN, "/", serverConfig.domain, httpResponse);
             logger.error("Ticket is not found from cookies");
@@ -399,7 +382,7 @@ public class SecurityController {
     public boolean passwordLogin(@RequestBody LoginRequest request,
                                  @Context HttpServletRequest httpRequest,
                                  @Context HttpServletResponse httpResponse) {
-        if (StringUtils.isNotEmpty(getTicket(httpRequest))) {
+        if (StringUtils.isNotEmpty(ticketTokenManagement.getTicketTokenFromRequest(httpRequest))) {
             logger.info("Logged in");
             return true;
         }

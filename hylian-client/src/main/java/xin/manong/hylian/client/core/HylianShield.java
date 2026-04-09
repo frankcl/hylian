@@ -62,7 +62,7 @@ public class HylianShield {
         if (StringUtils.isNotEmpty(token)) {
             User user = hylianClient.getUser(token);
             if (user == null) {
-                logger.error("Invalid token:{}", token);
+                logger.error("Invalid http token:{}", token);
                 throw new NotAuthorizedException("Token验证失败");
             }
             SessionUtils.setUser(httpRequest, user);
