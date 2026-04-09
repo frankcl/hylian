@@ -12,6 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
+import xin.manong.hylian.client.config.HylianClientConfig;
 import xin.manong.hylian.model.*;
 import xin.manong.hylian.server.component.TicketTokenManagement;
 import xin.manong.hylian.server.config.ServerConfig;
@@ -76,6 +77,8 @@ public class SecurityController {
     private TicketTokenManagement ticketTokenManagement;
     @Resource
     private ServerConfig serverConfig;
+    @Resource
+    private HylianClientConfig hylianClientConfig;
 
     /**
      * 申请安全code
@@ -127,11 +130,7 @@ public class SecurityController {
         ticketTokenManagement.verifyTicket(ticket);
         UserProfile userProfile = jwtService.decodeProfile(ticket);
         String token = ticketTokenManagement.buildToken(ticket);
-        Activity activity = Activity.builder().userId(userProfile.userId).
-                ticketId(userProfile.id).sessionId(request.sessionId).appId(request.appId).build();
-        if (!activityService.upsert(activity)) {
-            logger.warn("Upsert activity failed for app:{} and user:{}" , request.appId, userProfile.userId);
-        }
+        ticketTokenManagement.addActivity(userProfile, request.sessionId, request.appId);
         return token;
     }
 
@@ -410,6 +409,8 @@ public class SecurityController {
         userProfile.setId(RandomID.build()).setUserId(user.id);
         String ticket = ticketTokenManagement.buildTicket(userProfile);
         String token = ticketTokenManagement.buildToken(ticket);
+        ticketTokenManagement.addActivity(userProfile, httpRequest.getSession().getId(), hylianClientConfig.appId);
+        SessionUtils.setToken(httpRequest, token);
         CookieUtils.setCookie(Constants.COOKIE_TICKET, ticket, "/",
                 serverConfig.domain, true, httpRequest, httpResponse);
         CookieUtils.setCookie(Constants.COOKIE_TOKEN, token, "/",

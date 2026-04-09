@@ -14,7 +14,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
+import xin.manong.hylian.client.config.HylianClientConfig;
 import xin.manong.hylian.client.core.HTTPExecutor;
+import xin.manong.hylian.client.util.SessionUtils;
 import xin.manong.hylian.model.User;
 import xin.manong.hylian.server.common.Constants;
 import xin.manong.hylian.server.component.TicketTokenManagement;
@@ -67,6 +69,8 @@ public class WechatController extends WatchValueDisposableBean {
     private TicketTokenManagement ticketTokenManagement;
     @Resource
     private ServerConfig serverConfig;
+    @Resource
+    private HylianClientConfig hylianClientConfig;
     @Resource
     private OSSClient ossClient;
 
@@ -352,7 +356,9 @@ public class WechatController extends WatchValueDisposableBean {
         userProfile.setId(RandomID.build()).setUserId(user.id);
         String ticket = ticketTokenManagement.buildTicket(userProfile);
         String token = ticketTokenManagement.buildToken(ticket);
+        ticketTokenManagement.addActivity(userProfile, httpRequest.getSession().getId(), hylianClientConfig.appId);
         httpResponse.addHeader(Constants.HEADER_TOKEN, token);
+        SessionUtils.setToken(httpRequest, token);
         CookieUtils.setCookie(Constants.COOKIE_TICKET, ticket, "/",
                 serverConfig.domain, true, httpRequest, httpResponse);
         CookieUtils.setCookie(Constants.COOKIE_TOKEN, token, "/",
