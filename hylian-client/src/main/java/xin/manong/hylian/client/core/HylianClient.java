@@ -205,7 +205,7 @@ public class HylianClient {
      * @param token 当前token
      * @return 成功返回新token，否则返回null
      */
-    public String refreshToken(String token) {
+    String refreshToken(String token) {
         String requestURL = String.format("%s%s", config.serverURL, Constants.SERVER_PATH_REFRESH_TOKEN);
         Map<String, Object> requestBody = buildTokenRequest(token);
         HttpRequest httpRequest = HttpRequest.buildPostRequest(requestURL, RequestFormat.JSON, requestBody);

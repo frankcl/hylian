@@ -1,15 +1,16 @@
 package xin.manong.hylian.server.controller;
 
+import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import xin.manong.hylian.server.component.TicketTokenManagement;
 
 /**
  * 健康检测
@@ -22,6 +23,11 @@ import org.springframework.web.bind.annotation.RestController;
 @Path("api/health")
 @RequestMapping("api/health")
 public class HealthController {
+
+    private static final Logger logger = LoggerFactory.getLogger(HealthController.class);
+
+    @Resource
+    private TicketTokenManagement ticketTokenManagement;
 
     /**
      * 健康检测
@@ -48,5 +54,28 @@ public class HealthController {
     @GetMapping("refreshSession")
     public String refreshSession(@Context HttpServletRequest httpRequest) {
         return httpRequest.getSession().getId();
+    }
+
+    /**
+     * 刷新token
+     *
+     * @param token 令牌
+     * @return 新令牌
+     */
+    @POST
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("refreshToken/{token}")
+    @PostMapping("refreshToken/{token}")
+    public String refreshToken(@PathVariable("token") @PathParam("token") String token) {
+        if (StringUtils.isEmpty(token)) throw new BadRequestException("刷新Token为空");
+        if (!ticketTokenManagement.verifyToken(token)) throw new NotAuthorizedException("Token验证失败");
+        String ticket = ticketTokenManagement.getTicketByToken(token);
+        if (StringUtils.isEmpty(ticket)) {
+            logger.error("Cached ticket is expired for token:{}", token);
+            throw new NotAuthorizedException("缓存Ticket过期");
+        }
+        ticketTokenManagement.removeTokens(token);
+        return ticketTokenManagement.buildToken(ticket);
     }
 }
