@@ -3,7 +3,6 @@ package xin.manong.hylian.client.component;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import jakarta.servlet.http.HttpServletRequest;
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -53,17 +52,6 @@ public class UserServiceSupport {
                     .removalListener(n -> logger.info("Permissions are removed from cache for user:{}", n.getKey()));
             permissionsCache = builder.build();
         }
-    }
-
-    /**
-     * 刷新token
-     *
-     * @param token 令牌
-     * @return 新令牌
-     */
-    public String refreshToken(String token) {
-        if (StringUtils.isEmpty(token)) throw new IllegalArgumentException("Token is empty");
-        return hylianClient.refreshToken(token);
     }
 
     /**
