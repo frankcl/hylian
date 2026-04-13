@@ -135,9 +135,7 @@ public class HTTPUtils {
      * @return Token
      */
     public static String getTokenFromHeader(HttpServletRequest httpRequest) {
-        String value = httpRequest.getHeader(Constants.HEADER_WECHAT);
-        if (StringUtils.isEmpty(value) || !value.equalsIgnoreCase("wechat")) return null;
-        value = httpRequest.getHeader(Constants.HEADER_AUTHORIZATION);
+        String value = httpRequest.getHeader(Constants.HEADER_AUTHORIZATION);
         String prefix = String.format("%s ", Constants.PREFIX_BEARER);
         if (StringUtils.isEmpty(value) || !value.startsWith(prefix)) return null;
         return value.substring(prefix.length());
