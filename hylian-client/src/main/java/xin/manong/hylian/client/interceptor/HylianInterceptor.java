@@ -3,13 +3,16 @@ package xin.manong.hylian.client.interceptor;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.ws.rs.NotAuthorizedException;
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.web.servlet.HandlerInterceptor;
 import xin.manong.hylian.client.core.CookieSweeper;
 import xin.manong.hylian.client.core.HylianClient;
 import xin.manong.hylian.client.core.HylianShield;
 import xin.manong.hylian.client.core.ContextManager;
+import xin.manong.hylian.client.util.HTTPUtils;
 import xin.manong.hylian.client.util.SessionUtils;
+import xin.manong.hylian.model.User;
 
 /**
  * Hylian拦截器：负责安全拦截
@@ -19,9 +22,11 @@ import xin.manong.hylian.client.util.SessionUtils;
  */
 public class HylianInterceptor extends CookieSweeper implements HandlerInterceptor {
 
+    private final HylianClient client;
     private final HylianShield shield;
 
     public HylianInterceptor(HylianClient client) {
+        this.client = client;
         shield = new HylianShield(client);
     }
 
@@ -39,7 +44,7 @@ public class HylianInterceptor extends CookieSweeper implements HandlerIntercept
                              @NotNull Object handler) throws Exception {
         try {
             if (shield.shelter(httpRequest, httpResponse)) {
-                ContextManager.setUser(SessionUtils.getUser(httpRequest));
+                ContextManager.setUser(getUser(httpRequest));
                 return true;
             }
             return false;
@@ -63,5 +68,21 @@ public class HylianInterceptor extends CookieSweeper implements HandlerIntercept
                                 @NotNull Object handler, Exception e) throws Exception {
         ContextManager.removeUser();
         ContextManager.sweepContext();
+    }
+
+    /**
+     * 获取用户信息
+     * 1. 从session中获取用户信息
+     * 2. 从header中获取token，通过token获取用户信息
+     *
+     * @param httpRequest HTTP请求
+     * @return 用户信息
+     */
+    private User getUser(HttpServletRequest httpRequest) {
+        User user = SessionUtils.getUser(httpRequest);
+        if (user != null) return user;
+        String token = HTTPUtils.getTokenFromHeader(httpRequest);
+        if (StringUtils.isEmpty(token)) return null;
+        return client.getUser(token);
     }
 }

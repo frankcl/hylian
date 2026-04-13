@@ -12,7 +12,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
+import xin.manong.hylian.client.config.HylianClientConfig;
 import xin.manong.hylian.model.*;
+import xin.manong.hylian.server.component.ActivityManagement;
+import xin.manong.hylian.server.component.TicketTokenManagement;
 import xin.manong.hylian.server.config.ServerConfig;
 import xin.manong.hylian.server.controller.request.*;
 import xin.manong.hylian.server.converter.Converter;
@@ -31,7 +34,6 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -53,10 +55,6 @@ public class SecurityController {
     @Resource
     private CodeService codeService;
     @Resource
-    private TokenService tokenService;
-    @Resource
-    private TicketService ticketService;
-    @Resource
     private AppService appService;
     @Resource
     private UserService userService;
@@ -64,8 +62,6 @@ public class SecurityController {
     private AppUserService appUserService;
     @Resource
     private TenantService tenantService;
-    @Resource
-    private ActivityService activityService;
     @Resource
     private UserRoleService userRoleService;
     @Resource
@@ -77,7 +73,13 @@ public class SecurityController {
     @Resource
     private WechatService wechatService;
     @Resource
+    private ActivityManagement activityManagement;
+    @Resource
+    private TicketTokenManagement ticketTokenManagement;
+    @Resource
     private ServerConfig serverConfig;
+    @Resource
+    private HylianClientConfig hylianClientConfig;
 
     /**
      * 申请安全code
@@ -100,31 +102,13 @@ public class SecurityController {
                             @Context HttpServletRequest httpRequest,
                             @Context HttpServletResponse httpResponse) throws IOException {
         appService.verifyApp(appId, appSecret);
-        String ticket = getTicket(httpRequest);
-        verifyTicket(ticket);
+        String ticket = ticketTokenManagement.getTicketTokenFromRequest(httpRequest);
+        ticketTokenManagement.verifyTicket(ticket);
         String code = codeService.createCode(ticket);
         boolean hasQuery = StringUtils.isNotEmpty(new URL(redirectURL).getQuery());
         httpResponse.sendRedirect(String.format("%s%s%s=%s", redirectURL,
                 hasQuery ? "&" : "?", Constants.PARAM_CODE, code));
         return code;
-    }
-
-    /**
-     * 从HTTP请求中获取ticket
-     * 1. 从cookie获取
-     * 2. 从HTTP请求头Authorization获取
-     *
-     * @param httpRequest HTTP请求
-     * @return 票据
-     */
-    private String getTicket(HttpServletRequest httpRequest) {
-        String ticket = CookieUtils.getCookie(httpRequest, Constants.COOKIE_TICKET);
-        if (StringUtils.isNotEmpty(ticket)) return ticket;
-        String v = httpRequest.getHeader(Constants.HEADER_AUTHORIZATION);
-        if (StringUtils.isEmpty(v)) v = httpRequest.getHeader(Constants.HEADER_AUTHORIZATION.toLowerCase());
-        String prefix = String.format("%s ", Constants.PREFIX_BEARER);
-        if (StringUtils.isEmpty(v) || !v.startsWith(prefix)) return null;
-        return v.substring(prefix.length());
     }
 
     /**
@@ -144,24 +128,10 @@ public class SecurityController {
         appService.verifyApp(request.appId, request.appSecret);
         String ticket = codeService.getTicket(request.code);
         codeService.removeCode(request.code);
-        verifyTicket(ticket);
+        ticketTokenManagement.verifyTicket(ticket);
         UserProfile userProfile = jwtService.decodeProfile(ticket);
-        String token = tokenService.buildToken(userProfile, Constants.CACHE_TOKEN_EXPIRED_TIME_MS);
-        tokenService.putToken(token, ticket);
-        ticketService.addToken(userProfile.id, token);
-        Activity prevActivity = activityService.get(request.appId, userProfile.id);
-        Activity activity = new Activity();
-        activity.userId = userProfile.userId;
-        activity.ticketId = userProfile.id;
-        activity.sessionId = request.sessionId;
-        activity.appId = request.appId;
-        if (prevActivity != null) activity.id = prevActivity.id;
-        Function<Activity, Boolean> function = prevActivity == null ?
-                record -> activityService.add(record) : record -> activityService.update(record);
-        if (!function.apply(activity)) {
-            String operation = prevActivity == null ? "add" : "update";
-            logger.warn("{} activity failed for app:{} and user:{}", operation , request.appId, userProfile.userId);
-        }
+        String token = ticketTokenManagement.buildToken(ticket);
+        activityManagement.addActivity(userProfile, request.sessionId, request.appId);
         return token;
     }
 
@@ -182,7 +152,7 @@ public class SecurityController {
                         @QueryParam("app_id") @RequestParam("app_id") String appId,
                         @QueryParam("app_secret") @RequestParam("app_secret") String appSecret) {
         appService.verifyApp(appId, appSecret);
-        if (!verifyToken(token)) return null;
+        if (!ticketTokenManagement.verifyToken(token)) return null;
         UserProfile userProfile = jwtService.decodeProfile(token);
         User user = userService.get(userProfile.userId);
         if (user == null) {
@@ -212,23 +182,17 @@ public class SecurityController {
     @Path("refreshToken")
     @PostMapping("refreshToken")
     public String refreshToken(@RequestBody RefreshTokenRequest request) {
-        if (request == null) throw new BadRequestException("刷新token请求为空");
+        if (request == null) throw new BadRequestException("刷新Token请求为空");
         request.check();
         appService.verifyApp(request.appId, request.appSecret);
-        if (!verifyToken(request.token)) return null;
-        String ticket = tokenService.getTicket(request.token);
+        if (!ticketTokenManagement.verifyToken(request.token)) return null;
+        String ticket = ticketTokenManagement.getTicketByToken(request.token);
         if (StringUtils.isEmpty(ticket)) {
             logger.error("Cached ticket is expired");
-            throw new NotAuthorizedException("缓存ticket过期");
+            throw new NotAuthorizedException("缓存Ticket过期");
         }
-        UserProfile userProfile = jwtService.decodeProfile(ticket);
-        tokenService.removeToken(request.token);
-        ticketService.removeToken(userProfile.id, request.token);
-        String newToken = tokenService.buildToken(userProfile, Constants.CACHE_TOKEN_EXPIRED_TIME_MS);
-        tokenService.putToken(newToken, ticket);
-        ticketService.addToken(userProfile.id, newToken);
-        ticketService.putTicket(userProfile.id, ticket);
-        return newToken;
+        ticketTokenManagement.removeTokens(request.token);
+        return ticketTokenManagement.buildToken(ticket);
     }
 
     /**
@@ -246,7 +210,7 @@ public class SecurityController {
         if (request == null) throw new BadRequestException("移除活动记录请求为空");
         request.check();
         appService.verifyApp(request.appId, request.appSecret);
-        return activityService.remove(request.sessionId, request.appId);
+        return activityManagement.removeActivity(request.appId, request.sessionId);
     }
 
     /**
@@ -388,18 +352,17 @@ public class SecurityController {
                           @Context HttpServletRequest httpRequest,
                           @Context HttpServletResponse httpResponse) {
         appService.verifyApp(appId, appSecret);
-        String ticket = getTicket(httpRequest);
+        String ticket = ticketTokenManagement.getTicketTokenFromRequest(httpRequest);
         if (StringUtils.isEmpty(ticket)) {
             CookieUtils.removeCookie(Constants.COOKIE_TOKEN, "/", serverConfig.domain, httpResponse);
             logger.error("Ticket is not found from cookies");
             throw new IllegalStateException("尚未登录");
         }
-        removeTicketResources(ticket);
+        ticketTokenManagement.removeTicketTokensByTicket(ticket);
         SessionUtils.removeResources(httpRequest);
         CookieUtils.removeCookie(Constants.COOKIE_TOKEN, "/", serverConfig.domain, httpResponse);
         CookieUtils.removeCookie(Constants.COOKIE_TICKET, "/", serverConfig.domain, httpResponse);
-        UserProfile userProfile = jwtService.decodeProfile(ticket);
-        if (userProfile != null) activityService.remove(userProfile.id);
+        activityManagement.removeActivity(ticket);
         return true;
     }
 
@@ -418,8 +381,7 @@ public class SecurityController {
     public boolean passwordLogin(@RequestBody LoginRequest request,
                                  @Context HttpServletRequest httpRequest,
                                  @Context HttpServletResponse httpResponse) {
-        String ticket = getTicket(httpRequest);
-        if (StringUtils.isNotEmpty(ticket)) {
+        if (StringUtils.isNotEmpty(ticketTokenManagement.getTicketTokenFromRequest(httpRequest))) {
             logger.info("Logged in");
             return true;
         }
@@ -445,11 +407,13 @@ public class SecurityController {
         }
         UserProfile userProfile = new UserProfile();
         userProfile.setId(RandomID.build()).setUserId(user.id);
-        ticket = ticketService.buildTicket(userProfile, Constants.COOKIE_TICKET_EXPIRED_TIME_MS);
-        ticketService.putTicket(userProfile.id, ticket);
+        String ticket = ticketTokenManagement.buildTicket(userProfile);
+        String token = ticketTokenManagement.buildToken(ticket);
+        activityManagement.addActivity(userProfile, httpRequest.getSession().getId(), hylianClientConfig.appId);
+        SessionUtils.setToken(httpRequest, token);
         CookieUtils.setCookie(Constants.COOKIE_TICKET, ticket, "/",
                 serverConfig.domain, true, httpRequest, httpResponse);
-        CookieUtils.setCookie(Constants.COOKIE_TOKEN, RandomID.build(), "/",
+        CookieUtils.setCookie(Constants.COOKIE_TOKEN, token, "/",
                 serverConfig.domain, false, httpRequest, httpResponse);
         return true;
     }
@@ -511,78 +475,5 @@ public class SecurityController {
         if (currentCaptcha == null || !currentCaptcha.equalsIgnoreCase(captcha)) {
             throw new BadRequestException("验证码不正确");
         }
-    }
-
-    /**
-     * 验证token
-     *
-     * @param token 令牌
-     * @return 成功返回true，否则返回false
-     */
-    private boolean verifyToken(String token) {
-        if (StringUtils.isEmpty(token)) {
-            logger.error("Token is empty");
-            return false;
-        }
-        if (!tokenService.verifyToken(token)) {
-            logger.error("Verify token failed");
-            removeTokenResources(token);
-            return false;
-        }
-        return true;
-    }
-
-    /**
-     * 验证ticket
-     *
-     * @param ticket 票据
-     */
-    private void verifyTicket(String ticket) {
-        if (StringUtils.isEmpty(ticket)) {
-            logger.warn("Ticket is empty");
-            throw new NotAuthorizedException("ticket为空");
-        }
-        if (!ticketService.verifyTicket(ticket)) {
-            logger.error("Verify ticket failed");
-            removeTicketResources(ticket);
-            throw new NotAuthorizedException("验证ticket失败");
-        }
-        UserProfile userProfile = jwtService.decodeProfile(ticket);
-        if (userProfile == null) {
-            logger.error("Decode profile failed from ticket");
-            removeTicketResources(ticket);
-            throw new NotAuthorizedException("非法ticket");
-        }
-        String cachedTicket = ticketService.getTicket(userProfile.id);
-        if (StringUtils.isEmpty(cachedTicket) || !ticket.equals(cachedTicket)) {
-            logger.error("Cached ticket and provided ticket are not consistent");
-            removeTicketResources(ticket);
-            throw new NotAuthorizedException("ticket缓存失效");
-        }
-    }
-
-    /**
-     * 移除ticket相关资源
-     * 1. 移除ticket相关token
-     * 2. 移除ticket
-     *
-     * @param ticket 票据
-     */
-    private void removeTicketResources(String ticket) {
-        UserProfile userProfile = jwtService.decodeProfile(ticket);
-        if (userProfile == null) return;
-        userService.removeUserProfile(userProfile.id);
-    }
-
-    /**
-     * 移除token相关资源
-     *
-     * @param token 令牌
-     */
-    private void removeTokenResources(String token) {
-        tokenService.removeToken(token);
-        UserProfile userProfile = jwtService.decodeProfile(token);
-        if (userProfile == null) return;
-        ticketService.removeToken(userProfile.id, token);
     }
 }

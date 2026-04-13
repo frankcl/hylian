@@ -17,6 +17,7 @@ import jakarta.servlet.*;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import xin.manong.hylian.client.util.SessionUtils;
+import xin.manong.hylian.model.User;
 
 import java.io.IOException;
 import java.util.List;
@@ -61,18 +62,34 @@ public class HylianGuard extends CookieSweeper implements Filter {
         HttpServletRequest httpRequest = (HttpServletRequest) request;
         HttpServletResponse httpResponse = (HttpServletResponse) response;
         String requestPath = HTTPUtils.getRequestPath(httpRequest);
-        if (matchExcludePath(requestPath) || shield.shelter(httpRequest, httpResponse)) {
-            try {
-                ContextManager.setUser(SessionUtils.getUser(httpRequest));
+        try {
+            if (matchExcludePath(requestPath) || shield.shelter(httpRequest, httpResponse)) {
+                ContextManager.setUser(getUser(httpRequest));
                 chain.doFilter(request, response);
-            } catch (NotAuthorizedException e) {
-                sweepCookies(httpRequest, httpResponse);
-                throw e;
-            } finally {
-                ContextManager.removeUser();
-                ContextManager.sweepContext();
             }
+        } catch (NotAuthorizedException e) {
+            sweepCookies(httpRequest, httpResponse);
+            throw e;
+        } finally {
+            ContextManager.removeUser();
+            ContextManager.sweepContext();
         }
+    }
+
+    /**
+     * 获取用户信息
+     * 1. 从session中获取用户信息
+     * 2. 从header中获取token，通过token获取用户信息
+     *
+     * @param httpRequest HTTP请求
+     * @return 用户信息
+     */
+    private User getUser(HttpServletRequest httpRequest) {
+        User user = SessionUtils.getUser(httpRequest);
+        if (user != null) return user;
+        String token = HTTPUtils.getTokenFromHeader(httpRequest);
+        if (StringUtils.isEmpty(token)) return null;
+        return client.getUser(token);
     }
 
     /**

@@ -2,13 +2,11 @@ package xin.manong.hylian.client.core;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.ws.rs.ClientErrorException;
-import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.NotAuthorizedException;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import xin.manong.hylian.client.config.HylianClientConfig;
-import xin.manong.hylian.client.util.CookieUtils;
 import xin.manong.hylian.client.util.HTTPUtils;
 import xin.manong.hylian.client.util.SessionUtils;
 import xin.manong.hylian.model.User;
@@ -57,40 +55,27 @@ public class HylianShield {
             sweepSession(httpRequest);
             return false;
         }
-        String token = SessionUtils.getToken(httpRequest);
+        String token = HTTPUtils.getTokenFromHeader(httpRequest);
+        if (StringUtils.isNotEmpty(token)) {
+            User user = hylianClient.getUser(token);
+            if (user == null) {
+                logger.error("Invalid http token:{}", token);
+                throw new NotAuthorizedException("Token验证失败");
+            }
+            SessionUtils.setUser(httpRequest, user);
+            SessionUtils.removeRefreshUser(httpRequest);
+            return true;
+        }
+        token = SessionUtils.getToken(httpRequest);
         if (StringUtils.isNotEmpty(token)) {
             if (refreshUser(token, httpRequest) && refreshToken(token, httpRequest)) return true;
             logger.warn("Token is expired");
-        } else {
-            String authorization = httpRequest.getHeader(Constants.HEADER_AUTHORIZATION);
-            String sessionId = SessionUtils.getSessionID(httpRequest);
-            String cookieSessionId = CookieUtils.getCookie(httpRequest, Constants.COOKIE_SESSION_ID);
-            if (StringUtils.isEmpty(authorization)) {
-                authorization = httpRequest.getHeader(Constants.HEADER_AUTHORIZATION.toLowerCase());
-            }
-            if (StringUtils.isNotEmpty(authorization) && !Objects.equals(sessionId, cookieSessionId)) {
-                logger.error("Cookie session id is expired, need refresh");
-                ClientErrorException e = new ClientErrorException("Need refresh session", Response.Status.CONFLICT);
-                httpRequest.getServletContext().setAttribute(Constants.ATTRIBUTE_EXCEPTION, e);
-                throw e;
-            }
         }
         SessionUtils.removeResources(httpRequest);
         String code = httpRequest.getParameter(Constants.PARAM_CODE);
         if (StringUtils.isEmpty(code)) {
             logger.info("Apply code for acquiring token");
             String redirectURL = HTTPUtils.getRequestURL(httpRequest);
-            String authorization = httpRequest.getHeader(Constants.HEADER_AUTHORIZATION);
-            /*
-             * 解决微信小程序对303支持不好问题：微信小程序返回302，其他返回303
-             */
-            if (StringUtils.isNotEmpty(authorization)) {
-                httpResponse.sendRedirect(String.format("%s%s?%s=%s&%s=%s&%s=%s", clientConfig.serverURL,
-                        Constants.SERVER_PATH_APPLY_CODE, Constants.PARAM_APP_ID, clientConfig.appId,
-                        Constants.PARAM_APP_SECRET, clientConfig.appSecret, Constants.PARAM_REDIRECT_URL,
-                        URLEncoder.encode(redirectURL, StandardCharsets.UTF_8)));
-                return false;
-            }
             httpResponse.setStatus(HttpServletResponse.SC_SEE_OTHER);
             httpResponse.setHeader(Constants.HEADER_LOCATION, String.format("%s%s?%s=%s&%s=%s&%s=%s",
                     clientConfig.serverURL, Constants.SERVER_PATH_APPLY_CODE,
@@ -111,8 +96,7 @@ public class HylianShield {
             token = hylianClient.acquireToken(code, httpRequest);
             if (StringUtils.isEmpty(token)) {
                 logger.error("Acquire token failed");
-                httpResponse.sendRedirect(requestURL);
-                return false;
+                throw new NotAuthorizedException("获取Token失败");
             }
             logger.info("Acquire token success");
             SessionManager.putTokenSession(httpRequest.getSession());
