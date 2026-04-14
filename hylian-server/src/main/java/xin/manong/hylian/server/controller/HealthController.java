@@ -1,9 +1,7 @@
 package xin.manong.hylian.server.controller;
 
 import jakarta.annotation.Resource;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.ws.rs.*;
-import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -26,6 +24,8 @@ public class HealthController {
 
     private static final Logger logger = LoggerFactory.getLogger(HealthController.class);
 
+    private static final String HEALTH_REPORT = "Server is OK";
+
     @Resource
     private TicketTokenManagement ticketTokenManagement;
 
@@ -39,21 +39,7 @@ public class HealthController {
     @Path("check")
     @GetMapping("check")
     public String check() {
-        return "server is ok";
-    }
-
-    /**
-     * 刷新会话
-     *
-     * @param httpRequest HTTP请求
-     * @return 会话ID
-     */
-    @GET
-    @Produces(MediaType.APPLICATION_JSON)
-    @Path("refreshSession")
-    @GetMapping("refreshSession")
-    public String refreshSession(@Context HttpServletRequest httpRequest) {
-        return httpRequest.getSession().getId();
+        return HEALTH_REPORT;
     }
 
     /**
