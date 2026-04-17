@@ -463,6 +463,22 @@ public class MyApplication { }
 public class MyApplication { }
 ```
 
+编写spring MVC配置，引入拦截器
+
+```java
+@Configuration
+public class InterceptorConfig implements WebMvcConfigurer { 
+    @Resource
+    private HylianInterceptor interceptor;
+  
+    @Override
+    protected void addInterceptors(InterceptorRegistry registry) {
+        registry.addInterceptor(interceptor).addPathPatterns("/**").
+                excludePathPatterns("/login", "/favicon.ico");
+    }
+}
+```
+
 ### 8.3 客户端配置
 
 ```yaml
