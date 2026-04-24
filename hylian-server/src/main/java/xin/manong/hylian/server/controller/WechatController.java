@@ -228,7 +228,7 @@ public class WechatController extends WatchValueDisposableBean {
             }
             user = addWechatUser(wechatUser, openid, true);
         }
-        if (user.disabled) throw new IllegalStateException("账号尚未审核，请联系管理员");
+        if (user.disabled) throw new NotAuthorizedException("账号尚未审核通过，请联系管理员");
         afterLogin(user, httpRequest, httpResponse);
         return true;
     }
