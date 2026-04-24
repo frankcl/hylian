@@ -226,8 +226,9 @@ public class WechatController extends WatchValueDisposableBean {
                 String phone = wechatService.getPhoneNumber(request.phoneCode);
                 if (StringUtils.isNotEmpty(phone)) wechatUser.phone = phone;
             }
-            user = addWechatUser(wechatUser, openid, false);
+            user = addWechatUser(wechatUser, openid, true);
         }
+        if (user.disabled) throw new IllegalStateException("账号尚未审核，请联系管理员");
         afterLogin(user, httpRequest, httpResponse);
         return true;
     }
