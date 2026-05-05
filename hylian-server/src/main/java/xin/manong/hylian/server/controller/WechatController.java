@@ -14,19 +14,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
-import xin.manong.hylian.client.config.HylianClientConfig;
 import xin.manong.hylian.client.core.HTTPExecutor;
-import xin.manong.hylian.client.util.SessionUtils;
 import xin.manong.hylian.model.User;
 import xin.manong.hylian.server.common.Constants;
-import xin.manong.hylian.server.component.ActivityManagement;
-import xin.manong.hylian.server.component.TicketTokenManagement;
+import xin.manong.hylian.server.component.LoginManagement;
 import xin.manong.hylian.server.config.ServerConfig;
-import xin.manong.hylian.server.model.UserProfile;
 import xin.manong.hylian.server.service.*;
 import xin.manong.hylian.server.service.impl.WechatServiceImpl;
 import xin.manong.hylian.server.util.AvatarUtils;
-import xin.manong.hylian.client.util.CookieUtils;
 import xin.manong.hylian.server.websocket.QRCodeWebSocket;
 import xin.manong.hylian.server.wechat.*;
 import xin.manong.hylian.server.converter.Converter;
@@ -67,13 +62,9 @@ public class WechatController extends WatchValueDisposableBean {
     @Resource
     private WechatService wechatService;
     @Resource
-    private ActivityManagement activityManagement;
-    @Resource
-    private TicketTokenManagement ticketTokenManagement;
+    private LoginManagement loginManagement;
     @Resource
     private ServerConfig serverConfig;
-    @Resource
-    private HylianClientConfig hylianClientConfig;
     @Resource
     private OSSClient ossClient;
 
@@ -226,10 +217,10 @@ public class WechatController extends WatchValueDisposableBean {
                 String phone = wechatService.getPhoneNumber(request.phoneCode);
                 if (StringUtils.isNotEmpty(phone)) wechatUser.phone = phone;
             }
-            user = addWechatUser(wechatUser, openid, true);
+            user = addWechatUser(wechatUser, openid);
         }
         if (user.disabled) throw new NotAuthorizedException("账号尚未审核通过，请联系管理员");
-        afterLogin(user, httpRequest, httpResponse);
+        loginManagement.setUserLogin(user, httpRequest, httpResponse);
         return true;
     }
 
@@ -254,7 +245,7 @@ public class WechatController extends WatchValueDisposableBean {
             qrCode.openid = openid;
             User user = userService.getByWxOpenid(openid);
             if (user != null) throw new IllegalStateException("微信账号已注册");
-            addWechatUser(request.user, openid, true);
+            addWechatUser(request.user, openid);
             qrCode.status = QRCode.STATUS_REGISTERED;
             if (!qrCodeService.updateByKey(qrCode)) logger.warn("Update QRCode register status failed");
             NoticeNewUser noticeNewUser = new NoticeNewUser(request.user.nickName, "微信");
@@ -335,7 +326,7 @@ public class WechatController extends WatchValueDisposableBean {
             User user = userService.getByWxOpenid(qrCode.openid);
             if (user == null) throw new IllegalStateException("用户未绑定微信账号");
             if (user.disabled) throw new IllegalStateException("账号尚未审核，请联系管理员");
-            afterLogin(user, httpRequest, httpResponse);
+            loginManagement.setUserLogin(user, httpRequest, httpResponse);
             return true;
         } catch (Exception e) {
             qrCode.status = QRCode.STATUS_ERROR;
@@ -347,36 +338,13 @@ public class WechatController extends WatchValueDisposableBean {
     }
 
     /**
-     * 登录后处理
-     *
-     * @param user 登录用户
-     * @param httpRequest HTTP请求
-     * @param httpResponse HTTP响应
-     */
-    private void afterLogin(User user,
-                            HttpServletRequest httpRequest,
-                            HttpServletResponse httpResponse) {
-        UserProfile userProfile = new UserProfile();
-        userProfile.setId(RandomID.build()).setUserId(user.id);
-        String ticket = ticketTokenManagement.buildTicket(userProfile);
-        String token = ticketTokenManagement.buildToken(ticket);
-        activityManagement.addActivity(userProfile, httpRequest.getSession().getId(), hylianClientConfig.appId);
-        httpResponse.addHeader(Constants.HEADER_TOKEN, token);
-        SessionUtils.setToken(httpRequest, token);
-        CookieUtils.setCookie(Constants.COOKIE_TICKET, ticket, "/",
-                serverConfig.domain, true, httpRequest, httpResponse);
-        CookieUtils.setCookie(Constants.COOKIE_TOKEN, token, "/",
-                serverConfig.domain, false, httpRequest, httpResponse);
-    }
-
-    /**
      * 添加微信用户信息
      *
      * @param wechatUser 微信用户信息
      * @param openId 微信小程序openId
      * @return 新用户信息
      */
-    private User addWechatUser(WechatUser wechatUser, String openId, boolean disabled) {
+    private User addWechatUser(WechatUser wechatUser, String openId) {
         if (wechatUser == null) throw new BadRequestException("微信用户信息缺失");
         User user = new User();
         user.id = RandomID.build();
@@ -385,7 +353,7 @@ public class WechatController extends WatchValueDisposableBean {
         user.phone = wechatUser.phone;
         user.tenantId = serverConfig.defaultTenant;
         user.password = DEFAULT_PASSWORD;
-        user.disabled = disabled;
+        user.disabled = true;
         user.wxOpenid = openId;
         user.registerMode = User.REGISTER_MODE_WECHAT;
         String avatarURL = downloadAvatar(wechatUser);

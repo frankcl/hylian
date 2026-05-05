@@ -1,13 +1,19 @@
 package xin.manong.hylian.server.component;
 
 import jakarta.annotation.Resource;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import xin.manong.hylian.model.Activity;
+import xin.manong.hylian.server.model.Pager;
 import xin.manong.hylian.server.model.UserProfile;
 import xin.manong.hylian.server.service.ActivityService;
 import xin.manong.hylian.server.service.JWTService;
+import xin.manong.hylian.server.service.request.ActivitySearchRequest;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * 用户活动管理
@@ -58,5 +64,29 @@ public class ActivityManagement {
     public void removeActivity(String ticket) {
         UserProfile userProfile = jwtService.decodeProfile(ticket);
         if (userProfile != null) activityService.remove(userProfile.id);
+    }
+
+    /**
+     * 移除用户所有活动记录
+     *
+     * @param userId 用户ID
+     */
+    public void removeUserActivities(String userId) {
+        if (!activityService.removeByUserId(userId)) logger.warn("Remove activities failed for user:{}", userId);
+    }
+
+    /**
+     * 获取用户所有登录ticket
+     *
+     * @param userId 用户ID
+     * @return ticket列表
+     */
+    public List<String> getTicketsByUser(String userId) {
+        ActivitySearchRequest searchRequest = new ActivitySearchRequest();
+        searchRequest.userId = userId;
+        searchRequest.pageSize = 100;
+        Pager<Activity> pager = activityService.search(searchRequest);
+        return pager.records.stream().map(activity -> activity.ticketId).
+                filter(StringUtils::isNotEmpty).collect(Collectors.toSet()).stream().toList();
     }
 }

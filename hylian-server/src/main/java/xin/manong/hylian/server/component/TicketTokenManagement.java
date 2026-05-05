@@ -6,6 +6,7 @@ import jakarta.ws.rs.NotAuthorizedException;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import xin.manong.hylian.client.util.CookieUtils;
 import xin.manong.hylian.server.common.Constants;
@@ -14,6 +15,7 @@ import xin.manong.hylian.server.service.JWTService;
 import xin.manong.hylian.server.service.TicketService;
 import xin.manong.hylian.server.service.TokenService;
 
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -33,6 +35,9 @@ public class TicketTokenManagement {
     private TokenService tokenService;
     @Resource
     private TicketService ticketService;
+    @Resource
+    @Lazy
+    private ActivityManagement activityManagement;
 
     /**
      * 从HTTP头中获取token
@@ -166,6 +171,17 @@ public class TicketTokenManagement {
         for (String tokenId : tokenIds) tokenService.removeTokenWithId(tokenId);
         ticketService.removeTokens(ticketId);
         ticketService.removeTicket(ticketId);
+    }
+
+    /**
+     * 移除用户所有相关ticket和token
+     *
+     * @param userId 用户ID
+     */
+    public void removeTicketTokensByUser(String userId) {
+        List<String> tickets = activityManagement.getTicketsByUser(userId);
+        if (tickets == null || tickets.isEmpty()) return;
+        for (String ticket : tickets) removeTicketTokensByTicket(ticket);
     }
 
     /**
